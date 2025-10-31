@@ -59,7 +59,7 @@ const styles = {
     textAlign: "left",
     cursor: "pointer",
     fontSize: "20px",
-    fontfamily: "poppins",
+    fontfamily: "Poppins-regular",
   },
   bottomSection: {
     padding: "10px 20px",
