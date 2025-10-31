@@ -8,7 +8,7 @@ const Sidebar = () => {
 <aside style={styles.sidebar}>
 <div>
 <div style={styles.logoContainer}>
-<img src="/redsage.png" alt="Logo" style={styles.logo} />
+<img src="/light-redsage.png" alt="Logo" style={styles.logo} />
 </div>
 <nav>
           {menuItems.map((item) => (
@@ -34,7 +34,7 @@ const Sidebar = () => {
 const styles = {
   sidebar: {
     width: "230px",
-    backgroundColor: "#c62828",
+    backgroundColor: "#ffffffff",
     color: "white",
     display: "flex",
     flexDirection: "column",
@@ -47,7 +47,7 @@ const styles = {
     borderBottom: "1px solid rgba(255,255,255,0.2)",
   },
   logo: {
-    width: "70px",
+    width: "190px",
   },
   menuButton: {
     display: "block",
@@ -55,10 +55,10 @@ const styles = {
     padding: "10px 20px",
     border: "none",
     background: "none",
-    color: "white",
+    color: "black",
     textAlign: "left",
     cursor: "pointer",
-    fontSize: "15px",
+    fontSize: "20px",
   },
   bottomSection: {
     padding: "10px 20px",
@@ -69,9 +69,9 @@ const styles = {
     gap: "8px",
     background: "none",
     border: "none",
-    color: "white",
+    color: "black",
     cursor: "pointer",
-    fontSize: "14px",
+    fontSize: "17px",
     marginTop: "10px",
   },
 };
