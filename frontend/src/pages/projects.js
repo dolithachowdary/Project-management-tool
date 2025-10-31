@@ -11,7 +11,7 @@ const Projects = () => {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/projects", {
+      const res = await fetch("http://192.168.0.111:5000/api/projects", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
