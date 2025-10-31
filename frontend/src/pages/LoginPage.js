@@ -17,7 +17,7 @@ export default function LoginPage() {
 
   try {
     setLoading(true);
-    const res = await fetch("http://localhost:5000/api/auth/login", {
+    const res = await fetch("http://192.168.0.111:5000/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -71,7 +71,7 @@ export default function LoginPage() {
           }}
         >
           <img src="/redsage.png" alt="Logo" style={{ height: "5rem" }} />
-          <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#dc2626" }}>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#000000ff" }}>
             Welcome Back
           </h1>
           <p style={{ color: "#6b7280", textAlign: "center" }}>
