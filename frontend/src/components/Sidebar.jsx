@@ -74,6 +74,7 @@ const styles = {
     cursor: "pointer",
     fontSize: "17px",
     marginTop: "10px",
+    fontfamily: "Poppins-regular",
   },
 };
  
