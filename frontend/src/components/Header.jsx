@@ -17,7 +17,7 @@ const Header = ({ role }) => {
             style={styles.profileImg}
           />
 <div>
-<p style={styles.profileName}>John Doe</p>
+<p style={styles.profileName}>Niharika Koti</p>
 <p style={styles.profileRole}>{role}</p>
 </div>
 </div>
