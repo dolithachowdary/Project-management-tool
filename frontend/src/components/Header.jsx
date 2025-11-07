@@ -1,12 +1,29 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaBell } from "react-icons/fa";
-import avatar from "../assets/icons/avatar.png"; // ✅ Use your formal avatar here
+import { useLocation } from "react-router-dom"; // ✅ Import hook to get current route
+import avatar from "../assets/icons/avatar.png";
 
 const Header = ({ role }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const location = useLocation(); // ✅ Get current route path
 
-  // Close dropdown when clicking outside
+  // === Automatically generate page title from URL ===
+  const getPageTitle = () => {
+    const path = location.pathname; // e.g. "/projects/123"
+
+    if (path === "/" || path === "") return "Dashboard";
+    if (path === "/login") return ""; // login page → no title
+
+    // Split and capitalize first path segment
+    const segments = path.split("/").filter(Boolean);
+    const main = segments[0] || "Dashboard";
+    return main.charAt(0).toUpperCase() + main.slice(1);
+  };
+
+  const currentTitle = getPageTitle();
+
+  // === Close dropdown when clicking outside ===
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -14,16 +31,19 @@ const Header = ({ role }) => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // === Hide header entirely on login page ===
+  if (location.pathname === "/login") {
+    return null;
+  }
 
   return (
     <header style={styles.header}>
       {/* === Left Section === */}
       <div style={styles.left}>
-        <h2 style={styles.title}>Dashboard</h2>
+        <h2 style={styles.title}>{currentTitle}</h2>
         <input type="text" placeholder="Search..." style={styles.searchBox} />
       </div>
 
@@ -40,7 +60,6 @@ const Header = ({ role }) => {
             onClick={() => setIsDropdownOpen((prev) => !prev)}
           />
 
-          {/* Dropdown */}
           {isDropdownOpen && (
             <div style={styles.dropdown}>
               <p style={styles.dropdownText}>No reminders</p>
@@ -61,6 +80,7 @@ const Header = ({ role }) => {
   );
 };
 
+// === Styles ===
 const styles = {
   header: {
     display: "flex",
@@ -80,6 +100,7 @@ const styles = {
   title: {
     fontSize: "20px",
     fontWeight: "bold",
+    textTransform: "capitalize",
   },
   searchBox: {
     padding: "6px 10px",
@@ -98,7 +119,7 @@ const styles = {
     gap: "8px",
   },
   profileImg: {
-    width: "32px", // ✅ Perfectly sized for header
+    width: "32px",
     height: "32px",
     borderRadius: "50%",
     objectFit: "cover",
@@ -115,8 +136,6 @@ const styles = {
     color: "#555",
     margin: 0,
   },
-
-  // === Dropdown ===
   dropdown: {
     position: "absolute",
     top: "25px",
