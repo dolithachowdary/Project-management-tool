@@ -2,51 +2,58 @@ import React from "react";
 import Card from "./Card";
 import Calendar from "./Calendar";
 
-
 const DashboardContent = () => {
   return (
     <div style={styles.container}>
       {/* === LEFT MAIN SECTION === */}
       <div style={styles.mainContent}>
         {/* Active Projects */}
-        <section>
+        <section style={styles.section}>
           <h3 style={styles.sectionTitle}>Active Projects</h3>
           <div style={styles.cardGrid}>
             {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <div style={styles.cardHeader}>
-                  <h4>Project {i}</h4>
-                  <span style={styles.activeBadge}>Active</span>
-                </div>
-                <div style={styles.progressBarOuter}>
-                  <div
-                    style={{
-                      ...styles.progressBarInner,
-                      width: `${30 * i}%`,
-                    }}
-                  ></div>
-                </div>
-              </Card>
+              <div key={i} style={styles.cardWrapper}>
+                <Card>
+                  <div style={styles.cardHeader}>
+                    <h4>Project {i}</h4>
+                    <span style={styles.activeBadge}>Active</span>
+                  </div>
+                  <div style={styles.progressBarOuter}>
+                    <div
+                      style={{
+                        ...styles.progressBarInner,
+                        width: `${30 * i}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <p style={styles.progressText}>{30 * i}% complete</p>
+                </Card>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Active Sprints */}
-        <section>
+        <section style={styles.section}>
           <h3 style={styles.sectionTitle}>Active Sprints</h3>
           <div style={styles.cardGrid}>
             {[1, 2].map((i) => (
-              <Card key={i}>
-                <h4>Sprint {i}</h4>
-                <p>Ends in {i * 5} days</p>
-                <small>Project {i}</small>
-              </Card>
+              <div key={i} style={styles.cardWrapper}>
+                <Card>
+                  <div style={styles.cardHeader}>
+                    <h4>Sprint {i}</h4>
+                    <span style={styles.activeBadge}>Active</span>
+                  </div>
+                  <p style={styles.subText}>Ends in {i * 5} days</p>
+                  <p style={styles.smallText}>Project {i}</p>
+                </Card>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Workload Balance */}
-        <section>
+        <section style={styles.section}>
           <h3 style={styles.sectionTitle}>Workload Balance</h3>
           <Card>
             <p style={{ textAlign: "center", color: "#777" }}>
@@ -59,19 +66,19 @@ const DashboardContent = () => {
       {/* === RIGHT SIDEBAR === */}
       <aside style={styles.rightPanel}>
         <Card>
-          <h4>Calendar</h4>
-          <Calendar /> 
+          <h4 style={styles.sidebarTitle}>Calendar</h4>
+          <Calendar />
         </Card>
         <Card>
-          <h4>Upcoming Deadlines</h4>
-          <ul>
+          <h4 style={styles.sidebarTitle}>Upcoming Deadlines</h4>
+          <ul style={styles.list}>
             <li>Task 1 - 2 days left</li>
             <li>Task 2 - 5 days left</li>
           </ul>
         </Card>
         <Card>
-          <h4>QA Pending</h4>
-          <ul>
+          <h4 style={styles.sidebarTitle}>QA Pending</h4>
+          <ul style={styles.list}>
             <li>Feature A</li>
             <li>Bug Fix B</li>
           </ul>
@@ -82,10 +89,10 @@ const DashboardContent = () => {
 };
 
 const styles = {
-  // GRID layout for main container
+  // === GRID CONTAINER ===
   container: {
     display: "grid",
-    gridTemplateColumns: "2.5fr 1fr",
+    gridTemplateColumns: "2.5fr 1fr", // Left main | Right sidebar
     gap: "30px",
     padding: "30px",
     backgroundColor: "#f9f9f9",
@@ -95,24 +102,15 @@ const styles = {
     minHeight: "100%",
   },
 
-  // LEFT MAIN CONTENT (projects/sprints)
+  // === LEFT MAIN SECTION ===
   mainContent: {
     display: "flex",
     flexDirection: "column",
     gap: "30px",
-    minWidth: 0, // prevents flex overflow
   },
-
-  // RIGHT SIDEBAR
-  rightPanel: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    width: "340px",
-    flexShrink: 0,
+  section: {
+    marginBottom: "20px",
   },
-
-  // Title Styling
   sectionTitle: {
     marginBottom: "12px",
     fontSize: "1.1rem",
@@ -120,46 +118,82 @@ const styles = {
     color: "#111",
   },
 
-  // Card grid for projects/sprints
+  // === FIX: FLEX GRID FOR CARDS ===
   cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    display: "flex",
+    flexWrap: "wrap",
     gap: "20px",
-    width: "100%",
-    boxSizing: "border-box",
+    justifyContent: "flex-start",
+  },
+  cardWrapper: {
+    flex: "1 1 300px",
+    minWidth: "280px",
+    maxWidth: "340px",
+    display: "flex",
   },
 
-  // Card header (project title + badge)
+  // === CARD ELEMENTS ===
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "10px",
   },
-
-  // Active badge
   activeBadge: {
     backgroundColor: "#c62828",
     color: "white",
-    padding: "2px 8px",
-    borderRadius: "4px",
+    padding: "3px 8px",
+    borderRadius: "5px",
     fontSize: "12px",
   },
-
-  // Progress bar container
   progressBarOuter: {
     width: "100%",
     backgroundColor: "#eee",
     borderRadius: "5px",
     height: "8px",
   },
-
-  // Progress bar fill
   progressBarInner: {
     backgroundColor: "#c62828",
     height: "8px",
     borderRadius: "5px",
     transition: "width 0.3s ease",
+  },
+  progressText: {
+    marginTop: "6px",
+    fontSize: "13px",
+    color: "#555",
+    textAlign: "right",
+  },
+  subText: {
+    color: "#444",
+    fontWeight: "500",
+    marginBottom: "5px",
+  },
+  smallText: {
+    color: "#777",
+    fontSize: "14px",
+    marginBottom: "10px",
+  },
+
+  // === RIGHT SIDEBAR ===
+  rightPanel: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+    width: "340px",
+    flexShrink: 0,
+  },
+  sidebarTitle: {
+    fontSize: "1rem",
+    fontWeight: "600",
+    color: "#222",
+    marginBottom: "10px",
+  },
+  list: {
+    color: "#555",
+    fontSize: "14px",
+    paddingLeft: "16px",
+    lineHeight: "1.6",
   },
 };
 
