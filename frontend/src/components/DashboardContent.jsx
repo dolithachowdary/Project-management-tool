@@ -1,6 +1,8 @@
 import React from "react";
 import Card from "./Card";
 import Calendar from "./Calendar";
+import TaskGraph from "./TaskGraph";
+import RecentActivity from "./RecentActivity";
 
 const DashboardContent = () => {
   return (
@@ -61,6 +63,16 @@ const DashboardContent = () => {
             </p>
           </Card>
         </section>
+
+        {/* === TASK GRAPH + RECENT ACTIVITY ROW === */}
+        <section style={styles.bottomRow}>
+          <div style={styles.bottomLeft}>
+            <TaskGraph />
+          </div>
+          <div style={styles.bottomRight}>
+            <RecentActivity />
+          </div>
+        </section>
       </div>
 
       {/* === RIGHT SIDEBAR === */}
@@ -118,7 +130,7 @@ const styles = {
     color: "#111",
   },
 
-  // === FIX: FLEX GRID FOR CARDS ===
+  // === FLEX GRID FOR CARDS ===
   cardGrid: {
     display: "flex",
     flexWrap: "wrap",
@@ -173,6 +185,21 @@ const styles = {
     color: "#777",
     fontSize: "14px",
     marginBottom: "10px",
+  },
+
+  // === TASK GRAPH + RECENT ACTIVITY ROW ===
+  bottomRow: {
+    display: "flex",
+    gap: "25px",
+    flexWrap: "wrap",
+  },
+  bottomLeft: {
+    flex: "1 1 55%",
+    minWidth: "350px",
+  },
+  bottomRight: {
+    flex: "1 1 40%",
+    minWidth: "300px",
   },
 
   // === RIGHT SIDEBAR ===
