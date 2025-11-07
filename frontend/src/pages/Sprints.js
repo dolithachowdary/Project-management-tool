@@ -49,26 +49,30 @@ const Sprints = () => {
             <h3 style={styles.sectionTitle}>Active Sprints</h3>
             <div style={styles.cardGrid}>
               {sprintData.map((sprint, i) => (
-                <Card key={i}>
-                  <div style={styles.cardHeader}>
-                    <h4>{sprint.name}</h4>
-                    <span style={styles.activeBadge}>{sprint.status}</span>
-                  </div>
+                <div key={i} style={styles.cardWrapper}>
+                  <Card>
+                    <div style={styles.cardHeader}>
+                      <h4>{sprint.name}</h4>
+                      <span style={styles.activeBadge}>{sprint.status}</span>
+                    </div>
 
-                  <p style={styles.subText}>{sprint.project}</p>
-                  <p style={styles.smallText}>{sprint.due}</p>
+                    <p style={styles.subText}>{sprint.project}</p>
+                    <p style={styles.smallText}>{sprint.due}</p>
 
-                  <div style={styles.progressBarOuter}>
-                    <div
-                      style={{
-                        ...styles.progressBarInner,
-                        width: `${sprint.progress}%`,
-                      }}
-                    ></div>
-                  </div>
+                    <div style={styles.progressBarOuter}>
+                      <div
+                        style={{
+                          ...styles.progressBarInner,
+                          width: `${sprint.progress}%`,
+                        }}
+                      ></div>
+                    </div>
 
-                  <p style={styles.progressText}>{sprint.progress}% complete</p>
-                </Card>
+                    <p style={styles.progressText}>
+                      {sprint.progress}% complete
+                    </p>
+                  </Card>
+                </div>
               ))}
             </div>
           </section>
@@ -107,11 +111,22 @@ const styles = {
     color: "#333",
     margin: "20px 0 15px",
   },
+
+  /* ✅ GRID FIX — same as Projects.jsx */
   cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    display: "flex",
+    flexWrap: "wrap",
     gap: "20px",
+    justifyContent: "flex-start",
   },
+  cardWrapper: {
+    flex: "1 1 300px",
+    minWidth: "280px",
+    maxWidth: "340px",
+    display: "flex",
+  },
+
+  /* === CARD STYLES === */
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
@@ -121,8 +136,8 @@ const styles = {
   activeBadge: {
     backgroundColor: "#c62828",
     color: "white",
-    padding: "2px 8px",
-    borderRadius: "4px",
+    padding: "3px 8px",
+    borderRadius: "5px",
     fontSize: "12px",
   },
   subText: {

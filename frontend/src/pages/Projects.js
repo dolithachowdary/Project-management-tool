@@ -4,7 +4,6 @@ import Header from "../components/Header";
 import Card from "../components/Card";
 
 const Projects = ({ role = "Project Manager" }) => {
-  // Sample data (you can replace this with dynamic API data later)
   const projects = [
     { id: 1, name: "Website Revamp", status: "Active", progress: 70 },
     { id: 2, name: "Mobile App UI", status: "Active", progress: 45 },
@@ -15,7 +14,6 @@ const Projects = ({ role = "Project Manager" }) => {
     { id: 7, name: "Marketing Dashboard", status: "Completed", progress: 100 },
   ];
 
-  // Helper to filter projects by status
   const filterByStatus = (status) =>
     projects.filter((project) => project.status === status);
 
@@ -28,82 +26,92 @@ const Projects = ({ role = "Project Manager" }) => {
         <div style={styles.pageInner}>
           <h2 style={styles.pageTitle}>Projects</h2>
 
-          {/* === Active Projects === */}
+          {/* Active */}
           <section style={styles.section}>
             <h3 style={styles.sectionTitle}>Active Projects</h3>
             <div style={styles.cardGrid}>
               {filterByStatus("Active").map((p) => (
-                <Card key={p.id}>
-                  <div style={styles.cardHeader}>
-                    <h4>{p.name}</h4>
-                    <span style={{ ...styles.badge, ...styles.activeBadge }}>
-                      Active
-                    </span>
-                  </div>
-                  <div style={styles.progressOuter}>
-                    <div
-                      style={{
-                        ...styles.progressInner,
-                        width: `${p.progress}%`,
-                      }}
-                    />
-                  </div>
-                  <p style={styles.progressText}>{p.progress}% complete</p>
-                </Card>
+                <div key={p.id} style={styles.cardWrapper}>
+                  <Card style={styles.card}>
+                    <div style={styles.cardHeader}>
+                      <h4 style={styles.projectTitle}>{p.name}</h4>
+                      <span
+                        style={{ ...styles.badge, ...styles.activeBadge }}
+                      >
+                        Active
+                      </span>
+                    </div>
+                    <div style={styles.progressOuter}>
+                      <div
+                        style={{
+                          ...styles.progressInner,
+                          width: `${p.progress}%`,
+                        }}
+                      />
+                    </div>
+                    <p style={styles.progressText}>{p.progress}% complete</p>
+                  </Card>
+                </div>
               ))}
             </div>
           </section>
 
-          {/* === On Hold Projects === */}
+          {/* On Hold */}
           <section style={styles.section}>
             <h3 style={styles.sectionTitle}>On Hold</h3>
             <div style={styles.cardGrid}>
               {filterByStatus("On Hold").map((p) => (
-                <Card key={p.id}>
-                  <div style={styles.cardHeader}>
-                    <h4>{p.name}</h4>
-                    <span style={{ ...styles.badge, ...styles.holdBadge }}>
-                      On Hold
-                    </span>
-                  </div>
-                  <div style={styles.progressOuter}>
-                    <div
-                      style={{
-                        ...styles.progressInner,
-                        backgroundColor: "#fbc02d",
-                        width: `${p.progress}%`,
-                      }}
-                    />
-                  </div>
-                  <p style={styles.progressText}>{p.progress}% complete</p>
-                </Card>
+                <div key={p.id} style={styles.cardWrapper}>
+                  <Card style={styles.card}>
+                    <div style={styles.cardHeader}>
+                      <h4 style={styles.projectTitle}>{p.name}</h4>
+                      <span style={{ ...styles.badge, ...styles.holdBadge }}>
+                        On Hold
+                      </span>
+                    </div>
+                    <div style={styles.progressOuter}>
+                      <div
+                        style={{
+                          ...styles.progressInner,
+                          backgroundColor: "#fbc02d",
+                          width: `${p.progress}%`,
+                        }}
+                      />
+                    </div>
+                    <p style={styles.progressText}>{p.progress}% complete</p>
+                  </Card>
+                </div>
               ))}
             </div>
           </section>
 
-          {/* === Completed Projects === */}
+          {/* Completed */}
           <section style={styles.section}>
             <h3 style={styles.sectionTitle}>Completed</h3>
             <div style={styles.cardGrid}>
               {filterByStatus("Completed").map((p) => (
-                <Card key={p.id}>
-                  <div style={styles.cardHeader}>
-                    <h4>{p.name}</h4>
-                    <span style={{ ...styles.badge, ...styles.completedBadge }}>
-                      Completed
-                    </span>
-                  </div>
-                  <div style={styles.progressOuter}>
-                    <div
-                      style={{
-                        ...styles.progressInner,
-                        backgroundColor: "#2e7d32",
-                        width: `${p.progress}%`,
-                      }}
-                    />
-                  </div>
-                  <p style={styles.progressText}>100% complete</p>
-                </Card>
+                <div key={p.id} style={styles.cardWrapper}>
+                  <Card style={styles.card}>
+                    <div style={styles.cardHeader}>
+                      <h4 style={styles.projectTitle}>{p.name}</h4>
+                      <span
+                        style={{ ...styles.badge, ...styles.completedBadge }}
+                      >
+                        Completed
+                      </span>
+                    </div>
+                    <div style={styles.progressOuter}>
+                      <div
+                        style={{
+                          ...styles.progressInner,
+                          backgroundColor: "#2e7d32",
+                          width: `${p.progress}%`,
+                        }}
+                      />
+                    </div>
+                    <p style={styles.progressText}>100% complete</p>
+                  </Card>
+                </div>
               ))}
             </div>
           </section>
@@ -113,12 +121,12 @@ const Projects = ({ role = "Project Manager" }) => {
   );
 };
 
-// === Inline Styles ===
+// === Styles ===
 const styles = {
   pageContainer: {
     display: "flex",
-    height: "100vh",
     backgroundColor: "#f9f9f9",
+    height: "100vh",
     overflow: "hidden",
   },
   mainContent: {
@@ -130,12 +138,12 @@ const styles = {
   pageInner: {
     padding: "30px",
     backgroundColor: "#f9f9f9",
-    flex: 1,
     boxSizing: "border-box",
   },
   pageTitle: {
     fontSize: "1.5rem",
     fontWeight: "600",
+    color: "#222",
     marginBottom: "25px",
   },
   section: {
@@ -147,22 +155,37 @@ const styles = {
     color: "#222",
     marginBottom: "15px",
   },
+
+  // === FIXED GRID ===
   cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    display: "flex",
+    flexWrap: "wrap",
     gap: "20px",
-    width: "100%",
+    justifyContent: "flex-start",
   },
+  cardWrapper: {
+    flex: "1 1 300px",
+    minWidth: "280px",
+    maxWidth: "340px",
+    display: "flex",
+  },
+
+  // === CARD CONTENT ===
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "10px",
   },
+  projectTitle: {
+    fontSize: "1rem",
+    fontWeight: "600",
+    color: "#222",
+  },
   badge: {
     padding: "4px 10px",
     borderRadius: "5px",
-    color: "white",
+    color: "#fff",
     fontSize: "12px",
     fontWeight: "500",
   },
