@@ -4,7 +4,7 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import Sprints from './pages/Sprints';
-
+import Tasks from './pages/Tasks'; // ✅ Import your Tasks page
 
 function App() {
   return (
@@ -15,6 +15,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/sprints" element={<Sprints />} />
+        <Route path="/tasks" element={<Tasks />} /> {/* ✅ Added route for Tasks */}
       </Routes>
     </Router>
   );
