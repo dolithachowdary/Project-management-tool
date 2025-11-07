@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaBell } from "react-icons/fa";
-import avatar from "../assets/avatar.png"; // ✅ Use your formal avatar here
+import avatar from "../assets/icons/avatar.png"; // ✅ Use your formal avatar here
 
 const Header = ({ role }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
