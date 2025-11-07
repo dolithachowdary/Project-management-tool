@@ -8,20 +8,18 @@ import ProjectsIcon from "../assets/icons/projects.svg";
 import SprintsIcon from "../assets/icons/sprints.svg";
 import TasksIcon from "../assets/icons/tasks.svg";
 import TimesheetsIcon from "../assets/icons/timesheets.svg";
-import MeetingsIcon from "../assets/icons/meetings.svg";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Now link each menu item with its respective icon
+  // ✅ Updated menu items (Meetings removed)
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: DashboardIcon },
     { name: "Projects", path: "/projects", icon: ProjectsIcon },
     { name: "Sprints", path: "/sprints", icon: SprintsIcon },
     { name: "Tasks", path: "/tasks", icon: TasksIcon },
     { name: "Timesheets", path: "/timesheets", icon: TimesheetsIcon },
-    { name: "Meetings", path: "/meetings", icon: MeetingsIcon },
   ];
 
   const handleSignOut = () => {
@@ -51,15 +49,14 @@ const Sidebar = () => {
                 }}
                 onClick={() => navigate(item.path)}
               >
-                {/* Figma SVG icon */}
                 <img
                   src={item.icon}
                   alt={item.name}
                   style={{
                     ...styles.icon,
                     filter: isActive
-                      ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)" // red
-                      : "invert(0%) brightness(0%)", // black
+                      ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
+                      : "invert(0%) brightness(0%)",
                   }}
                 />
                 {item.name}
