@@ -543,26 +543,44 @@ const styles = {
   },
 
   /* board */
-  board: { display: "flex", gap: 16, justifyContent: "space-between", marginTop: 8 },
-  column: {
-    flex: 1,
-    minWidth: 240,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 14,
-    boxShadow: "0 4px 14px rgba(15,23,42,0.04)",
-    maxHeight: "60vh",
-    overflowY: "auto",
-  },
-  columnTitle: { fontSize: 15, fontWeight: 700, color: "#c2410c", marginBottom: 12 },
-  taskCard: {
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 10,
-    boxShadow: "0 4px 10px rgba(15,23,42,0.03)",
-    transition: "all 160ms ease",
-    cursor: "grab",
-  },
+
+board: {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  flexWrap: "nowrap", // keep all 5 columns in one row
+  gap: 12,            // tighter gap between columns
+  marginTop: 8,
+  width: "100%",
+  overflowX: "auto",  // enables subtle horizontal scroll only if absolutely needed
+  paddingBottom: 10,
+},
+column: {
+  flex: "1 1 18%",     // ✅ ensures roughly 5 equal columns on standard screens
+  minWidth: 200,       // prevent too narrow on small windows
+  maxWidth: 240,       // keeps proportions tight and uniform
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  padding: 12,
+  boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
+  transition: "all 0.2s ease",
+},
+columnTitle: {
+  fontSize: 15,
+  fontWeight: 700,
+  color: "#c2410c",
+  marginBottom: 10,
+  whiteSpace: "nowrap",
+},
+taskCard: {
+  borderRadius: 10,
+  padding: 10,
+  marginBottom: 8,
+  boxShadow: "0 3px 8px rgba(15,23,42,0.03)",
+  transition: "all 160ms ease",
+  cursor: "grab",
+},
+
   taskName: { fontWeight: 700, fontSize: 14, marginBottom: 6 },
   taskMeta: { fontSize: 12, color: "#374151" },
 
