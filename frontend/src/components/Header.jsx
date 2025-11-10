@@ -1,21 +1,32 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaBell } from "react-icons/fa";
-import { useLocation } from "react-router-dom"; // ✅ Import hook to get current route
+import { useLocation } from "react-router-dom";
 import avatar from "../assets/icons/avatar.png";
 
-const Header = ({ role }) => {
+const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userData, setUserData] = useState({ name: "", role: "" });
   const dropdownRef = useRef(null);
-  const location = useLocation(); // ✅ Get current route path
+  const location = useLocation();
 
-  // === Automatically generate page title from URL ===
+  // ✅ Load user data from localStorage on mount
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData"));
+    if (storedUser) {
+      setUserData({
+        name: storedUser.name || "",
+        role: storedUser.role || "",
+      });
+    }
+  }, []);
+
+  // === Generate page title from URL ===
   const getPageTitle = () => {
-    const path = location.pathname; // e.g. "/projects/123"
+    const path = location.pathname;
 
     if (path === "/" || path === "") return "Dashboard";
-    if (path === "/login") return ""; // login page → no title
+    if (path === "/login") return ""; // hide on login page
 
-    // Split and capitalize first path segment
     const segments = path.split("/").filter(Boolean);
     const main = segments[0] || "Dashboard";
     return main.charAt(0).toUpperCase() + main.slice(1);
@@ -34,7 +45,7 @@ const Header = ({ role }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // === Hide header entirely on login page ===
+  // === Hide header on login page ===
   if (location.pathname === "/login") {
     return null;
   }
@@ -67,12 +78,16 @@ const Header = ({ role }) => {
           )}
         </div>
 
-        {/* Profile */}
+        {/* Profile Section */}
         <div style={styles.profileContainer}>
           <img src={avatar} alt="Profile" style={styles.profileImg} />
           <div>
-            <p style={styles.profileName}>Niharika Koti</p>
-            <p style={styles.profileRole}>{role}</p>
+            <p style={styles.profileName}>
+              {userData.name || "User"}
+            </p>
+            <p style={styles.profileRole}>
+              {userData.role || "Role"}
+            </p>
           </div>
         </div>
       </div>
