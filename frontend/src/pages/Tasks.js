@@ -1,16 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { FaThLarge, FaListUl, FaPlus, FaSearch, FaFilter, FaSort } from "react-icons/fa";
+import gridIcon from "../assets/icons/grid.svg";
+import dashboardIcon from "../assets/icons/dashboard.svg";
+
+
+const RED = "#C62828";
 
 const Tasks = ({ role = "Project Manager" }) => {
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "board"
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState(""); // yyyy-mm-dd
+  const [selectedProject, setSelectedProject] = useState("All");
+  const [selectedPerson, setSelectedPerson] = useState("All");
   const [hoveredRow, setHoveredRow] = useState(null);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [showAddRow, setShowAddRow] = useState(false);
+  const [newTask, setNewTask] = useState(null);
+  const [toast, setToast] = useState({ show: false, text: "" });
+
+  // dummy data for dropdowns (replace with API values later)
+  const projectList = ["All", "Analytics Dashboard", "Automation Suite", "Enterprise Portal"];
+  const peopleList = ["All", "A", "B", "C", "D"];
 
   const [tasks, setTasks] = useState([
     {
@@ -80,7 +94,7 @@ const Tasks = ({ role = "Project Manager" }) => {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
   };
 
-  // filter by search, selectedStatus, selectedDate
+  // Combined filters: search, status, date, project, person
   const filteredTasks = tasks.filter((t) => {
     const q = searchQuery.trim().toLowerCase();
     const matchesSearch =
@@ -89,14 +103,14 @@ const Tasks = ({ role = "Project Manager" }) => {
       t.moduleName.toLowerCase().includes(q) ||
       t.projectName.toLowerCase().includes(q);
     const matchesStatus = selectedStatus === "All" || t.status === selectedStatus;
-    const matchesDate =
-      !selectedDate ||
-      t.startDate === selectedDate ||
-      t.endDate === selectedDate;
-    return matchesSearch && matchesStatus && matchesDate;
+    const matchesDate = !selectedDate || t.startDate === selectedDate || t.endDate === selectedDate;
+    const matchesProject = selectedProject === "All" || t.projectName === selectedProject;
+    const matchesPerson =
+      selectedPerson === "All" || t.assignedTo.some((p) => p === selectedPerson);
+    return matchesSearch && matchesStatus && matchesDate && matchesProject && matchesPerson;
   });
 
-  // board columns are derived from filteredTasks (so board respects filters)
+  // board columns derived from filteredTasks (board respects filters)
   const boardColumns = {
     "To Do": filteredTasks.filter((t) => t.status === "To Do"),
     "In Progress": filteredTasks.filter((t) => t.status === "In Progress"),
@@ -119,12 +133,78 @@ const Tasks = ({ role = "Project Manager" }) => {
     if (!movedTask) return;
 
     // update the status on the master tasks array
-    setTasks((prev) => prev.map((t) => (t.id === movedTask.id ? { ...t, status: destStatus } : t)));
+    setTasks((prev) =>
+      prev.map((t) => (t.id === movedTask.id ? { ...t, status: destStatus } : t))
+    );
   };
 
   const getCount = (status) => {
     if (status === "All") return tasks.length;
     return tasks.filter((t) => t.status === status).length;
+  };
+
+  // show toast
+  useEffect(() => {
+    if (!toast.show) return;
+    const id = setTimeout(() => setToast({ show: false, text: "" }), 2200);
+    return () => clearTimeout(id);
+  }, [toast]);
+
+  // Add Task logic (inline row)
+  const handleAddTaskClick = () => {
+    // only insert inline row in grid view
+    if (viewMode !== "grid") setViewMode("grid");
+    if (!showAddRow) {
+      setNewTask({
+        id: `temp-${Date.now()}`,
+        taskName: "",
+        moduleName: "",
+        projectName: projectList[1] || "Analytics Dashboard",
+        assignedTo: [],
+        status: "To Do",
+        startDate: "",
+        endDate: "",
+      });
+      setShowAddRow(true);
+    }
+  };
+
+  const handleSaveNewTask = () => {
+    if (!newTask) return;
+    // basic validation: require taskName
+    if (!newTask.taskName.trim()) {
+      setToast({ show: true, text: "Please enter task name" });
+      return;
+    }
+    const saved = {
+      ...newTask,
+      id: `${Date.now()}`, // simple id
+      assignedTo: newTask.assignedTo.length ? newTask.assignedTo : ["A"],
+    };
+    // add to top of master tasks
+    setTasks((prev) => [saved, ...prev]);
+    // reset add row
+    setNewTask(null);
+    setShowAddRow(false);
+    setToast({ show: true, text: "Task added successfully!" });
+  };
+
+  const handleCancelNewTask = () => {
+    setNewTask(null);
+    setShowAddRow(false);
+  };
+
+  // helper to toggle view via pill toggle
+  const toggleView = () => setViewMode((v) => (v === "grid" ? "board" : "grid"));
+
+  // helper for assignedTo multi-select simple implementation (comma separated text)
+  const handleNewTaskAssignChange = (value) => {
+    // accept comma separated names or single name
+    const arr = value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    setNewTask((prev) => ({ ...prev, assignedTo: arr }));
   };
 
   return (
@@ -136,87 +216,153 @@ const Tasks = ({ role = "Project Manager" }) => {
         <div style={styles.pageInner}>
           <h2 style={styles.pageTitle}>Tasks</h2>
 
-          {/* === Top toolbar: single rounded container with search + date + actions === */}
+          {/* === Top toolbar: single rounded container with search + date + project + person + toggle + add task === */}
           <div style={styles.searchFilterContainer}>
+            {/* search */}
             <div style={styles.searchBox}>
-              <FaSearch style={styles.searchIcon} />
+              <FaSearch style={{ ...styles.searchIcon, color: "#B91C1C" }} />
               <input
                 type="text"
                 placeholder="Search tasks, module or project..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={styles.searchInput}
+                style={{ ...styles.searchInput, paddingLeft: 40 }}
               />
             </div>
 
-            <div style={styles.centerControls}>
-              <label style={styles.dateLabel}>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  style={styles.dateInput}
-                />
-              </label>
+            {/* date picker */}
+            <div style={styles.toolbarControl}>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                style={styles.dateInput}
+              />
             </div>
 
-            <div style={styles.toolbarBtns}>
-              <button style={styles.toolbarBtn}>
-                <FaSort /> Sort by
-              </button>
-              <button style={styles.toolbarBtn}>
-                <FaFilter /> Filter
-              </button>
+            {/* project select */}
+            <div style={styles.toolbarControl}>
+              <select
+                value={selectedProject}
+                onChange={(e) => setSelectedProject(e.target.value)}
+                style={styles.selectInput}
+              >
+                {projectList.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              <button
+            {/* person select */}
+            <div style={styles.toolbarControl}>
+              <select
+                value={selectedPerson}
+                onChange={(e) => setSelectedPerson(e.target.value)}
+                style={styles.selectInput}
+              >
+                {peopleList.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* icon toggle pill */}                
+            <div style={styles.toggleWrapper}>
+            <div style={styles.iconToggle}>
+              {/* sliding background indicator */}
+              <div
+                style={{
+                  ...styles.toggleHighlight,
+                  transform: viewMode === "grid" ? "translateX(0%)" : "translateX(100%)",
+                }}
+              ></div>
+
+              {/* Grid icon */}
+              <div
                 onClick={() => setViewMode("grid")}
                 style={{
-                  ...styles.toolbarBtn,
-                  ...(viewMode === "grid" ? styles.activeBtn : {}),
+                  ...styles.iconButton,
+                  color: viewMode === "grid" ? "#C62828" : "#6B7280",
                 }}
               >
-                <FaListUl /> Grid
-              </button>
+                <img
+                  src={gridIcon}
+                  alt="Grid"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    zIndex: 2,
+                    filter:
+                      viewMode === "grid"
+                        ? "invert(20%) sepia(90%) saturate(5000%) hue-rotate(350deg)"
+                        : "invert(40%) brightness(0.5)",
+                    transition: "filter 0.3s ease",
+                  }}
+                />
+              </div>
 
-              <button
+              {/* Board icon */}
+              <div
                 onClick={() => setViewMode("board")}
                 style={{
-                  ...styles.toolbarBtn,
-                  ...(viewMode === "board" ? styles.activeBtn : {}),
+                  ...styles.iconButton,
+                  color: viewMode === "board" ? "#C62828" : "#6B7280",
                 }}
               >
-                <FaThLarge /> Board
+                <img
+                  src={dashboardIcon}
+                  alt="Board"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    zIndex: 2,
+                    filter:
+                      viewMode === "board"
+                        ? "invert(20%) sepia(90%) saturate(5000%) hue-rotate(350deg)"
+                        : "invert(40%) brightness(0.5)",
+                    transition: "filter 0.3s ease",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+            {/* add task */}
+            <div style={styles.toolbarControl}>
+              <button onClick={handleAddTaskClick} style={styles.addTaskBtn}>
+                <FaPlus style={{ marginRight: 8 }} />
+                Add Task
               </button>
             </div>
           </div>
 
-          {/* === Status chips row (pastel pills) === */}
-          <div style={styles.statusFilterContainer}>
-            {statuses.map((status) => {
-              const isActive = selectedStatus === status;
-              return (
-                <button
-                  key={status}
-                  onClick={() => setSelectedStatus(status)}
-                  style={{
-                    ...styles.statusChip,
-                    ...(isActive ? styles.activeChip : {}),
-                  }}
-                >
-                  <span>{status}</span>
-                  <span style={styles.chipCount}>{getCount(status)}</span>
-                </button>
-              );
-            })}
-            {/* clear date quick button */}
-            <button
-              onClick={() => setSelectedDate("")}
-              style={styles.clearDateBtn}
-              title="Clear date"
-            >
-              Clear date
-            </button>
-          </div>
+          {/* === Status chips row (only for Grid view) === */}
+          {viewMode === "grid" && (
+            <div style={styles.statusFilterContainer}>
+              {statuses.map((status) => {
+                const isActive = selectedStatus === status;
+                return (
+                  <button
+                    key={status}
+                    onClick={() => setSelectedStatus(status)}
+                    style={{
+                      ...styles.statusChip,
+                      ...(isActive ? styles.activeChip : {}),
+                    }}
+                  >
+                    <span>{status}</span>
+                    <span style={styles.chipCount}>{getCount(status)}</span>
+                  </button>
+                );
+              })}
+              <button onClick={() => setSelectedDate("")} style={styles.clearDateBtn} title="Clear date">
+                Clear date
+              </button>
+            </div>
+          )}
 
           {/* === GRID VIEW (table) === */}
           {viewMode === "grid" && (
@@ -232,9 +378,94 @@ const Tasks = ({ role = "Project Manager" }) => {
                       <th style={styles.th}>Status</th>
                       <th style={styles.th}>Start Date</th>
                       <th style={styles.th}>End Date</th>
+                      <th style={styles.th}></th>
                     </tr>
                   </thead>
                   <tbody>
+                    {/* inline add row at top */}
+                    {showAddRow && newTask && (
+                      <tr style={{ ...styles.tableRow, background: "#FFF9F9" }}>
+                        <td style={styles.td}>
+                          <input
+                            value={newTask.taskName}
+                            onChange={(e) => setNewTask((p) => ({ ...p, taskName: e.target.value }))}
+                            placeholder="Task name"
+                            style={styles.inlineInput}
+                          />
+                        </td>
+                        <td style={styles.td}>
+                          <input
+                            value={newTask.moduleName}
+                            onChange={(e) => setNewTask((p) => ({ ...p, moduleName: e.target.value }))}
+                            placeholder="Module name"
+                            style={styles.inlineInput}
+                          />
+                        </td>
+                        <td style={styles.td}>
+                          <select
+                            value={newTask.projectName}
+                            onChange={(e) => setNewTask((p) => ({ ...p, projectName: e.target.value }))}
+                            style={styles.inlineSelect}
+                          >
+                            {projectList
+                              .filter((p) => p !== "All")
+                              .map((p) => (
+                                <option key={p} value={p}>
+                                  {p}
+                                </option>
+                              ))}
+                          </select>
+                        </td>
+                        <td style={styles.td}>
+                          <input
+                            value={newTask.assignedTo.join(", ")}
+                            onChange={(e) => handleNewTaskAssignChange(e.target.value)}
+                            placeholder="A, B, C"
+                            style={styles.inlineInput}
+                          />
+                        </td>
+                        <td style={styles.td}>
+                          <select
+                            value={newTask.status}
+                            onChange={(e) => setNewTask((p) => ({ ...p, status: e.target.value }))}
+                            style={styles.inlineSelect}
+                          >
+                            {statusesForSelect.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td style={styles.td}>
+                          <input
+                            type="date"
+                            value={newTask.startDate}
+                            onChange={(e) => setNewTask((p) => ({ ...p, startDate: e.target.value }))}
+                            style={styles.inlineDate}
+                          />
+                        </td>
+                        <td style={styles.td}>
+                          <input
+                            type="date"
+                            value={newTask.endDate}
+                            onChange={(e) => setNewTask((p) => ({ ...p, endDate: e.target.value }))}
+                            style={styles.inlineDate}
+                          />
+                        </td>
+                        <td style={styles.td}>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={handleSaveNewTask} style={styles.saveBtn}>
+                              Save
+                            </button>
+                            <button onClick={handleCancelNewTask} style={styles.cancelBtn}>
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+
                     {filteredTasks.map((task) => {
                       const colors = getStatusColor(task.status);
                       const isHovered = hoveredRow === task.id;
@@ -259,9 +490,7 @@ const Tasks = ({ role = "Project Manager" }) => {
                                   {u}
                                 </div>
                               ))}
-                              {task.assignedTo.length > 3 && (
-                                <div style={styles.plusAvatar}>+{task.assignedTo.length - 3}</div>
-                              )}
+                              {task.assignedTo.length > 3 && <div style={styles.plusAvatar}>+{task.assignedTo.length - 3}</div>}
                             </div>
                           </td>
                           <td style={styles.td}>
@@ -283,12 +512,13 @@ const Tasks = ({ role = "Project Manager" }) => {
                           </td>
                           <td style={styles.td}>{task.startDate}</td>
                           <td style={styles.td}>{task.endDate}</td>
+                          <td style={styles.td}></td>
                         </tr>
                       );
                     })}
-                    {filteredTasks.length === 0 && (
+                    {filteredTasks.length === 0 && !showAddRow && (
                       <tr>
-                        <td colSpan={7} style={{ padding: 24, textAlign: "center", color: "#666" }}>
+                        <td colSpan={8} style={{ padding: 24, textAlign: "center", color: "#666" }}>
                           No tasks found.
                         </td>
                       </tr>
@@ -306,11 +536,7 @@ const Tasks = ({ role = "Project Manager" }) => {
                 {Object.keys(boardColumns).map((colId) => (
                   <Droppable key={colId} droppableId={colId}>
                     {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        style={styles.column}
-                      >
+                      <div ref={provided.innerRef} {...provided.droppableProps} style={styles.column}>
                         <h3 style={styles.columnTitle}>{colId}</h3>
 
                         <div style={{ minHeight: 20 }}>
@@ -319,7 +545,7 @@ const Tasks = ({ role = "Project Manager" }) => {
                             const isHovered = hoveredCard === task.id;
                             return (
                               <Draggable key={task.id} draggableId={task.id} index={index}>
-                                {(provided) => (
+                                {(provided, snapshot) => (
                                   <div
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
@@ -330,10 +556,13 @@ const Tasks = ({ role = "Project Manager" }) => {
                                       ...styles.taskCard,
                                       backgroundColor: colors.bg,
                                       color: colors.text,
-                                      boxShadow: isHovered
+                                      boxShadow: snapshot.isDragging
+                                        ? "0 8px 22px rgba(15,23,42,0.12)"
+                                        : isHovered
                                         ? "0 8px 22px rgba(15,23,42,0.10)"
                                         : styles.taskCard.boxShadow,
-                                      transform: isHovered ? "translateY(-6px)" : "translateY(0)",
+                                      transform: snapshot.isDragging ? "scale(1.02)" : isHovered ? "translateY(-6px)" : "translateY(0)",
+                                      transition: "all 0.18s ease",
                                       ...provided.draggableProps.style,
                                     }}
                                   >
@@ -357,9 +586,12 @@ const Tasks = ({ role = "Project Manager" }) => {
           )}
         </div>
 
-        <button style={styles.addButton}>
-          <FaPlus />
-        </button>
+        {/* toast */}
+        {toast.show && (
+          <div style={styles.toast}>
+            {toast.text}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -367,10 +599,10 @@ const Tasks = ({ role = "Project Manager" }) => {
 
 // === inline styles ===
 const styles = {
-  pageContainer: { display: "flex", backgroundColor: "#FBFAFC", height: "100vh" },
+  pageContainer: { display: "flex", backgroundColor: "#FBFAFC", minHeight: "100vh" },
   mainContent: { flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" },
-  pageInner: { padding: "28px" },
-  pageTitle: { fontSize: "1.8rem", fontWeight: 700, color: "#111827", marginBottom: 18 },
+  pageInner: { padding: "24px" },
+  pageTitle: { fontSize: "1.8rem", fontWeight: 700, color: "#111827", marginBottom: 14 },
 
   /* top toolbar */
   searchFilterContainer: {
@@ -379,11 +611,12 @@ const styles = {
     justifyContent: "space-between",
     background: "#fff",
     borderRadius: 12,
-    boxShadow: "0 4px 14px rgba(15,23,42,0.04)",
-    padding: "10px 18px",
-    marginBottom: 16,
+    boxShadow: "0 4px 14px rgba(15,23,42,0.05)",
+    padding: "10px 14px",
+    marginBottom: 14,
+    gap: 12,
   },
-  searchBox: { position: "relative", flex: 1, marginRight: 12 },
+  searchBox: { position: "relative", flex: 1, minWidth: 180 },
   searchIcon: { position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" },
   searchInput: {
     width: "100%",
@@ -393,100 +626,160 @@ const styles = {
     fontSize: 14,
     outline: "none",
   },
-  centerControls: { display: "flex", alignItems: "center", marginRight: 12 },
-  dateLabel: { display: "inline-block" },
+
+  toolbarControl: {
+    minWidth: 120,
+    marginLeft: 8,
+  },
   dateInput: {
     padding: "8px 10px",
     borderRadius: 10,
     border: "1px solid #E6E9EE",
     fontSize: 14,
     outline: "none",
+    width: 160,
   },
-
-  toolbarBtns: { display: "flex", gap: 10, alignItems: "center" },
-  toolbarBtn: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    background: "#fff",
-    border: "1px solid #E6E9EE",
+  selectInput: {
+    width: 160,
+    padding: "8px 10px",
     borderRadius: 10,
-    padding: "8px 12px",
-    cursor: "pointer",
-    color: "#374151",
-    fontSize: 13,
-  },
-  activeBtn: { backgroundColor: "#FFF1E6", color: "#c2410c", borderColor: "#FFDAB6" },
-
-  /* status chips */
-  statusFilterContainer: {
+    border: "1px solid #E6E9EE",
+    fontSize: 14,
+    outline: "none",
     background: "#fff",
-    borderRadius: 12,
-    padding: "12px 14px",
-    display: "flex",
-    gap: 10,
-    boxShadow: "0 4px 14px rgba(15,23,42,0.04)",
-    marginBottom: 18,
-    alignItems: "center",
-    flexWrap: "wrap",
   },
-  statusChip: {
+
+  toggleWrapper: { marginLeft: 8 },
+
+iconButton: {
+  width: 34,
+  height: 34,
+  borderRadius: "50%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  transition: "all 0.25s ease",
+},
+
+iconButtonActive: {
+  backgroundColor: "#FEE8E8", // light red tint
+  transform: "scale(1.05)",
+  boxShadow: "0 4px 10px rgba(198,40,40,0.12)",
+},
+iconToggle: {
+  position: "relative",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  borderRadius: 999,
+  background: "#F9FAFB",
+  border: "1px solid #E5E7EB",
+  padding: "4px 6px",
+  width: 80,
+  height: 42,
+  overflow: "hidden",
+  boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
+},
+
+toggleHighlight: {
+  position: "absolute",
+  top: 3,
+  left: 3,
+  width: "calc(50% - 6px)",
+  height: "calc(100% - 6px)",
+  borderRadius: "50%",
+  background: "#FEE8E8",
+  boxShadow: "0 4px 10px rgba(198,40,40,0.12)",
+  transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  zIndex: 1,
+},
+  addTaskBtn: {
+    background: RED,
+    color: "#fff",
+    border: "none",
     padding: "8px 14px",
-    borderRadius: 999,
-    background: "#F7F7F8",
-    color: "#374151",
-    border: "2px solid transparent",
+    borderRadius: 10,
     cursor: "pointer",
-    fontSize: 13,
-    fontWeight: 600,
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 8,
-    transition: "all 0.18s ease",
-  },
-  activeChip: {
-    background: "#FFF7ED",
-    borderColor: "#FFE7BF",
-    color: "#7C2D12",
-    transform: "translateY(-3px)",
-    boxShadow: "0 6px 18px rgba(15,23,42,0.06)",
-  },
-  chipCount: {
-    background: "#FFF4D9",
-    color: "#3C2F11",
-    borderRadius: "50%",
-    width: 20,
-    height: 20,
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 12,
     fontWeight: 700,
-    paddingTop: 1,
+    display: "inline-flex",
+    alignItems: "center",
+    boxShadow: "0 6px 16px rgba(198,40,40,0.18)",
   },
 
-  clearDateBtn: {
-    marginLeft: 10,
-    padding: "8px 12px",
-    borderRadius: 10,
-    border: "1px solid #E6E9EE",
-    background: "#fff",
-    cursor: "pointer",
-    fontSize: 13,
-    color: "#374151",
-  },
+  /* ===== Status Filter Chips ===== */
+statusFilterContainer: {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+  flexWrap: "wrap",
+  background: "#fff",
+  borderRadius: 12,
+  boxShadow: "0 4px 14px rgba(15,23,42,0.05)",
+  padding: "12px 14px",
+  marginBottom: 18,
+},
+
+statusChip: {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  borderRadius: 999,
+  background: "#F9FAFB", // neutral background
+  color: "#374151", // neutral text
+  border: "none",
+  cursor: "pointer",
+  fontSize: 13,
+  fontWeight: 600,
+  padding: "8px 16px",
+  transition: "all 0.25s ease",
+  boxShadow: "none",
+},
+
+activeChip: {
+  background: "#FFE5E5", // light red tint
+  color: "#C62828",
+  transform: "translateY(-2px)",
+  boxShadow: "0 4px 10px rgba(198,40,40,0.10)",
+},
+
+chipCount: {
+  background: "#fff",
+  color: "#C62828",
+  borderRadius: 999,
+  minWidth: 20,
+  height: 20,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 12,
+  fontWeight: 700,
+  padding: "2px 6px",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+},
+
+clearDateBtn: {
+  background: "#fff",
+  border: "1px solid #E5E7EB",
+  color: "#374151",
+  fontSize: 13,
+  padding: "8px 14px",
+  borderRadius: 10,
+  cursor: "pointer",
+  transition: "all 0.25s ease",
+},
 
   /* table */
   tableContainer: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    boxShadow: "0 4px 14px rgba(15,23,42,0.04)",
-    padding: "12px 18px",
+    boxShadow: "0 4px 14px rgba(15,23,42,0.05)",
+    padding: "12px 14px",
   },
-  table: { width: "100%", borderCollapse: "separate", borderSpacing: "0 12px" },
+  table: { width: "100%", borderCollapse: "separate", borderSpacing: "0 10px" },
   th: {
     textAlign: "left",
-    padding: "12px 12px",
+    padding: "10px 12px",
     color: "#111827",
     fontWeight: 700,
     fontSize: 13,
@@ -500,10 +793,35 @@ const styles = {
     transition: "all 180ms ease",
   },
   td: {
-    padding: "14px 12px",
+    padding: "10px 12px",
     color: "#374151",
     fontSize: 14,
     verticalAlign: "middle",
+  },
+
+  inlineInput: {
+    width: "100%",
+    padding: "8px 10px",
+    borderRadius: 8,
+    border: "1px solid #E6E9EE",
+    fontSize: 13,
+    outline: "none",
+  },
+  inlineSelect: {
+    width: "100%",
+    padding: "8px 10px",
+    borderRadius: 8,
+    border: "1px solid #E6E9EE",
+    fontSize: 13,
+    outline: "none",
+    background: "#fff",
+  },
+  inlineDate: {
+    padding: "6px 8px",
+    borderRadius: 8,
+    border: "1px solid #E6E9EE",
+    fontSize: 13,
+    outline: "none",
   },
 
   userAvatars: { display: "flex", alignItems: "center" },
@@ -543,63 +861,66 @@ const styles = {
   },
 
   /* board */
-
-board: {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  flexWrap: "nowrap", // keep all 5 columns in one row
-  gap: 12,            // tighter gap between columns
-  marginTop: 8,
-  width: "100%",
-  overflowX: "auto",  // enables subtle horizontal scroll only if absolutely needed
-  paddingBottom: 10,
-},
-column: {
-  flex: "1 1 18%",     // ✅ ensures roughly 5 equal columns on standard screens
-  minWidth: 200,       // prevent too narrow on small windows
-  maxWidth: 240,       // keeps proportions tight and uniform
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  padding: 12,
-  boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
-  transition: "all 0.2s ease",
-},
-columnTitle: {
-  fontSize: 15,
-  fontWeight: 700,
-  color: "#c2410c",
-  marginBottom: 10,
-  whiteSpace: "nowrap",
-},
-taskCard: {
-  borderRadius: 10,
-  padding: 10,
-  marginBottom: 8,
-  boxShadow: "0 3px 8px rgba(15,23,42,0.03)",
-  transition: "all 160ms ease",
-  cursor: "grab",
-},
-
+  board: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    flexWrap: "nowrap", // attempt 5 columns in one row; will scroll if extremely narrow
+    gap: 12,
+    marginTop: 8,
+    width: "100%",
+    overflowX: "hidden",
+    paddingBottom: 6,
+  },
+  column: {
+    flex: "1 1 18%", // attempt to make ~5 equal columns
+    minWidth: 160,
+    maxWidth: 260,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 12,
+    boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
+    transition: "all 0.18s ease",
+  },
+  columnTitle: { fontSize: 15, fontWeight: 700, color: RED, marginBottom: 10, whiteSpace: "nowrap" },
+  taskCard: {
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+    boxShadow: "0 3px 8px rgba(15,23,42,0.03)",
+    transition: "all 160ms ease",
+    cursor: "grab",
+  },
   taskName: { fontWeight: 700, fontSize: 14, marginBottom: 6 },
   taskMeta: { fontSize: 12, color: "#374151" },
-
-  addButton: {
-    position: "fixed",
-    bottom: 28,
-    right: 28,
-    backgroundColor: "#F97316",
+  saveBtn: {
+    background: RED,
     color: "#fff",
-    width: 56,
-    height: 56,
-    borderRadius: "50%",
     border: "none",
+    padding: "6px 10px",
+    borderRadius: 8,
     cursor: "pointer",
-    fontSize: 20,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 8px 26px rgba(249,115,22,0.18)",
+    fontWeight: 700,
+  },
+  cancelBtn: {
+    background: "#fff",
+    color: "#374151",
+    border: "1px solid #E6E9EE",
+    padding: "6px 10px",
+    borderRadius: 8,
+    cursor: "pointer",
+  },
+
+  /* toast */
+  toast: {
+    position: "fixed",
+    bottom: 100,
+    right: 32,
+    background: "#111827",
+    color: "#fff",
+    padding: "10px 14px",
+    borderRadius: 8,
+    boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
   },
 };
 
