@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import DashboardPM from "../components/DashboardPM";
-import DashboardDev from "../components/DashboardDev";
-
+import DashboardContent from "../components/DashboardContent";
 
 function Dashboard() {
   const [role, setRole] = useState(null);
@@ -18,15 +16,6 @@ function Dashboard() {
     }
   }, []);
 
-  const renderDashboard = () => {
-    switch (role) {
-      case "Developer":
-        return <DashboardDev />;
-      default:
-        return <DashboardPM />;
-    }
-  };
-
   if (!role) {
     return <p style={{ textAlign: "center", marginTop: "50px" }}>Loading...</p>;
   }
@@ -36,7 +25,8 @@ function Dashboard() {
       <Sidebar role={role} />
       <div style={styles.main}>
         <Header role={role} />
-        {renderDashboard()}
+        {/*  Pass role to shared DashboardContent */}
+        <DashboardContent role={role} />
       </div>
     </div>
   );
