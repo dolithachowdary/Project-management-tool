@@ -1,17 +1,17 @@
 import React from "react";
 
 /**
- * PM-Dashboard.jsx
- * Simple "in progress" placeholder for Project Manager view.
- * Replace placeholders with real components (StatCards, ProjectsGrid, etc.)
+ * Dev-Dashboard.jsx
+ * Simple "in progress" placeholder for Developer view.
+ * Replace placeholders with real components (My Tasks, Progress, etc.)
  */
 
-const PMDashboard = ({ role }) => {
+const DevDashboard = ({ role }) => {
   return (
     <div style={styles.page}>
       <div style={styles.headerRow}>
-        <h2 style={styles.title}>Overview — Project Manager</h2>
-        <div style={styles.smallNote}>Role: {role || "Project Manager"}</div>
+        <h2 style={styles.title}>Overview — Developer</h2>
+        <div style={styles.smallNote}>Role: {role || "Developer"}</div>
       </div>
 
       <div style={styles.content}>
@@ -20,22 +20,22 @@ const PMDashboard = ({ role }) => {
             <div style={styles.cardBody}>
               <h3 style={{ margin: 0 }}>Work in progress</h3>
               <p style={{ color: "#666", marginTop: 8 }}>
-                PM Dashboard is being built — stats, projects, and sprints will appear here.
+                Developer Dashboard is being prepared — your assigned tasks and sprint details will show here.
               </p>
 
               <div style={styles.loaderRow}>
                 <div style={styles.loader} />
-                <div style={{ marginLeft: 12 }}>Loading modules…</div>
+                <div style={{ marginLeft: 12 }}>Preparing your workspace…</div>
               </div>
             </div>
           </div>
 
           <div style={{ height: 16 }} />
 
-          <div style={styles.row}>
-            <div style={{ ...styles.placeholderBox }}>Stat card placeholder</div>
-            <div style={{ ...styles.placeholderBox }}>Stat card placeholder</div>
-            <div style={{ ...styles.placeholderBox }}>Stat card placeholder</div>
+          <div style={styles.tasksList}>
+            <div style={styles.taskPlaceholder}>• Task placeholder 1</div>
+            <div style={styles.taskPlaceholder}>• Task placeholder 2</div>
+            <div style={styles.taskPlaceholder}>• Task placeholder 3</div>
           </div>
         </div>
 
@@ -43,7 +43,7 @@ const PMDashboard = ({ role }) => {
           <div style={styles.card}>
             <div style={styles.cardBody}>
               <h4 style={{ margin: 0 }}>Mini Calendar</h4>
-              <div style={{ marginTop: 12, color: "#aaa" }}>[Calendar widget placeholder]</div>
+              <div style={{ marginTop: 12, color: "#aaa" }}>[Calendar placeholder]</div>
             </div>
           </div>
         </aside>
@@ -82,33 +82,27 @@ const styles = {
     height: 18,
     borderRadius: 9,
     border: "3px solid #eee",
-    borderTopColor: "#c62828",
+    borderTopColor: "#0e7bd0",
     animation: "spin 1s linear infinite",
   },
 
-  row: { display: "flex", gap: 12, marginTop: 12 },
-  placeholderBox: {
-    flex: 1,
-    minHeight: 80,
+  tasksList: { marginTop: 12, display: "flex", flexDirection: "column", gap: 8 },
+  taskPlaceholder: {
     background: "#fff",
     border: "1px dashed #e6e6e6",
     borderRadius: 8,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#777",
+    padding: 12,
+    color: "#666",
   },
-
-  // keyframes via inline style not supported — we'll inject small style tag below
 };
 
 /* inject spinner keyframes once */
-const styleTagId = "pm-dashboard-spin-style";
-if (typeof document !== "undefined" && !document.getElementById(styleTagId)) {
+const styleTagId2 = "dev-dashboard-spin-style";
+if (typeof document !== "undefined" && !document.getElementById(styleTagId2)) {
   const s = document.createElement("style");
-  s.id = styleTagId;
+  s.id = styleTagId2;
   s.innerHTML = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
   document.head.appendChild(s);
 }
 
-export default PMDashboard;
+export default DevDashboard;
