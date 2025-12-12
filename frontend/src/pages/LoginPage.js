@@ -1,52 +1,32 @@
+// src/pages/LoginPage.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { login } from "../lib/auth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-
     if (!email || !password) {
       alert("Please enter your credentials");
       return;
     }
-
-    // 🔹 Dummy users
-    const dummyUsers = [
-      {
-        email: "pm@redsage.com",
-        password: "pm123",
-        name: "Project Manager",
-        role: "Project Manager",
-      },
-      {
-        email: "dev@redsage.com",
-        password: "dev123",
-        name: "Developer User",
-        role: "Developer",
-      },
-    ];
-
-    // 🔍 Validate credentials
-    const foundUser = dummyUsers.find(
-      (user) => user.email === email && user.password === password
-    );
-
-    if (foundUser) {
-      const userData = {
-        name: foundUser.name,
-        email: foundUser.email,
-        role: foundUser.role,
-        token: "dummy-token",
-      };
-      localStorage.setItem("userData", JSON.stringify(userData));
+    try {
+      setBusy(true);
+      await login(email, password);
+      // successful login saved userData in localStorage by auth.login
       navigate("/dashboard");
-    } else {
-      alert("Invalid credentials. Please try again.");
+    } catch (err) {
+      console.error("Login failed", err);
+      const msg = err?.response?.data?.message || err.message || "Login failed";
+      alert(msg);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -129,6 +109,7 @@ export default function LoginPage() {
             />
             <button
               type="submit"
+              disabled={busy}
               style={{
                 width: "100%",
                 backgroundColor: "#ca2a2aff",
@@ -137,10 +118,11 @@ export default function LoginPage() {
                 padding: "0.75rem",
                 borderRadius: "0.5rem",
                 border: "none",
-                cursor: "pointer",
+                cursor: busy ? "not-allowed" : "pointer",
+                opacity: busy ? 0.7 : 1,
               }}
             >
-              Sign In
+              {busy ? "Signing in…" : "Sign In"}
             </button>
           </form>
         </div>
