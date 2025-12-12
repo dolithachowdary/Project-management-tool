@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+<<<<<<< HEAD
 
 import PMDashboard from "../components/PM-Dashboard";
 import DevDashboard from "../components/Dev-Dashboard";
 
 import DashboardCalendar from "../components/DashboardCalendar"; 
 import DashboardTimeline from "../components/DashboardTimeline";
+=======
+import DashboardPM from "../components/DashboardPM";
+import DashboardDev from "../components/DashboardDev";
+
+>>>>>>> 41d6cbf500afb0e74373cff27d36dc31946d08ef
 
 function Dashboard() {
   const [role, setRole] = useState(null);
@@ -20,6 +26,15 @@ function Dashboard() {
       window.location.href = "/login";
     }
   }, []);
+
+  const renderDashboard = () => {
+    switch (role) {
+      case "Developer":
+        return <DashboardDev />;
+      default:
+        return <DashboardPM />;
+    }
+  };
 
   if (!role) {
     return <p style={{ textAlign: "center", marginTop: "50px" }}>Loading...</p>;
@@ -41,6 +56,7 @@ function Dashboard() {
       <Sidebar role={role} />
       <div style={styles.main}>
         <Header role={role} />
+<<<<<<< HEAD
 
         {/* TOP TABS SECTION */}
         <div style={styles.tabsRow}>
@@ -71,6 +87,9 @@ function Dashboard() {
           {renderContent()}
         </div>
 
+=======
+        {renderDashboard()}
+>>>>>>> 41d6cbf500afb0e74373cff27d36dc31946d08ef
       </div>
     </div>
   );
