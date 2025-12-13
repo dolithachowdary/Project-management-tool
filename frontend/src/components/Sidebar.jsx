@@ -2,7 +2,6 @@ import React from "react";
 import { FaSignOutAlt, FaStickyNote } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
 
-// 🖼️ Import Figma-exported SVG icons
 import DashboardIcon from "../assets/icons/dashboard.svg";
 import ProjectsIcon from "../assets/icons/projects.svg";
 import SprintsIcon from "../assets/icons/sprints.svg";
@@ -13,7 +12,6 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Updated menu items (Meetings removed)
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: DashboardIcon },
     { name: "Projects", path: "/projects", icon: ProjectsIcon },
@@ -30,13 +28,12 @@ const Sidebar = () => {
 
   return (
     <aside style={styles.sidebar}>
-      {/* === Top Section === */}
+      {/* TOP */}
       <div>
         <div style={styles.logoContainer}>
           <img src="/light-redsage.png" alt="Logo" style={styles.logo} />
         </div>
 
-        {/* === Menu Buttons === */}
         <nav style={styles.nav}>
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -66,7 +63,7 @@ const Sidebar = () => {
         </nav>
       </div>
 
-      {/* === Bottom Section === */}
+      {/* BOTTOM */}
       <div style={styles.bottomSection}>
         <button style={styles.bottomButton}>
           <FaStickyNote /> Notes
@@ -83,63 +80,66 @@ const Sidebar = () => {
 const styles = {
   sidebar: {
     width: "230px",
+    height: "100vh",
+    overflow: "hidden",        // 🔒 NO SCROLL EVER
     backgroundColor: "#fff",
-    color: "black",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
-    height: "100vh",
     borderRight: "1px solid #e0e0e0",
+    flexShrink: 0,             // 🔒 never shrink
   },
+
   logoContainer: {
     textAlign: "center",
     padding: "20px 0",
-    borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
+    borderBottom: "1px solid rgba(0,0,0,0.1)",
   },
+
   logo: {
     width: "190px",
   },
+
   nav: {
-    marginTop: "10px",
     display: "flex",
     flexDirection: "column",
+    marginTop: "10px",
   },
+
   menuButton: {
     display: "flex",
     alignItems: "center",
     gap: "14px",
-    width: "100%",
     padding: "12px 20px",
     border: "none",
     background: "none",
-    color: "black",
-    textAlign: "left",
     cursor: "pointer",
     fontSize: "18px",
+    textAlign: "left",
     fontFamily: "Poppins, sans-serif",
-    transition: "all 0.3s ease",
   },
+
   activeButton: {
     backgroundColor: "#f5f5f5",
     borderLeft: "4px solid #c71b1b",
     fontWeight: "600",
   },
+
   icon: {
     width: "20px",
     height: "20px",
-    objectFit: "contain",
-    transition: "filter 0.2s ease",
   },
+
   bottomSection: {
     padding: "10px 20px",
   },
+
   bottomButton: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
     background: "none",
     border: "none",
-    color: "black",
     cursor: "pointer",
     fontSize: "17px",
     marginTop: "10px",

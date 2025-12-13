@@ -11,6 +11,12 @@ export default function PMDashboard() {
   return (
     <div style={styles.page}>
 
+      {/* HEADER */}
+      <div style={styles.headerRow}>
+        <h2 style={styles.title}>Dashboard — Project Manager</h2>
+        <div style={styles.role}>Project Manager</div>
+      </div>
+
       <div style={styles.mainGrid}>
 
         {/* ---------------- LEFT CONTENT ---------------- */}
@@ -26,7 +32,7 @@ export default function PMDashboard() {
           {/* GRAPH + RECENT ACTIVITY */}
           <div style={styles.graphRow}>
 
-            {/* WEEKLY TASK GRAPH */}
+            {/* WEEKLY GRAPH */}
             <div style={styles.graphWrapper}>
               <h3 style={styles.sectionTitle}>Weekly Tasks Graph</h3>
               <WeeklyTaskGraph />
@@ -74,16 +80,25 @@ function renderStat(title, number, percent, color) {
 
 const styles = {
   page: {
+    padding: 20,
     background: "#fafafa",
+    minHeight: "100vh",
     boxSizing: "border-box"
   },
+
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  title: { fontSize: 20, fontWeight: 600 },
+  role: { fontSize: 14, color: "#777" },
 
   /* Layout */
   mainGrid: {
     display: "flex",
     gap: 20
   },
-
   left: { flex: 1 },
 
   right: {
@@ -99,7 +114,6 @@ const styles = {
     gap: 12,
     marginBottom: 20
   },
-
   statCard: {
     flex: 1,
     background: "#fff",
@@ -107,12 +121,11 @@ const styles = {
     borderRadius: 12,
     padding: 14
   },
-
   statTitle: { fontSize: 13, color: "#444" },
   statNumber: { fontSize: 26, fontWeight: 600, marginTop: 4 },
   statPercent: { fontSize: 12, marginTop: 2 },
 
-  /* GRAPH + RECENT ACTIVITY */
+  /* GRAPH + ACTIVITY ROW */
   graphRow: {
     display: "flex",
     gap: 20,
