@@ -5,12 +5,12 @@ import Header from "../components/Header";
 import PMDashboard from "../components/PM-Dashboard";
 import DevDashboard from "../components/Dev-Dashboard";
 
-import DashboardCalendar from "../components/DashboardCalendar"; 
-import DashboardTimeline from "../components/DashboardTimeline";
+import DashboardCalendar from "../components/DashboardCalendar";
+import DashboardTimeline from "../components/Pm-Timeline";
 
 function Dashboard() {
   const [role, setRole] = useState(null);
-  const [activeTab, setActiveTab] = useState("Overview"); // NEW
+  const [activeTab, setActiveTab] = useState("Overview");
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
@@ -25,7 +25,7 @@ function Dashboard() {
     return <p style={{ textAlign: "center", marginTop: "50px" }}>Loading...</p>;
   }
 
-  // ======== WHAT TO RENDER INSIDE DASHBOARD BODY ========
+  /* -------- CONTENT BASED ON TAB -------- */
   const renderContent = () => {
     if (activeTab === "Overview") {
       return role === "Project Manager" || role === "Admin"
@@ -34,15 +34,22 @@ function Dashboard() {
     }
     if (activeTab === "Calendar") return <DashboardCalendar />;
     if (activeTab === "Timeline") return <DashboardTimeline />;
+    return null;
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.app}>
+
+      {/* SIDEBAR — NEVER SCROLLS */}
       <Sidebar role={role} />
+
+      {/* MAIN AREA */}
       <div style={styles.main}>
+
+        {/* HEADER — NEVER SCROLLS */}
         <Header role={role} />
 
-        {/* TOP TABS SECTION */}
+        {/* TABS — NEVER SCROLL */}
         <div style={styles.tabsRow}>
           <button
             style={activeTab === "Overview" ? styles.activeTab : styles.tab}
@@ -66,8 +73,8 @@ function Dashboard() {
           </button>
         </div>
 
-        {/* PAGE THAT CHANGES BASED ON TAB */}
-        <div style={{ padding: "20px" }}>
+        {/* 🔥 ONLY THIS AREA SCROLLS */}
+        <div style={styles.scrollArea}>
           {renderContent()}
         </div>
 
@@ -76,25 +83,35 @@ function Dashboard() {
   );
 }
 
-// Styles
+/* ================== STYLES ================== */
+
 const styles = {
-  container: {
+  /* ROOT LAYOUT */
+  app: {
     display: "flex",
     height: "100vh",
-    backgroundColor: "white",
-    color: "black",
+    overflow: "hidden", // 🔒 LOCK ENTIRE VIEWPORT
+    backgroundColor: "#fafafa",
   },
+
+  /* MAIN COLUMN (HEADER + TABS + CONTENT) */
   main: {
     flex: 1,
     display: "flex",
     flexDirection: "column",
+    overflow: "hidden", // 🔒 HEADER & TABS DO NOT SCROLL
   },
+
+  /* TABS */
   tabsRow: {
     display: "flex",
     gap: "20px",
     padding: "15px 20px",
     borderBottom: "1px solid #f0f0f0",
+    background: "#fff",
+    flexShrink: 0, // 🔒 NEVER SHRINK
   },
+
   tab: {
     background: "transparent",
     border: "none",
@@ -103,15 +120,23 @@ const styles = {
     color: "#666",
     paddingBottom: "5px",
   },
+
   activeTab: {
-    border: "none",
     background: "transparent",
+    border: "none",
     fontSize: "16px",
     cursor: "pointer",
     borderBottom: "3px solid #c62828",
     color: "#111",
     paddingBottom: "5px",
     fontWeight: "600",
+  },
+
+  /* ONLY SCROLLABLE AREA */
+  scrollArea: {
+    flex: 1,
+    overflowY: "auto", // ✅ ONLY PLACE THAT SCROLLS
+    padding: "20px",
   },
 };
 
