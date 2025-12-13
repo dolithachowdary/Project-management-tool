@@ -1,163 +1,195 @@
 import React from "react";
-import MiniCalendar from "./Mini-Calendar";
-import Upcoming from "./Upcoming";
-import RecentActivity from "./RecentActivity";
-import QAPending from "./QAPending";
-import WeeklyTaskGraph from "./WeeklyTaskGraph";
-import ActiveProjects from "./ActiveProject";
-import ActiveSprints from "./ActiveSprints";
 
-export default function PMDashboard() {
+export default function PMTimeline() {
+  const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+
+  const employees = [
+    {
+      name: "Hank Williams",
+      tasks: [
+        { title: "Contact customers with failed payments", start: "10:00", end: "12:00", color: "#FFE5B4" },
+        { title: "Task detail modal", start: "13:00", end: "15:00", color: "#FFD2D2" }
+      ]
+    },
+    {
+      name: "Hanna Rodrigues",
+      tasks: [
+        { title: "Dashboard: concept", start: "11:00", end: "15:00", color: "#C7F5D7" }
+      ]
+    },
+    {
+      name: "Mitchel Fleen",
+      tasks: [
+        { title: "Reporting: Visual dashboard", start: "10:00", end: "18:00", color: "#D5E4FF" }
+      ]
+    }
+  ];
+
+  // Convert HH:MM → minutes
+  const toMinutes = (t) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  const startMinutes = toMinutes("10:00");
+  const endMinutes = toMinutes("18:00");
+  const totalMinutes = endMinutes - startMinutes; // 480 minutes
+
   return (
-    <div style={styles.page}>
+    <div style={styles.wrapper}>
 
-      {/* HEADER */}
-      <div style={styles.headerRow}>
-        <h2 style={styles.title}>Dashboard — Project Manager</h2>
-        <div style={styles.role}>Project Manager</div>
+      {/* TOP HOURS */}
+      <div style={styles.hoursRow}>
+        <div style={styles.leftSpacer}></div>
+
+        <div style={styles.hoursGrid}>
+          {hours.map((h) => (
+            <div key={h} style={styles.hourCell}>{h}</div>
+          ))}
+        </div>
       </div>
 
-      <div style={styles.mainGrid}>
+      {/* MAIN GRID */}
+      <div style={styles.mainSection}>
 
-        {/* ---------------- LEFT CONTENT ---------------- */}
-        <div style={styles.left}>
-
-          {/* STAT CARDS */}
-          <div style={styles.statsRow}>
-            {renderStat("Completed Tasks", 127, "67.18%", "#2e7d32")}
-            {renderStat("Incompleted Tasks", 62, "54.29%", "#c62828")}
-            {renderStat("Overdue Tasks", 20, "14.11%", "#777")}
-          </div>
-
-          {/* GRAPH + RECENT ACTIVITY */}
-          <div style={styles.graphRow}>
-
-            {/* WEEKLY GRAPH */}
-            <div style={styles.graphWrapper}>
-              <h3 style={styles.sectionTitle}>Weekly Tasks Graph</h3>
-              <WeeklyTaskGraph />
+        {/* LEFT EMPLOYEES */}
+        <div style={styles.employeeColumn}>
+          {employees.map((emp, idx) => (
+            <div key={idx} style={styles.employeeRow}>
+              <span style={styles.employeeName}>{emp.name}</span>
             </div>
-
-            {/* RECENT ACTIVITY */}
-            <div style={styles.recentWrapper}>
-              <RecentActivity />
-            </div>
-
-          </div>
-
-          {/* ACTIVE PROJECTS */}
-          <ActiveProjects />
-
-          {/* ACTIVE SPRINTS */}
-          <ActiveSprints />
-
+          ))}
         </div>
 
-        {/* ---------------- RIGHT SIDEBAR ---------------- */}
-        <aside style={styles.right}>
-          <div style={styles.card}><MiniCalendar /></div>
-          <div style={styles.card}><Upcoming /></div>
-          <div style={styles.card}><QAPending /></div>
-        </aside>
+        {/* RIGHT GANTT AREA */}
+        <div style={styles.chartArea}>
 
+          {/* BACKGROUND GRID LINES */}
+          <div style={styles.verticalLines}>
+            {hours.map((_, i) => (
+              <div key={i} style={styles.vLine}></div>
+            ))}
+          </div>
+
+          {/* TASK BLOCKS */}
+          {employees.map((emp, rowIndex) =>
+            emp.tasks.map((task, i) => {
+              const start = toMinutes(task.start) - startMinutes;
+              const end = toMinutes(task.end) - startMinutes;
+
+              const left = (start / totalMinutes) * 100;
+              const width = (end - start) / totalMinutes * 100;
+
+              return (
+                <div
+                  key={i}
+                  style={{
+                    ...styles.taskBlock,
+                    background: task.color,
+                    top: rowIndex * 70 + 20,       // center vertically
+                    left: `${left}%`,
+                    width: `${width}%`,
+                  }}
+                >
+                  <div style={styles.taskTitle}>{task.title}</div>
+                  <div style={styles.taskTime}>{task.start} - {task.end}</div>
+                </div>
+              );
+            })
+          )}
+
+        </div>
       </div>
+
     </div>
   );
 }
 
-/* ---------- Helper ---------- */
-function renderStat(title, number, percent, color) {
-  return (
-    <div style={styles.statCard}>
-      <div style={styles.statTitle}>{title}</div>
-      <div style={styles.statNumber}>{number}</div>
-      <div style={{ ...styles.statPercent, color }}>{percent}</div>
-    </div>
-  );
-}
 
-/* ---------- STYLES ---------- */
+/* ----------------------------------------------------------
+   STYLES – Matches the PDF EXACTLY
+---------------------------------------------------------- */
 
 const styles = {
-  page: {
+  wrapper: {
+    background: "#fff",
+    borderRadius: 12,
+    border: "1px solid #ddd",
     padding: 20,
-    background: "#fafafa",
-    minHeight: "100vh",
-    boxSizing: "border-box"
+    width: "100%"
   },
 
-  headerRow: {
+  /* HOURS ROW (TOP) */
+  hoursRow: { display: "flex", marginBottom: 10 },
+  leftSpacer: { width: 160 },
+  hoursGrid: {
+    flex: 1,
+    display: "grid",
+    gridTemplateColumns: "repeat(9, 1fr)"
+  },
+  hourCell: {
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: 500,
+    paddingBottom: 4,
+    color: "#444"
+  },
+
+  /* MAIN */
+  mainSection: { display: "flex", position: "relative" },
+
+  /* EMPLOYEES LIST */
+  employeeColumn: { width: 160 },
+  employeeRow: {
+    height: 70,
+    borderBottom: "1px solid #e6e6e6",
     display: "flex",
-    justifyContent: "space-between",
-    marginBottom: 10
+    alignItems: "center"
   },
-  title: { fontSize: 20, fontWeight: 600 },
-  role: { fontSize: 14, color: "#777" },
-
-  /* Layout */
-  mainGrid: {
-    display: "flex",
-    gap: 20
+  employeeName: {
+    fontSize: 14,
+    fontWeight: 600
   },
-  left: { flex: 1 },
 
-  right: {
-    width: 320,
+  /* CHART AREA */
+  chartArea: {
+    flex: 1,
+    position: "relative",
+  },
+
+  /* GRID LINES */
+  verticalLines: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    width: "100%",
+    display: "grid",
+    gridTemplateColumns: "repeat(9, 1fr)",
+    zIndex: 0,
+  },
+  vLine: {
+    borderRight: "1px solid #d0d0d0" // darker as requested
+  },
+
+  /* TASK BLOCKS */
+  taskBlock: {
+    position: "absolute",
+    height: 50,
+    borderRadius: 12,
+    padding: "6px 12px",
+    fontSize: 13,
     display: "flex",
     flexDirection: "column",
-    gap: 20
+    justifyContent: "center",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    zIndex: 3
   },
-
-  /* STAT CARDS */
-  statsRow: {
-    display: "flex",
-    gap: 12,
-    marginBottom: 20
-  },
-  statCard: {
-    flex: 1,
-    background: "#fff",
-    border: "1px solid #e5e5e5",
-    borderRadius: 12,
-    padding: 14
-  },
-  statTitle: { fontSize: 13, color: "#444" },
-  statNumber: { fontSize: 26, fontWeight: 600, marginTop: 4 },
-  statPercent: { fontSize: 12, marginTop: 2 },
-
-  /* GRAPH + ACTIVITY ROW */
-  graphRow: {
-    display: "flex",
-    gap: 20,
-    marginBottom: 25
-  },
-
-  graphWrapper: {
-    flex: 2,
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #e5e5e5",
-    padding: 20,
-    display: "flex",
-    flexDirection: "column"
-  },
-
-  recentWrapper: {
-    flex: 1,
-    display: "flex"
-  },
-
-  sectionTitle: {
-    fontSize: 18,
+  taskTitle: {
     fontWeight: 600,
-    marginBottom: 12
+    marginBottom: 2
   },
-
-  /* RIGHT COLUMN CARDS */
-  card: {
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #e5e5e5",
-    padding: 16
+  taskTime: {
+    fontSize: 12,
+    color: "#555"
   }
 };
