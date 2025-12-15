@@ -1,7 +1,6 @@
 import React from "react";
 
 export default function WeeklyTaskGraph() {
-  // Example data (can be replaced with backend data)
   const data = [
     { day: "Mon", value: 40 },
     { day: "Tue", value: 55 },
@@ -15,73 +14,70 @@ export default function WeeklyTaskGraph() {
   const max = Math.max(...data.map(d => d.value));
 
   return (
-    <div style={styles.card}>
-      <h3 style={styles.title}>Weekly Task Report</h3>
+    <div style={styles.graphBox}>
+      <svg
+        viewBox="0 0 700 160"
+        width="100%"
+        height="160"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {data.map((d, i) => {
+          const slotWidth = 700 / data.length;
+          const barWidth = slotWidth * 0.6; // 🔽 tighter bars
+          const x = i * slotWidth + (slotWidth - barWidth) / 2;
+          const height = (d.value / max) * 95; // 🔽 less vertical waste
+          const baseY = 115; // 🔼 move graph upward
 
-      <div style={styles.graphBox}>
-        <svg width="100%" height="180">
-          {data.map((d, i) => {
-            const barWidth = 40;
-            const gap = 35;
-            const height = (d.value / max) * 130;
+          return (
+            <g key={d.day}>
+              {/* light bar */}
+              <rect
+                x={x}
+                y={baseY - height}
+                width={barWidth}
+                height={height}
+                rx="7"
+                fill="#ffd8d8"
+              />
 
-            return (
-              <g key={i} transform={`translate(${i * (barWidth + gap)}, 0)`}>
-                <rect
-                  x="0"
-                  y={160 - height}
-                  width={barWidth}
-                  height={height}
-                  rx="8"
-                  fill="#ffd8d8"
-                />
-                {/* dark inner part */}
-                <rect
-                  x="0"
-                  y={160 - height / 2}
-                  width={barWidth}
-                  height={height / 2}
-                  rx="8"
-                  fill="#e88989"
-                />
+              {/* dark inner bar */}
+              <rect
+                x={x}
+                y={baseY - height / 2}
+                width={barWidth}
+                height={height / 2}
+                rx="7"
+                fill="#e88989"
+              />
 
-                <text
-                  x={barWidth / 2}
-                  y={175}
-                  textAnchor="middle"
-                  style={styles.dayLabel}
-                >
-                  {d.day}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+              {/* day label */}
+              <text
+                x={x + barWidth / 2}
+                y={140}   // 🔼 pulled up (less bottom gap)
+                textAnchor="middle"
+                style={styles.dayLabel}
+              >
+                {d.day}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
 }
 
 const styles = {
-  card: {
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #eee",
-    padding: 20,
-    marginBottom: 20
-  },
-  title: {
-    marginBottom: 10,
-    fontSize: 18,
-    fontWeight: 600
-  },
   graphBox: {
     background: "#f6f6f6",
     borderRadius: 12,
-    padding: 10
+    padding: "120px 14px 14px 14px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
   },
   dayLabel: {
     fontSize: 12,
-    fill: "#999"
+    fill: "#8a8a8a"
   }
 };
