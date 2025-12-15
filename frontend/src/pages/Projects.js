@@ -2,23 +2,88 @@ import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Card from "../components/Card";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const Projects = ({ role = "Project Manager" }) => {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
-  const projects = [
-    { id: 1, name: "Website Revamp", status: "Active", progress: 70 },
-    { id: 2, name: "Mobile App UI", status: "Active", progress: 45 },
-    { id: 3, name: "Client Onboarding", status: "On Hold", progress: 20 },
-    { id: 4, name: "Automation System", status: "Completed", progress: 100 },
-    { id: 5, name: "Security Upgrade", status: "Active", progress: 55 },
-    { id: 6, name: "Legacy Migration", status: "On Hold", progress: 30 },
-    { id: 7, name: "Marketing Dashboard", status: "Completed", progress: 100 },
-  ];
+  const [projects, setProjects] = useState({
+    Active: [
+      { id: "1", name: "TourO Web Development", progress: 70 },
+      { id: "2", name: "Dashboard Portal", progress: 45 },
+      { id: "5", name: "Designing", progress: 55 },
+    ],
+    "On Hold": [
+      { id: "3", name: "Client Onboarding", progress: 20 },
+      { id: "6", name: "Legacy Migration", progress: 30 },
+    ],
+    Completed: [
+      { id: "4", name: "Automation System", progress: 100 },
+      { id: "7", name: "Marketing Dashboard", progress: 100 },
+    ],
+  });
 
-  const filterByStatus = (status) =>
-    projects.filter((project) => project.status === status);
+  const [newProject, setNewProject] = useState({
+    name: "",
+    startDate: "",
+    endDate: "",
+    status: "Active",
+  });
+
+  const findSection = (id) =>
+    Object.keys(projects).find((key) =>
+      projects[key].some((p) => p.id === id)
+    );
+
+  const onDragEnd = ({ active, over }) => {
+    if (!over) return;
+
+    const from = findSection(active.id);
+    const to = findSection(over.id);
+    if (!from || !to || from === to) return;
+
+    const moved = projects[from].find((p) => p.id === active.id);
+
+    setProjects((prev) => ({
+      ...prev,
+      [from]: prev[from].filter((p) => p.id !== active.id),
+      [to]: [...prev[to], moved],
+    }));
+  };
+
+  const handleAddProject = (e) => {
+    e.preventDefault();
+
+    const id = Date.now().toString();
+
+    const project = {
+      id,
+      name: newProject.name,
+      progress: newProject.status === "Completed" ? 100 : 0,
+      startDate: newProject.startDate,
+      endDate: newProject.endDate,
+    };
+
+    setProjects((prev) => ({
+      ...prev,
+      [newProject.status]: [...prev[newProject.status], project],
+    }));
+
+    setNewProject({
+      name: "",
+      startDate: "",
+      endDate: "",
+      status: "Active",
+    });
+
+    setShowAddModal(false);
+  };
 
   return (
     <div style={styles.pageContainer}>
@@ -29,155 +94,82 @@ const Projects = ({ role = "Project Manager" }) => {
         <div style={styles.pageInner}>
           <h2 style={styles.pageTitle}>Projects</h2>
 
-          {/* === Active Projects === */}
-          <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Active Projects</h3>
-            <div style={styles.cardGrid}>
-              {filterByStatus("Active").map((p) => (
-                <div key={p.id} style={styles.cardWrapper}>
-                  <Card>
-                    <div style={styles.cardHeader}>
-                      <h4 style={styles.projectTitle}>{p.name}</h4>
-                      <span style={{ ...styles.badge, ...styles.activeBadge }}>
-                        Active
-                      </span>
-                    </div>
-                    <div style={styles.progressOuter}>
-                      <div
-                        style={{
-                          ...styles.progressInner,
-                          width: `${p.progress}%`,
-                        }}
-                      />
-                    </div>
-                    <p style={styles.progressText}>{p.progress}% complete</p>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </section>
+          <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            {Object.keys(projects).map((status) => (
+              <section key={status} style={styles.section}>
+                <h3 style={styles.sectionTitle}>{status} Projects</h3>
 
-          {/* === On Hold === */}
-          <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>On Hold</h3>
-            <div style={styles.cardGrid}>
-              {filterByStatus("On Hold").map((p) => (
-                <div key={p.id} style={styles.cardWrapper}>
-                  <Card>
-                    <div style={styles.cardHeader}>
-                      <h4 style={styles.projectTitle}>{p.name}</h4>
-                      <span style={{ ...styles.badge, ...styles.holdBadge }}>
-                        On Hold
-                      </span>
-                    </div>
-                    <div style={styles.progressOuter}>
-                      <div
-                        style={{
-                          ...styles.progressInner,
-                          backgroundColor: "#fbc02d",
-                          width: `${p.progress}%`,
-                        }}
+                <SortableContext
+                  items={projects[status].map((p) => p.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div style={styles.cardGrid}>
+                    {projects[status].map((p) => (
+                      <SortableProjectCard
+                        key={p.id}
+                        project={p}
+                        status={status}
                       />
-                    </div>
-                    <p style={styles.progressText}>{p.progress}% complete</p>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* === Completed === */}
-          <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Completed</h3>
-            <div style={styles.cardGrid}>
-              {filterByStatus("Completed").map((p) => (
-                <div key={p.id} style={styles.cardWrapper}>
-                  <Card>
-                    <div style={styles.cardHeader}>
-                      <h4 style={styles.projectTitle}>{p.name}</h4>
-                      <span
-                        style={{ ...styles.badge, ...styles.completedBadge }}
-                      >
-                        Completed
-                      </span>
-                    </div>
-                    <div style={styles.progressOuter}>
-                      <div
-                        style={{
-                          ...styles.progressInner,
-                          backgroundColor: "#2e7d32",
-                          width: `${p.progress}%`,
-                        }}
-                      />
-                    </div>
-                    <p style={styles.progressText}>100% complete</p>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </section>
+                    ))}
+                  </div>
+                </SortableContext>
+              </section>
+            ))}
+          </DndContext>
         </div>
 
-        {/* === Floating Buttons (Bottom-Right) === */}
-        <div style={styles.fabContainer}>
-          <button style={styles.addBtn} onClick={() => setShowAddModal(true)}>
-            + Add Project
-          </button>
-          <button
-            style={styles.updateBtn}
-            onClick={() => setShowUpdateModal(true)}
-          >
-            ✎ Update Project
-          </button>
-        </div>
+        {/* Floating + Button */}
+        <button style={styles.fab} onClick={() => setShowAddModal(true)}>
+          +
+        </button>
 
-        {/* === Add Project Modal === */}
+        {/* Add Project Modal */}
         {showAddModal && (
           <Modal title="Add Project" onClose={() => setShowAddModal(false)}>
-            <form style={styles.form}>
+            <form style={styles.form} onSubmit={handleAddProject}>
               <label>Project Name</label>
-              <input type="text" required />
-              <label>Description</label>
-              <textarea required />
+              <input
+                type="text"
+                required
+                value={newProject.name}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, name: e.target.value })
+                }
+              />
+
               <label>Start Date</label>
-              <input type="date" required />
-              <label>End Date (optional)</label>
-              <input type="date" />
+              <input
+                type="date"
+                required
+                value={newProject.startDate}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, startDate: e.target.value })
+                }
+              />
+
+              <label>End Date</label>
+              <input
+                type="date"
+                value={newProject.endDate}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, endDate: e.target.value })
+                }
+              />
+
               <label>Status</label>
-              <select required>
-                <option>Active</option>
-                <option>On Hold</option>
-                <option>Completed</option>
+              <select
+                value={newProject.status}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, status: e.target.value })
+                }
+              >
+                <option value="Active">Active</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Completed">Completed</option>
               </select>
-              <label>Document</label>
-              <input type="file" />
+
               <button type="submit" style={styles.submitBtn}>
                 Add Project
-              </button>
-            </form>
-          </Modal>
-        )}
-
-        {/* === Update Project Modal === */}
-        {showUpdateModal && (
-          <Modal title="Update Project" onClose={() => setShowUpdateModal(false)}>
-            <form style={styles.form}>
-              <label>Project Name</label>
-              <input type="text" required />
-              <label>Description</label>
-              <textarea required />
-              <label>End Date</label>
-              <input type="date" required />
-              <label>Status</label>
-              <select required>
-                <option>Active</option>
-                <option>On Hold</option>
-                <option>Completed</option>
-              </select>
-              <label>Document</label>
-              <input type="file" />
-              <button type="submit" style={styles.submitBtn}>
-                Update Project
               </button>
             </form>
           </Modal>
@@ -187,7 +179,62 @@ const Projects = ({ role = "Project Manager" }) => {
   );
 };
 
-// === Modal Component ===
+/* === Sortable Card === */
+const SortableProjectCard = ({ project, status }) => {
+  const { setNodeRef, attributes, listeners, transform, transition } =
+    useSortable({ id: project.id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        flex: "1 1 300px",
+        minWidth: "280px",
+      }}
+    >
+      <Card>
+        <div style={styles.cardHeader}>
+          <h4 style={styles.projectTitle}>{project.name}</h4>
+          <span
+            style={{
+              ...styles.badge,
+              ...(status === "Active"
+                ? styles.activeBadge
+                : status === "On Hold"
+                ? styles.holdBadge
+                : styles.completedBadge),
+            }}
+          >
+            {status}
+          </span>
+        </div>
+
+        <div style={styles.progressOuter}>
+          <div
+            style={{
+              ...styles.progressInner,
+              width: `${project.progress}%`,
+              backgroundColor:
+                status === "Completed"
+                  ? "#2e7d32"
+                  : status === "On Hold"
+                  ? "#fbc02d"
+                  : "#c62828",
+            }}
+          />
+        </div>
+
+        <p style={styles.progressText}>{project.progress}% complete</p>
+      </Card>
+    </div>
+  );
+};
+
+/* === Modal === */
 const Modal = ({ title, children, onClose }) => (
   <div style={styles.modalOverlay}>
     <div style={styles.modal}>
@@ -202,164 +249,74 @@ const Modal = ({ title, children, onClose }) => (
   </div>
 );
 
-// === Styles ===
+/* === Styles === */
 const styles = {
-  pageContainer: {
-    display: "flex",
-    backgroundColor: "#f9f9f9",
-    height: "100vh",
-    overflow: "hidden",
-  },
-  mainContent: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    overflowY: "auto",
-    position: "relative",
-  },
-  pageInner: {
-    padding: "30px",
-    backgroundColor: "#f9f9f9",
-    boxSizing: "border-box",
-  },
-  pageTitle: {
-    fontSize: "1.5rem",
-    fontWeight: "600",
-    color: "#222",
-    marginBottom: "25px",
-  },
+  pageContainer: { display: "flex", height: "100vh", background: "#f9f9f9" },
+  mainContent: { flex: 1, position: "relative", overflowY: "auto" },
+  pageInner: { padding: "30px" },
+  pageTitle: { fontSize: "1.5rem", marginBottom: "25px" },
   section: { marginBottom: "40px" },
-  sectionTitle: {
-    fontSize: "1.1rem",
-    fontWeight: "600",
-    color: "#222",
-    marginBottom: "15px",
-  },
-  cardGrid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "20px",
-    justifyContent: "flex-start",
-  },
-  cardWrapper: {
-    flex: "1 1 300px",
-    minWidth: "280px",
-    maxWidth: "340px",
-    display: "flex",
-  },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "10px",
-  },
-  projectTitle: {
-    fontSize: "1rem",
-    fontWeight: "600",
-    color: "#222",
-  },
+  sectionTitle: { marginBottom: "15px", fontWeight: 600 },
+  cardGrid: { display: "flex", gap: "20px", flexWrap: "wrap" },
+
+  cardHeader: { display: "flex", justifyContent: "space-between" },
+  projectTitle: { fontSize: "1rem", fontWeight: 600 },
+
   badge: {
     padding: "4px 10px",
     borderRadius: "5px",
-    color: "#fff",
     fontSize: "12px",
-    fontWeight: "500",
+    color: "#fff",
   },
-  activeBadge: { backgroundColor: "#c62828" },
-  holdBadge: { backgroundColor: "#fbc02d", color: "#222" },
-  completedBadge: { backgroundColor: "#2e7d32" },
-  progressOuter: {
-    backgroundColor: "#eee",
-    borderRadius: "5px",
-    height: "8px",
-    overflow: "hidden",
-  },
-  progressInner: {
-    height: "8px",
-    backgroundColor: "#c62828",
-    borderRadius: "5px",
-    transition: "width 0.3s ease",
-  },
-  progressText: {
-    marginTop: "8px",
-    fontSize: "0.85rem",
-    color: "#555",
-  },
+  activeBadge: { background: "#c62828" },
+  holdBadge: { background: "#fbc02d", color: "#222" },
+  completedBadge: { background: "#2e7d32" },
 
-  // === Floating Buttons ===
-  fabContainer: {
+  progressOuter: {
+    background: "#eee",
+    borderRadius: "5px",
+    height: "8px",
+    marginTop: "10px",
+  },
+  progressInner: { height: "8px", borderRadius: "5px" },
+  progressText: { fontSize: "0.85rem", marginTop: "6px" },
+
+  fab: {
     position: "fixed",
     bottom: "30px",
     right: "30px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-  addBtn: {
-    backgroundColor: "#c62828",
-    color: "#fff",
-    padding: "12px 18px",
+    width: "56px",
+    height: "56px",
+    borderRadius: "50%",
     border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "500",
-  },
-  updateBtn: {
-    backgroundColor: "#2e7d32",
+    fontSize: "32px",
+    background: "#c62828",
     color: "#fff",
-    padding: "12px 18px",
-    border: "none",
-    borderRadius: "8px",
     cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "500",
   },
 
-  // === Modal Styles ===
   modalOverlay: {
     position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0,0,0,0.4)",
+    inset: 0,
+    background: "rgba(0,0,0,0.4)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1000,
   },
-  modal: {
-    background: "#fff",
-    borderRadius: "10px",
-    padding: "25px",
-    width: "400px",
-  },
+  modal: { background: "#fff", padding: "25px", borderRadius: "10px" },
   modalHeader: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "15px",
+    marginBottom: "10px",
   },
-  closeBtn: {
-    background: "none",
-    border: "none",
-    fontSize: "22px",
-    cursor: "pointer",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
+  closeBtn: { border: "none", background: "none", fontSize: "22px" },
+  form: { display: "flex", flexDirection: "column", gap: "10px" },
   submitBtn: {
-    marginTop: "10px",
-    backgroundColor: "#c62828",
+    background: "#c62828",
     color: "#fff",
-    padding: "10px",
     border: "none",
+    padding: "10px",
     borderRadius: "6px",
-    cursor: "pointer",
   },
 };
 
