@@ -24,20 +24,20 @@ export default function PMDashboard() {
           </div>
 
           {/* GRAPH + RECENT ACTIVITY */}
-          <div style={styles.graphRow}>
+            <div style={styles.graphRow}>
 
-            {/* WEEKLY TASK GRAPH */}
+          {/* WEEKLY TASK GRAPH */}
             <div style={styles.graphWrapper}>
-              <h3 style={styles.sectionTitle}>Weekly Tasks Graph</h3>
-              <WeeklyTaskGraph />
-            </div>
+            <h3 style={styles.sectionTitle}>Weekly Tasks Graph</h3>
+          <WeeklyTaskGraph />
+        </div>
 
-            {/* RECENT ACTIVITY */}
-            <div style={styles.recentWrapper}>
-              <RecentActivity />
-            </div>
-
+        {/* RECENT ACTIVITY */}
+          <div style={styles.recentWrapper}>
+            <RecentActivity />
           </div>
+
+        </div>
 
           {/* ACTIVE PROJECTS */}
           <ActiveProjects />
@@ -114,25 +114,28 @@ const styles = {
 
   /* GRAPH + RECENT ACTIVITY */
   graphRow: {
-    display: "flex",
-    gap: 20,
-    marginBottom: 25
+  display: "grid",
+  gridTemplateColumns: "2.5fr 1.5fr", // graph + activity
+  gap: 20,
+  marginBottom: 25,
+  alignItems: "stretch"
   },
 
   graphWrapper: {
-    flex: 2,
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #e5e5e5",
-    padding: 20,
-    display: "flex",
-    flexDirection: "column"
-  },
+  background: "#fff",
+  borderRadius: 12,
+  border: "1px solid #e5e5e5",
+  padding: 20
+},
 
   recentWrapper: {
-    flex: 1,
-    display: "flex"
-  },
+  background: "#fff",
+  borderRadius: 12,
+  border: "1px solid #e5e5e5",
+  padding: 16,
+  display: "flex",
+  flexDirection: "column"
+},
 
   sectionTitle: {
     fontSize: 18,
