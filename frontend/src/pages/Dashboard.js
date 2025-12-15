@@ -6,7 +6,10 @@ import PMDashboard from "../components/PM-Dashboard";
 import DevDashboard from "../components/Dev-Dashboard";
 
 import DashboardCalendar from "../components/DashboardCalendar";
-import DashboardTimeline from "../components/Pm-Timeline";
+import PMTimeline from "../components/Pm-Timeline";
+import DevTimeline from "../components/Dev-Timeline";
+
+
 
 function Dashboard() {
   const [role, setRole] = useState(null);
@@ -25,32 +28,38 @@ function Dashboard() {
     return <p style={{ textAlign: "center", marginTop: "50px" }}>Loading...</p>;
   }
 
-  /* -------- CONTENT BASED ON TAB -------- */
+  /* ---------- TAB CONTENT ---------- */
   const renderContent = () => {
     if (activeTab === "Overview") {
       return role === "Project Manager" || role === "Admin"
         ? <PMDashboard />
         : <DevDashboard />;
     }
-    if (activeTab === "Calendar") return <DashboardCalendar />;
-    if (activeTab === "Timeline") return <DashboardTimeline />;
+
+    if (activeTab === "Calendar" && role === "Developer") {
+      return <DashboardCalendar />;
+    }
+
+    if (activeTab === "Timeline") {
+      return role === "Developer"
+        ? <DevTimeline />
+        : <PMTimeline />;
+    }
+
     return null;
   };
 
   return (
     <div style={styles.app}>
 
-      {/* SIDEBAR — NEVER SCROLLS */}
       <Sidebar role={role} />
 
-      {/* MAIN AREA */}
       <div style={styles.main}>
+        <Header />
 
-        {/* HEADER — NEVER SCROLLS */}
-        <Header role={role} />
-
-        {/* TABS — NEVER SCROLL */}
+        {/* ---------- TABS ---------- */}
         <div style={styles.tabsRow}>
+
           <button
             style={activeTab === "Overview" ? styles.activeTab : styles.tab}
             onClick={() => setActiveTab("Overview")}
@@ -58,22 +67,27 @@ function Dashboard() {
             Overview
           </button>
 
-          <button
-            style={activeTab === "Calendar" ? styles.activeTab : styles.tab}
-            onClick={() => setActiveTab("Calendar")}
-          >
-            Calendar
-          </button>
+          {/* ✅ Calendar ONLY for Developer */}
+          {role === "Developer" && (
+            <button
+              style={activeTab === "Calendar" ? styles.activeTab : styles.tab}
+              onClick={() => setActiveTab("Calendar")}
+            >
+              Calendar
+            </button>
+          )}
 
+          {/* ✅ Timeline for BOTH, component switches by role */}
           <button
             style={activeTab === "Timeline" ? styles.activeTab : styles.tab}
             onClick={() => setActiveTab("Timeline")}
           >
             Timeline
           </button>
+
         </div>
 
-        {/* 🔥 ONLY THIS AREA SCROLLS */}
+        {/* ---------- SCROLL AREA ---------- */}
         <div style={styles.scrollArea}>
           {renderContent()}
         </div>
@@ -83,60 +97,56 @@ function Dashboard() {
   );
 }
 
-/* ================== STYLES ================== */
+/* ================= STYLES ================= */
 
 const styles = {
-  /* ROOT LAYOUT */
   app: {
     display: "flex",
     height: "100vh",
-    overflow: "hidden", // 🔒 LOCK ENTIRE VIEWPORT
+    overflow: "hidden",
     backgroundColor: "#fafafa",
   },
 
-  /* MAIN COLUMN (HEADER + TABS + CONTENT) */
   main: {
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    overflow: "hidden", // 🔒 HEADER & TABS DO NOT SCROLL
+    overflow: "hidden",
   },
 
-  /* TABS */
   tabsRow: {
     display: "flex",
-    gap: "20px",
+    gap: 20,
     padding: "15px 20px",
     borderBottom: "1px solid #f0f0f0",
     background: "#fff",
-    flexShrink: 0, // 🔒 NEVER SHRINK
+    flexShrink: 0,
   },
 
   tab: {
     background: "transparent",
     border: "none",
-    fontSize: "16px",
+    fontSize: 16,
     cursor: "pointer",
     color: "#666",
-    paddingBottom: "5px",
+    paddingBottom: 5,
   },
 
   activeTab: {
     background: "transparent",
     border: "none",
-    fontSize: "16px",
+    fontSize: 16,
     cursor: "pointer",
     borderBottom: "3px solid #c62828",
     color: "#111",
-    paddingBottom: "5px",
-    fontWeight: "600",
+    paddingBottom: 5,
+    fontWeight: 600,
   },
 
-  /* ONLY SCROLLABLE AREA */
   scrollArea: {
     flex: 1,
-    overflowY: "auto", // ✅ ONLY PLACE THAT SCROLLS
-    padding: "20px",
+    overflowY: "auto",
+    padding: 20,
   },
 };
 
