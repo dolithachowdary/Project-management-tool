@@ -1,9 +1,63 @@
 import React from "react";
 
+import TaskOverviewList from "./TaskOverviewList";
+import DevTaskPie from "./DevTaskPie";
+import WeeklyTaskGraph from "./WeeklyTaskGraph";
+import RecentActivity from "./RecentActivity";
+
 /**
  * Dev-Dashboard.jsx
- * Developer Overview (NO timeline here)
+ * Developer Overview Dashboard
+ * - Task list (role-aware)
+ * - Pie chart (tasks by project)
+ * - Weekly task graph (dev only)
+ * - Recent activity
  */
+
+// 🔹 TEMP: reuse same task structure from Tasks.js
+// Later replace with props / API / context
+const tasks = [
+  {
+    id: "1",
+    taskName: "Implement Weekly Task Graph",
+    projectName: "Analytics Dashboard",
+    moduleName: "UI",
+    assignedTo: ["A"],
+    status: "In Progress",
+  },
+  {
+    id: "2",
+    taskName: "Fix Dashboard Responsiveness",
+    projectName: "Analytics Dashboard",
+    moduleName: "UI",
+    assignedTo: ["A"],
+    status: "To Do",
+  },
+  {
+    id: "3",
+    taskName: "Prepare Sprint Demo",
+    projectName: "Automation Suite",
+    moduleName: "Docs",
+    assignedTo: ["A"],
+    status: "Done",
+  },
+];
+
+// 🔹 Pie chart data (derived later from tasks API)
+const pieData = [
+  {
+    project: "Analytics Dashboard",
+    total: 3,
+    completed: 1,
+    color: "#D5E4FF",
+  },
+  {
+    project: "Automation Suite",
+    total: 2,
+    completed: 1,
+    color: "#FFD2D2",
+  },
+];
 
 const DevDashboard = ({ role }) => {
   return (
@@ -15,79 +69,68 @@ const DevDashboard = ({ role }) => {
         <div style={styles.smallNote}>Role: {role || "Developer"}</div>
       </div>
 
-      {/* CONTENT */}
-      <div style={styles.content}>
+      {/* ================= TOP ROW ================= */}
+      <div style={styles.topRow}>
+        {/* TASK LIST */}
+        <TaskOverviewList
+          role="Developer"
+          tasks={tasks}
+          currentUser="A"
+        />
 
-        {/* LEFT */}
-        <div style={styles.left}>
-
-          {/* SUMMARY CARD */}
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}>My Tasks</h3>
-
-            <div style={styles.tasksList}>
-              <div style={styles.taskItem}>Implement Weekly Task Graph</div>
-              <div style={styles.taskItem}>Fix Dashboard Responsiveness</div>
-              <div style={styles.taskItem}>Prepare Sprint Demo</div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* RIGHT */}
-        <aside style={styles.right}>
-          <div style={styles.card}>
-            <h4 style={{ margin: 0 }}>Quick Notes</h4>
-            <p style={{ fontSize: 13, color: "#666", marginTop: 8 }}>
-              Use the Timeline tab to track today’s project allocation.
-            </p>
-          </div>
-        </aside>
-
+        {/* PIE CHART */}
+        <DevTaskPie data={pieData} />
       </div>
+
+      {/* ================= BOTTOM ROW ================= */}
+      <div style={styles.bottomRow}>
+        <WeeklyTaskGraph />
+        <RecentActivity />
+      </div>
+
     </div>
   );
 };
+
+/* ================= STYLES ================= */
 
 const styles = {
   page: {
     padding: 20,
     background: "#fafafa",
     minHeight: "calc(100vh - 70px)",
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
   },
+
   headerRow: {
     display: "flex",
     justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  title: { fontSize: 20, fontWeight: 600 },
-  smallNote: { fontSize: 13, color: "#666" },
-
-  content: { display: "flex", gap: 20 },
-  left: { flex: 1 },
-  right: { width: 280 },
-
-  card: {
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #e5e5e5",
-    padding: 16,
+    alignItems: "center",
   },
 
-  cardTitle: { margin: 0, fontSize: 16, fontWeight: 600 },
-
-  tasksList: {
-    marginTop: 12,
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
+  title: {
+    fontSize: 20,
+    fontWeight: 600,
+    margin: 0,
   },
 
-  taskItem: {
-    padding: "10px 12px",
-    borderRadius: 8,
-    background: "#f7f7f7",
-    border: "1px solid #eee",
+  smallNote: {
+    fontSize: 13,
+    color: "#666",
+  },
+
+  topRow: {
+    display: "grid",
+    gridTemplateColumns: "2fr 1fr",
+    gap: 20,
+  },
+
+  bottomRow: {
+    display: "grid",
+    gridTemplateColumns: "2fr 1fr",
+    gap: 20,
   },
 };
 

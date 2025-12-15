@@ -1,103 +1,110 @@
-import React from "react";
+import React, { useState } from "react";
 
 export default function MiniCalendar() {
+  const [current, setCurrent] = useState(new Date());
+
+  const year = current.getFullYear();
+  const month = current.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  const startOffset = firstDay.getDay(); // Sun-based
+  const daysInMonth = lastDay.getDate();
+
+  const today = new Date();
+
+  const changeMonth = (delta) => {
+    setCurrent(new Date(year, month + delta, 1));
+  };
+
   return (
-    <div style={styles.card}>
-      <div style={styles.calHeader}>
-        <span style={styles.month}>November 2028</span>
-        <div style={styles.navBtns}>
-          <button style={styles.navBtn}>‹</button>
-          <button style={styles.navBtn}>›</button>
+    <div>
+      {/* HEADER */}
+      <div style={styles.header}>
+        <button onClick={() => changeMonth(-1)} style={styles.navBtn}>‹</button>
+        <div style={styles.month}>
+          {current.toLocaleString("default", { month: "long" })} {year}
         </div>
+        <button onClick={() => changeMonth(1)} style={styles.navBtn}>›</button>
       </div>
 
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d) => (
-              <th key={d} style={styles.th}>{d}</th>
-            ))}
-          </tr>
-        </thead>
+      {/* DAYS */}
+      <div style={styles.grid}>
+        {["S","M","T","W","T","F","S"].map(d => (
+          <div key={d} style={styles.day}>{d}</div>
+        ))}
 
-        <tbody>
-          {[...Array(5)].map((_, row) => (
-            <tr key={row}>
-              {[...Array(7)].map((_, col) => {
-                const date = row * 7 + col - 1;
-                const day = date >= 1 && date <= 30 ? date : "";
+        {Array.from({ length: startOffset }).map((_, i) => (
+          <div key={`e-${i}`} />
+        ))}
 
-                const highlighted = day === 5 || day === 12 || day === 19;
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const date = i + 1;
+          const isToday =
+            date === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear();
 
-                return (
-                  <td key={col} style={styles.td}>
-                    <div
-                      style={{
-                        ...styles.day,
-                        ...(highlighted ? styles.dotDay : {})
-                      }}
-                    >
-                      {day}
-                      {highlighted && <div style={styles.dot}></div>}
-                    </div>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          return (
+            <div
+              key={date}
+              style={{
+                ...styles.date,
+                ...(isToday ? styles.today : {}),
+              }}
+            >
+              {date}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 const styles = {
-  card: {
-    border: "1px solid #e5e5e5",
-    borderRadius: 12,
-    padding: 16,
-    background: "#fff"
-  },
-  calHeader: {
+  header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10
+    marginBottom: 10,
   },
+
   month: {
     fontWeight: 600,
-    fontSize: 15
+    fontSize: 14,
   },
-  navBtns: { display: "flex", gap: 6 },
+
   navBtn: {
-    width: 26,
-    height: 26,
-    borderRadius: "50%",
-    border: "1px solid #ddd",
-    background: "#fff",
-    cursor: "pointer"
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    fontSize: 18,
   },
-  table: { width: "100%", fontSize: 13, textAlign: "center" },
-  th: { paddingBottom: 6, color: "#888", fontWeight: 500 },
-  td: { padding: "4px 0" },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(7, 1fr)",
+    gap: 6,
+    textAlign: "center",
+    fontSize: 12,
+  },
+
   day: {
-    width: 26,
-    height: 26,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "50%",
-    position: "relative"
+    fontWeight: 600,
+    color: "#777",
   },
-  dotDay: {
-    fontWeight: 600
+
+  date: {
+    padding: "6px 0",
+    borderRadius: 6,
+    cursor: "pointer",
   },
-  dot: {
-    position: "absolute",
-    bottom: 3,
-    width: 5,
-    height: 5,
-    background: "#e53935",
-    borderRadius: "50%"
-  }
+
+  today: {
+    background: "#C62828",
+    color: "#fff",
+    fontWeight: 600,
+  },
 };
