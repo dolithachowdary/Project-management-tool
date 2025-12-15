@@ -10,7 +10,6 @@ import ActiveSprints from "./ActiveSprints";
 export default function PMDashboard() {
   return (
     <div style={styles.page}>
-
       <div style={styles.mainGrid}>
 
         {/* ---------------- LEFT CONTENT ---------------- */}
@@ -24,20 +23,20 @@ export default function PMDashboard() {
           </div>
 
           {/* GRAPH + RECENT ACTIVITY */}
-            <div style={styles.graphRow}>
+          <div style={styles.graphRow}>
 
-          {/* WEEKLY TASK GRAPH */}
+            {/* WEEKLY TASK GRAPH */}
             <div style={styles.graphWrapper}>
-            <h3 style={styles.sectionTitle}>Weekly Tasks Graph</h3>
-          <WeeklyTaskGraph />
-        </div>
+              <h3 style={styles.sectionTitle}>Weekly Tasks Graph</h3>
+              <WeeklyTaskGraph />
+            </div>
 
-        {/* RECENT ACTIVITY */}
-          <div style={styles.recentWrapper}>
-            <RecentActivity />
+            {/* RECENT ACTIVITY */}
+            <div style={styles.recentWrapper}>
+              <RecentActivity />
+            </div>
+
           </div>
-
-        </div>
 
           {/* ACTIVE PROJECTS */}
           <ActiveProjects />
@@ -49,9 +48,17 @@ export default function PMDashboard() {
 
         {/* ---------------- RIGHT SIDEBAR ---------------- */}
         <aside style={styles.right}>
-          <div style={styles.card}><MiniCalendar /></div>
-          <div style={styles.card}><Upcoming /></div>
-          <div style={styles.card}><QAPending /></div>
+          <div style={styles.card}>
+            <MiniCalendar />
+          </div>
+
+          <div style={styles.card}>
+            <Upcoming />
+          </div>
+
+          <div style={styles.card}>
+            <QAPending />
+          </div>
         </aside>
 
       </div>
@@ -75,13 +82,12 @@ function renderStat(title, number, percent, color) {
 const styles = {
   page: {
     background: "#fafafa",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
   },
 
-  /* Layout */
   mainGrid: {
     display: "flex",
-    gap: 20
+    gap: 20,
   },
 
   left: { flex: 1 },
@@ -90,14 +96,13 @@ const styles = {
     width: 320,
     display: "flex",
     flexDirection: "column",
-    gap: 20
+    gap: 20,
   },
 
-  /* STAT CARDS */
   statsRow: {
     display: "flex",
     gap: 12,
-    marginBottom: 20
+    marginBottom: 20,
   },
 
   statCard: {
@@ -105,49 +110,46 @@ const styles = {
     background: "#fff",
     border: "1px solid #e5e5e5",
     borderRadius: 12,
-    padding: 14
+    padding: 14,
   },
 
   statTitle: { fontSize: 13, color: "#444" },
   statNumber: { fontSize: 26, fontWeight: 600, marginTop: 4 },
   statPercent: { fontSize: 12, marginTop: 2 },
 
-  /* GRAPH + RECENT ACTIVITY */
   graphRow: {
-  display: "grid",
-  gridTemplateColumns: "2.5fr 1.5fr", // graph + activity
-  gap: 20,
-  marginBottom: 25,
-  alignItems: "stretch"
+    display: "grid",
+    gridTemplateColumns: "2.5fr 1.5fr",
+    gap: 20,
+    marginBottom: 25,
   },
 
   graphWrapper: {
-  background: "#fff",
-  borderRadius: 12,
-  border: "1px solid #e5e5e5",
-  padding: 20
-},
+    background: "#fff",
+    borderRadius: 12,
+    border: "1px solid #e5e5e5",
+    padding: 20,
+  },
 
   recentWrapper: {
-  background: "#fff",
-  borderRadius: 12,
-  border: "1px solid #e5e5e5",
-  padding: 16,
-  display: "flex",
-  flexDirection: "column"
-},
+    background: "#fff",
+    borderRadius: 12,
+    border: "1px solid #e5e5e5",
+    padding: 16,
+    display: "flex",
+    flexDirection: "column",
+  },
 
   sectionTitle: {
     fontSize: 18,
     fontWeight: 600,
-    marginBottom: 12
+    marginBottom: 12,
   },
 
-  /* RIGHT COLUMN CARDS */
   card: {
     background: "#fff",
     borderRadius: 12,
     border: "1px solid #e5e5e5",
-    padding: 16
-  }
+    padding: 16,
+  },
 };
