@@ -1,10 +1,5 @@
 import React, { useState } from "react";
 
-/**
- * DevTaskPie.jsx
- * Toggle between Pie and Doughnut chart
- */
-
 export default function DevTaskPie({ data }) {
   const [type, setType] = useState("pie"); // "pie" | "doughnut"
   const [hover, setHover] = useState(null);
@@ -42,7 +37,6 @@ export default function DevTaskPie({ data }) {
       `;
     }
 
-    // DOUGHNUT
     const innerStart = polarToCartesian(center, center, innerRadius, start);
     const innerEnd = polarToCartesian(center, center, innerRadius, end);
 
