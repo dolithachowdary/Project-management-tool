@@ -1,22 +1,34 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import Dashboard from './pages/Dashboard';
-import Projects from './pages/Projects';
-import Sprints from './pages/Sprints';
-import Tasks from './pages/Tasks'; 
-import Timesheets from './pages/Timesheets';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+import LoginPage from "./pages/LoginPage";
+import Dashboard from "./pages/Dashboard";
+import Projects from "./pages/Projects";
+import ProjectDetails from "./pages/ProjectDetails";
+import Sprints from "./pages/Sprints";
+import Tasks from "./pages/Tasks";
+import Timesheets from "./pages/Timesheets";
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Default redirect */}
         <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Auth */}
         <Route path="/login" element={<LoginPage />} />
+
+        {/* Main pages */}
         <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Projects */}
         <Route path="/projects" element={<Projects />} />
+        <Route path="/projects/:projectId" element={<ProjectDetails />} />
+
+        {/* Other pages */}
         <Route path="/sprints" element={<Sprints />} />
-        <Route path="/tasks" element={<Tasks />} /> 
+        <Route path="/tasks" element={<Tasks />} />
         <Route path="/timesheets" element={<Timesheets />} />
       </Routes>
     </Router>
