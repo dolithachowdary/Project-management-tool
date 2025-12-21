@@ -2,76 +2,124 @@ import React from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Card from "../components/Card";
+import { useNavigate } from "react-router-dom";
 
-const Sprints = () => {
-  const sprintData = [
+const Sprints = ({ role = "Project Manager" }) => {
+  const navigate = useNavigate();
+
+  /* ---------------- MEMBERS ---------------- */
+
+  const allMembers = [
+    { id: 1, name: "Deepak Chandra", color: "#f6c1cc" },
+    { id: 2, name: "Harsha Anand", color: "#dfe6d8" },
+    { id: 3, name: "Nikhil Kumar", color: "#d8edf6" },
+    { id: 4, name: "Varun Chaitanya", color: "#e0e7ff" },
+  ];
+
+  /* ---------------- ACTIVE SPRINTS ---------------- */
+
+  const activeSprints = [
     {
-      name: "Sprint 1",
-      project: "Website Revamp",
-      status: "Active",
+      id: 1,
+      title: "Website Revamp – Sprint 4",
       progress: 70,
-      due: "Ends in 5 days",
+      startDate: "Dec 01, 2025",
+      endDate: "Dec 15, 2025",
+      members: [allMembers[0], allMembers[1]],
+      availableMembers: allMembers,
+      timeLeft: "5 Days Left",
+      color: "#d47b4a",
     },
     {
-      name: "Sprint 2",
-      project: "Mobile App UI",
-      status: "Active",
+      id: 2,
+      title: "Mobile App UI – Sprint 2",
       progress: 45,
-      due: "Ends in 10 days",
+      startDate: "Dec 05, 2025",
+      endDate: "Dec 20, 2025",
+      members: [allMembers[2]],
+      availableMembers: allMembers,
+      timeLeft: "10 Days Left",
+      color: "#cddc39",
     },
     {
-      name: "Sprint 3",
-      project: "Security Upgrade",
-      status: "Active",
+      id: 3,
+      title: "Security Upgrade – Sprint 1",
       progress: 60,
-      due: "Ends in 12 days",
+      startDate: "Dec 08, 2025",
+      endDate: "Dec 25, 2025",
+      members: [allMembers[1], allMembers[3]],
+      availableMembers: allMembers,
+      timeLeft: "12 Days Left",
+      color: "#1e88e5",
+    },
+  ];
+
+  /* ---------------- COMPLETED SPRINTS (OF ACTIVE PROJECTS) ---------------- */
+
+  const completedSprints = [
+    {
+      id: 101,
+      title: "Website Revamp – Sprint 3",
+      progress: 100,
+      startDate: "Nov 15, 2025",
+      endDate: "Nov 30, 2025",
+      members: [allMembers[0], allMembers[1]],
+      availableMembers: allMembers,
+      timeLeft: "Completed",
+      color: "#2e7d32",
     },
     {
-      name: "Sprint 4",
-      project: "Client Portal",
-      status: "Active",
-      progress: 20,
-      due: "Ends in 15 days",
+      id: 102,
+      title: "Mobile App UI – Sprint 1",
+      progress: 100,
+      startDate: "Nov 01, 2025",
+      endDate: "Nov 14, 2025",
+      members: [allMembers[2]],
+      availableMembers: allMembers,
+      timeLeft: "Completed",
+      color: "#2e7d32",
     },
   ];
 
   return (
-    <div style={styles.container}>
+    <div style={styles.pageContainer}>
       <Sidebar />
-      <div style={styles.main}>
-        <Header role="Project Manager" />
 
-        {/* === Page Content === */}
-        <div style={styles.content}>
-          <h2 style={styles.title}>Sprints</h2>
+      <div style={styles.mainContent}>
+        <Header role={role} />
 
-          <section>
+        <div style={styles.pageInner}>
+          <h2 style={styles.pageTitle}>Sprints</h2>
+
+          {/* ACTIVE SPRINTS */}
+          <section style={styles.section}>
             <h3 style={styles.sectionTitle}>Active Sprints</h3>
+
             <div style={styles.cardGrid}>
-              {sprintData.map((sprint, i) => (
-                <div key={i} style={styles.cardWrapper}>
-                  <Card>
-                    <div style={styles.cardHeader}>
-                      <h4>{sprint.name}</h4>
-                      <span style={styles.activeBadge}>{sprint.status}</span>
-                    </div>
+              {activeSprints.map((sprint) => (
+                <div
+                  key={sprint.id}
+                  style={styles.cardWrapper}
+                  onClick={() => navigate(`/sprints/${sprint.id}`)}
+                >
+                  <Card {...sprint} />
+                </div>
+              ))}
+            </div>
+          </section>
 
-                    <p style={styles.subText}>{sprint.project}</p>
-                    <p style={styles.smallText}>{sprint.due}</p>
+          {/* COMPLETED SPRINTS */}
+          <section style={styles.section}>
+            <h3 style={styles.sectionTitle}>Completed Sprints</h3>
 
-                    <div style={styles.progressBarOuter}>
-                      <div
-                        style={{
-                          ...styles.progressBarInner,
-                          width: `${sprint.progress}%`,
-                        }}
-                      ></div>
-                    </div>
-
-                    <p style={styles.progressText}>
-                      {sprint.progress}% complete
-                    </p>
-                  </Card>
+            <div style={styles.cardGrid}>
+              {completedSprints.map((sprint) => (
+                <div
+                  key={sprint.id}
+                  style={styles.cardWrapper}
+                  onClick={() => navigate(`/sprints/${sprint.id}`)}
+                >
+                  <Card {...sprint} />
                 </div>
               ))}
             </div>
@@ -82,92 +130,52 @@ const Sprints = () => {
   );
 };
 
+export default Sprints;
+
+/* ---------------- STYLES ---------------- */
+
 const styles = {
-  container: {
+  pageContainer: {
     display: "flex",
     height: "100vh",
-    backgroundColor: "#fff",
+    background: "#f9f9f9",
   },
-  main: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-  },
-  content: {
-    padding: "30px",
-    backgroundColor: "#f9f9f9",
+
+  mainContent: {
     flex: 1,
     overflowY: "auto",
   },
-  title: {
-    fontSize: "1.8rem",
-    fontWeight: "600",
-    marginBottom: "10px",
-    color: "#111",
-  },
-  sectionTitle: {
-    fontSize: "1.2rem",
-    fontWeight: "600",
-    color: "#333",
-    margin: "20px 0 15px",
+
+  pageInner: {
+    padding: 30,
   },
 
-  /* ✅ GRID FIX — same as Projects.jsx */
+  pageTitle: {
+    fontSize: "1.6rem",
+    fontWeight: 600,
+    marginBottom: 20,
+  },
+
+  section: {
+    marginBottom: 40,
+  },
+
+  sectionTitle: {
+    fontSize: "1.2rem",
+    fontWeight: 600,
+    marginBottom: 15,
+  },
+
   cardGrid: {
     display: "flex",
     flexWrap: "wrap",
-    gap: "20px",
-    justifyContent: "flex-start",
+    gap: 20,
   },
+
   cardWrapper: {
     flex: "1 1 300px",
-    minWidth: "280px",
-    maxWidth: "340px",
-    display: "flex",
-  },
-
-  /* === CARD STYLES === */
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "8px",
-  },
-  activeBadge: {
-    backgroundColor: "#c62828",
-    color: "white",
-    padding: "3px 8px",
-    borderRadius: "5px",
-    fontSize: "12px",
-  },
-  subText: {
-    color: "#444",
-    fontWeight: "500",
-    marginBottom: "5px",
-  },
-  smallText: {
-    color: "#777",
-    fontSize: "14px",
-    marginBottom: "10px",
-  },
-  progressBarOuter: {
-    width: "100%",
-    backgroundColor: "#eee",
-    borderRadius: "5px",
-    height: "8px",
-    marginBottom: "6px",
-  },
-  progressBarInner: {
-    height: "8px",
-    borderRadius: "5px",
-    backgroundColor: "#c62828",
-    transition: "width 0.3s ease",
-  },
-  progressText: {
-    fontSize: "13px",
-    color: "#555",
-    textAlign: "right",
+    minWidth: 280,
+    maxWidth: 340,
+    cursor: "pointer",
   },
 };
-
-export default Sprints;

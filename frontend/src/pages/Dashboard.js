@@ -5,7 +5,7 @@ import Header from "../components/Header";
 import PMDashboard from "../components/PM-Dashboard";
 import DevDashboard from "../components/Dev-Dashboard";
 
-import DashboardCalendar from "../components/DashboardCalendar";
+import DevCalendar from "../components/Dev-Calendar";
 import PMTimeline from "../components/Pm-Timeline";
 import DevTimeline from "../components/Dev-Timeline";
 
@@ -37,7 +37,7 @@ function Dashboard() {
     }
 
     if (activeTab === "Calendar" && role === "Developer") {
-      return <DashboardCalendar />;
+      return <DevCalendar />;
     }
 
     if (activeTab === "Timeline") {

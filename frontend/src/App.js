@@ -8,6 +8,8 @@ import ProjectDetails from "./pages/ProjectDetails";
 import Sprints from "./pages/Sprints";
 import Tasks from "./pages/Tasks";
 import Timesheets from "./pages/Timesheets";
+import Analytics from "./pages/Analytics";
+import Reports from "./pages/Reports";
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
         <Route path="/sprints" element={<Sprints />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/timesheets" element={<Timesheets />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/reports" element={<Reports />} />
       </Routes>
     </Router>
   );

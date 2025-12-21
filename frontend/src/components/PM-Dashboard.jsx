@@ -1,88 +1,173 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+
+import Stats from "./Stats";
+import Card from "./Card";
 import MiniCalendar from "./Mini-Calendar";
 import Upcoming from "./Upcoming";
 import RecentActivity from "./RecentActivity";
 import QAPending from "./QAPending";
 import WeeklyTaskGraph from "./WeeklyTaskGraph";
-import ActiveProjects from "./ActiveProject";
-import ActiveSprints from "./ActiveSprints";
 
 export default function PMDashboard() {
+  const navigate = useNavigate();
+
+  /* ---------------- MEMBERS (BACKEND READY) ---------------- */
+
+  const allMembers = [
+    { id: 1, name: "Deepak Chandra", color: "#f6c1cc" },
+    { id: 2, name: "Harsha Anand", color: "#dfe6d8" },
+    { id: 3, name: "Nikhil Kumar", color: "#d8edf6" },
+    { id: 4, name: "Varun Chaitanya", color: "#e0e7ff" },
+  ];
+
+  /* ---------------- ACTIVE PROJECTS ---------------- */
+
+  const activeProjects = [
+    {
+      id: 1,
+      title: "TourO Web Development",
+      progress: 70,
+      startDate: "January 10, 2024",
+      endDate: "July 30, 2024",
+      members: [allMembers[0], allMembers[1]],
+      availableMembers: allMembers,
+      timeLeft: "2 Days Left",
+      color: "#d47b4a",
+    },
+    {
+      id: 2,
+      title: "Dashboard Portal",
+      progress: 50,
+      startDate: "January 10, 2024",
+      endDate: "July 30, 2024",
+      members: [allMembers[2]],
+      availableMembers: allMembers,
+      timeLeft: "2 Weeks Left",
+      color: "#cddc39",
+    },
+    {
+      id: 3,
+      title: "Designing",
+      progress: 85,
+      startDate: "January 10, 2024",
+      endDate: "July 30, 2024",
+      members: [allMembers[1], allMembers[3]],
+      availableMembers: allMembers,
+      timeLeft: "1 Month Left",
+      color: "#1e88e5",
+    },
+  ];
+
+  /* ---------------- ACTIVE SPRINTS ---------------- */
+
+  const activeSprints = [
+    {
+      id: 4,
+      title: "TourO Web Development, Sprint 1",
+      progress: 40,
+      startDate: "January 10, 2024",
+      endDate: "July 30, 2024",
+      members: [allMembers[0]],
+      availableMembers: allMembers,
+      timeLeft: "1 Week Left",
+      color: "#d47b4a",
+    },
+    {
+      id: 5,
+      title: "Dashboard Portal, Sprint 2",
+      progress: 65,
+      startDate: "January 10, 2024",
+      endDate: "July 30, 2024",
+      members: [allMembers[1], allMembers[2]],
+      availableMembers: allMembers,
+      timeLeft: "2 Weeks Left",
+      color: "#cddc39",
+    },
+    {
+      id: 6,
+      title: "Designing, Sprint 3",
+      progress: 90,
+      startDate: "January 10, 2024",
+      endDate: "July 30, 2024",
+      members: [allMembers[3]],
+      availableMembers: allMembers,
+      timeLeft: "1 Week Left",
+      color: "#1e88e5",
+    },
+  ];
+
   return (
     <div style={styles.page}>
       <div style={styles.mainGrid}>
-
-        {/* ---------------- LEFT CONTENT ---------------- */}
+        {/* ---------------- LEFT ---------------- */}
         <div style={styles.left}>
+          <Stats />
 
-          {/* STAT CARDS */}
-          <div style={styles.statsRow}>
-            {renderStat("Completed Tasks", 127, "67.18%", "#2e7d32")}
-            {renderStat("Incompleted Tasks", 62, "54.29%", "#c62828")}
-            {renderStat("Overdue Tasks", 20, "14.11%", "#777")}
-          </div>
-
-          {/* GRAPH + RECENT ACTIVITY */}
           <div style={styles.graphRow}>
-
-            {/* WEEKLY TASK GRAPH */}
             <div style={styles.graphWrapper}>
-              <h3 style={styles.sectionTitle}>Weekly Tasks Graph</h3>
+              <h3 style={styles.sectionTitle}>Weekly task report</h3>
               <WeeklyTaskGraph />
             </div>
 
-            {/* RECENT ACTIVITY */}
             <div style={styles.recentWrapper}>
               <RecentActivity />
             </div>
-
           </div>
 
           {/* ACTIVE PROJECTS */}
-          <ActiveProjects />
+          <h3 style={styles.sectionTitle}>Active Projects</h3>
+          <div style={styles.cardGrid}>
+            {activeProjects.map(card => (
+              <div
+                key={card.id}
+                style={styles.cardWrapper}
+                onClick={() => navigate(`/projects/${card.id}`)}
+              >
+                <Card {...card} />
+              </div>
+            ))}
+          </div>
 
           {/* ACTIVE SPRINTS */}
-          <ActiveSprints />
-
+          <h3 style={styles.sectionTitle}>Active Sprints</h3>
+          <div style={styles.cardGrid}>
+            {activeSprints.map(card => (
+              <div
+                key={card.id}
+                style={styles.cardWrapper}
+                onClick={() => navigate(`/sprints/${card.id}`)}
+              >
+                <Card {...card} />
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* ---------------- RIGHT SIDEBAR ---------------- */}
+        {/* ---------------- RIGHT ---------------- */}
         <aside style={styles.right}>
-          <div style={styles.card}>
+          <div style={styles.sideCard}>
             <MiniCalendar />
           </div>
 
-          <div style={styles.card}>
+          <div style={styles.sideCard}>
             <Upcoming />
           </div>
 
-          <div style={styles.card}>
+          <div style={styles.sideCard}>
             <QAPending />
           </div>
         </aside>
-
       </div>
     </div>
   );
 }
 
-/* ---------- Helper ---------- */
-function renderStat(title, number, percent, color) {
-  return (
-    <div style={styles.statCard}>
-      <div style={styles.statTitle}>{title}</div>
-      <div style={styles.statNumber}>{number}</div>
-      <div style={{ ...styles.statPercent, color }}>{percent}</div>
-    </div>
-  );
-}
-
-/* ---------- STYLES ---------- */
+/* ---------------- STYLES ---------------- */
 
 const styles = {
   page: {
     background: "#fafafa",
-    boxSizing: "border-box",
   },
 
   mainGrid: {
@@ -90,7 +175,9 @@ const styles = {
     gap: 20,
   },
 
-  left: { flex: 1 },
+  left: {
+    flex: 1,
+  },
 
   right: {
     width: 320,
@@ -99,29 +186,11 @@ const styles = {
     gap: 20,
   },
 
-  statsRow: {
-    display: "flex",
-    gap: 12,
-    marginBottom: 20,
-  },
-
-  statCard: {
-    flex: 1,
-    background: "#fff",
-    border: "1px solid #e5e5e5",
-    borderRadius: 12,
-    padding: 14,
-  },
-
-  statTitle: { fontSize: 13, color: "#444" },
-  statNumber: { fontSize: 26, fontWeight: 600, marginTop: 4 },
-  statPercent: { fontSize: 12, marginTop: 2 },
-
   graphRow: {
     display: "grid",
     gridTemplateColumns: "2.5fr 1.5fr",
     gap: 20,
-    marginBottom: 25,
+    marginBottom: 24,
   },
 
   graphWrapper: {
@@ -136,8 +205,6 @@ const styles = {
     borderRadius: 12,
     border: "1px solid #e5e5e5",
     padding: 16,
-    display: "flex",
-    flexDirection: "column",
   },
 
   sectionTitle: {
@@ -146,7 +213,18 @@ const styles = {
     marginBottom: 12,
   },
 
-  card: {
+  cardGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 20,
+    marginBottom: 24,
+  },
+
+  cardWrapper: {
+    cursor: "pointer",
+  },
+
+  sideCard: {
     background: "#fff",
     borderRadius: 12,
     border: "1px solid #e5e5e5",
