@@ -7,6 +7,9 @@ import ProjectsIcon from "../assets/icons/projects.svg";
 import SprintsIcon from "../assets/icons/sprints.svg";
 import TasksIcon from "../assets/icons/tasks.svg";
 import TimesheetsIcon from "../assets/icons/timesheets.svg";
+import analyticsIcon from "../assets/icons/analytics.svg";
+import reportsicon from "../assets/icons/reports.svg";
+
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -18,6 +21,8 @@ const Sidebar = () => {
     { name: "Sprints", path: "/sprints", icon: SprintsIcon },
     { name: "Tasks", path: "/tasks", icon: TasksIcon },
     { name: "Timesheets", path: "/timesheets", icon: TimesheetsIcon },
+    { name: "Analytics", path: "/analytics", icon: analyticsIcon },
+    { name: "Reports", path: "/reports", icon: reportsicon },
   ];
 
   const handleSignOut = () => {
