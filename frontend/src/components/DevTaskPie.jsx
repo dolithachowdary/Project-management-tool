@@ -1,105 +1,134 @@
 import React, { useState } from "react";
 
+function polarToCartesian(cx, cy, r, angle) {
+  const rad = ((angle - 90) * Math.PI) / 180.0;
+  return {
+    x: cx + r * Math.cos(rad),
+    y: cy + r * Math.sin(rad),
+  };
+}
+
+function describeArc(cx, cy, r, startAngle, endAngle) {
+  const start = polarToCartesian(cx, cy, r, endAngle);
+  const end = polarToCartesian(cx, cy, r, startAngle);
+  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+
+  return `
+    M ${cx} ${cy}
+    L ${start.x} ${start.y}
+    A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}
+    Z
+  `;
+}
+
 export default function DevTaskPie({ data }) {
-  const [type, setType] = useState("pie"); // "pie" | "doughnut"
-  const [hover, setHover] = useState(null);
+  const [mode, setMode] = useState("pie");
+  const [tooltip, setTooltip] = useState(null);
 
-  const size = 200;
-  const center = size / 2;
-  const radius = 90;
-  const innerRadius = type === "doughnut" ? 45 : 0;
-
-  const total = data.reduce((sum, d) => sum + d.total, 0);
-
-  let startAngle = -90; // start from top
-
-  const polarToCartesian = (cx, cy, r, angle) => {
-    const rad = (Math.PI / 180) * angle;
-    return {
-      x: cx + r * Math.cos(rad),
-      y: cy + r * Math.sin(rad),
-    };
-  };
-
-  const describeArc = (start, end) => {
-    const largeArc = end - start > 180 ? 1 : 0;
-
-    const outerStart = polarToCartesian(center, center, radius, end);
-    const outerEnd = polarToCartesian(center, center, radius, start);
-
-    if (innerRadius === 0) {
-      // PIE
-      return `
-        M ${center} ${center}
-        L ${outerStart.x} ${outerStart.y}
-        A ${radius} ${radius} 0 ${largeArc} 0 ${outerEnd.x} ${outerEnd.y}
-        Z
-      `;
-    }
-
-    const innerStart = polarToCartesian(center, center, innerRadius, start);
-    const innerEnd = polarToCartesian(center, center, innerRadius, end);
-
-    return `
-      M ${outerStart.x} ${outerStart.y}
-      A ${radius} ${radius} 0 ${largeArc} 0 ${outerEnd.x} ${outerEnd.y}
-      L ${innerStart.x} ${innerStart.y}
-      A ${innerRadius} ${innerRadius} 0 ${largeArc} 1 ${innerEnd.x} ${innerEnd.y}
-      Z
-    `;
-  };
+  const total = data.reduce((s, d) => s + d.total, 0);
+  let angle = 0;
 
   return (
     <div style={styles.card}>
+      {/* HEADER */}
       <div style={styles.header}>
-        <h3 style={{ margin: 0 }}>Tasks by Project</h3>
-
-        {/* TOGGLE */}
-        <div style={styles.toggle}>
+        <h3 style={styles.title}>Tasks by Project</h3>
+        <div>
           <button
-            onClick={() => setType("pie")}
-            style={type === "pie" ? styles.activeBtn : styles.btn}
+            style={mode === "pie" ? styles.activeBtn : styles.btn}
+            onClick={() => setMode("pie")}
           >
             Pie
           </button>
           <button
-            onClick={() => setType("doughnut")}
-            style={type === "doughnut" ? styles.activeBtn : styles.btn}
+            style={mode === "doughnut" ? styles.activeBtn : styles.btn}
+            onClick={() => setMode("doughnut")}
           >
             Doughnut
           </button>
         </div>
       </div>
 
-      {/* SVG CHART */}
-      <svg width={size} height={size}>
-        {data.map((d, i) => {
-          const angle = (d.total / total) * 360;
-          const path = describeArc(startAngle, startAngle + angle);
-          const currentStart = startAngle;
-          startAngle += angle;
-
-          return (
-            <path
-              key={i}
-              d={path}
-              fill={d.color}
-              onMouseEnter={() => setHover(d)}
-              onMouseLeave={() => setHover(null)}
-            />
-          );
-        })}
-      </svg>
-
       {/* TOOLTIP */}
-      {hover && (
-        <div style={styles.tooltip}>
-          <strong>{hover.project}</strong>
-          <div>
-            {hover.completed}/{hover.total} completed
-          </div>
+      {tooltip && (
+        <div
+          style={{
+            ...styles.tooltip,
+            left: tooltip.x + 12,
+            top: tooltip.y + 12,
+          }}
+        >
+          <strong>{tooltip.project}</strong>
+          <div>Assigned: {tooltip.total}</div>
+          <div>Completed: {tooltip.completed}</div>
+          <div>Pending: {tooltip.total - tooltip.completed}</div>
         </div>
       )}
+
+      {/* CHART */}
+      <svg viewBox="0 0 200 200" width="200" height="200">
+        {mode === "pie" &&
+          data.map((d, i) => {
+            const sliceAngle = (d.total / total) * 360;
+            const path = describeArc(
+              100,
+              100,
+              80,
+              angle,
+              angle + sliceAngle
+            );
+            angle += sliceAngle;
+
+            return (
+              <path
+                key={i}
+                d={path}
+                fill={d.color}
+                onMouseMove={e =>
+                  setTooltip({
+                    ...d,
+                    x: e.clientX,
+                    y: e.clientY,
+                  })
+                }
+                onMouseLeave={() => setTooltip(null)}
+              />
+            );
+          })}
+
+        {mode === "doughnut" &&
+          (() => {
+            let acc = 0;
+            return data.map((d, i) => {
+              const value = (d.total / total) * 100;
+              const dash = `${value} ${100 - value}`;
+              const offset = -acc;
+              acc += value;
+
+              return (
+                <circle
+                  key={i}
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="transparent"
+                  stroke={d.color}
+                  strokeWidth="18"
+                  strokeDasharray={dash}
+                  strokeDashoffset={offset}
+                  onMouseMove={e =>
+                    setTooltip({
+                      ...d,
+                      x: e.clientX,
+                      y: e.clientY,
+                    })
+                  }
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              );
+            });
+          })()}
+      </svg>
     </div>
   );
 }
@@ -113,42 +142,48 @@ const styles = {
     border: "1px solid #e5e5e5",
     padding: 16,
     textAlign: "center",
+    position: "relative",
   },
 
   header: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: 12,
   },
 
-  toggle: {
-    display: "flex",
-    gap: 6,
+  title: {
+    fontSize: 16,
+    fontWeight: 600,
   },
 
   btn: {
+    padding: "4px 10px",
+    marginLeft: 6,
+    borderRadius: 6,
     border: "1px solid #ddd",
     background: "#fff",
-    padding: "4px 10px",
-    fontSize: 12,
     cursor: "pointer",
-    borderRadius: 6,
   },
 
   activeBtn: {
-    border: "1px solid #c62828",
-    background: "#c62828",
-    color: "#fff",
     padding: "4px 10px",
-    fontSize: 12,
-    cursor: "pointer",
+    marginLeft: 6,
     borderRadius: 6,
+    border: "none",
+    background: "#d32f2f",
+    color: "#fff",
+    cursor: "pointer",
   },
 
   tooltip: {
-    marginTop: 10,
+    position: "fixed",
+    background: "#fff",
+    border: "1px solid #e5e5e5",
+    borderRadius: 8,
+    padding: "10px 12px",
     fontSize: 13,
-    color: "#444",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+    pointerEvents: "none",
+    zIndex: 9999,
   },
 };

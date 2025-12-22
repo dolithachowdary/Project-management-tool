@@ -12,16 +12,12 @@ import WeeklyTaskGraph from "./WeeklyTaskGraph";
 export default function PMDashboard() {
   const navigate = useNavigate();
 
-  /* ---------------- MEMBERS (BACKEND READY) ---------------- */
-
   const allMembers = [
     { id: 1, name: "Deepak Chandra", color: "#f6c1cc" },
     { id: 2, name: "Harsha Anand", color: "#dfe6d8" },
     { id: 3, name: "Nikhil Kumar", color: "#d8edf6" },
     { id: 4, name: "Varun Chaitanya", color: "#e0e7ff" },
   ];
-
-  /* ---------------- ACTIVE PROJECTS ---------------- */
 
   const activeProjects = [
     {
@@ -58,8 +54,6 @@ export default function PMDashboard() {
       color: "#1e88e5",
     },
   ];
-
-  /* ---------------- ACTIVE SPRINTS ---------------- */
 
   const activeSprints = [
     {
@@ -100,14 +94,18 @@ export default function PMDashboard() {
   return (
     <div style={styles.page}>
       <div style={styles.mainGrid}>
-        {/* ---------------- LEFT ---------------- */}
+
+        {/* LEFT */}
         <div style={styles.left}>
           <Stats />
 
           <div style={styles.graphRow}>
             <div style={styles.graphWrapper}>
               <h3 style={styles.sectionTitle}>Weekly task report</h3>
-              <WeeklyTaskGraph />
+
+              <div style={{ flex: 1, display: "flex" }}>
+                <WeeklyTaskGraph />
+              </div>
             </div>
 
             <div style={styles.recentWrapper}>
@@ -115,7 +113,6 @@ export default function PMDashboard() {
             </div>
           </div>
 
-          {/* ACTIVE PROJECTS */}
           <h3 style={styles.sectionTitle}>Active Projects</h3>
           <div style={styles.cardGrid}>
             {activeProjects.map(card => (
@@ -129,7 +126,6 @@ export default function PMDashboard() {
             ))}
           </div>
 
-          {/* ACTIVE SPRINTS */}
           <h3 style={styles.sectionTitle}>Active Sprints</h3>
           <div style={styles.cardGrid}>
             {activeSprints.map(card => (
@@ -144,19 +140,11 @@ export default function PMDashboard() {
           </div>
         </div>
 
-        {/* ---------------- RIGHT ---------------- */}
+        {/* RIGHT */}
         <aside style={styles.right}>
-          <div style={styles.sideCard}>
-            <MiniCalendar />
-          </div>
-
-          <div style={styles.sideCard}>
-            <Upcoming />
-          </div>
-
-          <div style={styles.sideCard}>
-            <QAPending />
-          </div>
+          <div style={styles.sideCard}><MiniCalendar /></div>
+          <div style={styles.sideCard}><Upcoming /></div>
+          <div style={styles.sideCard}><QAPending /></div>
         </aside>
       </div>
     </div>
@@ -188,7 +176,7 @@ const styles = {
 
   graphRow: {
     display: "grid",
-    gridTemplateColumns: "2.5fr 1.5fr",
+    gridTemplateColumns: "2.2fr 1.3fr",   // 🔥 zoom-safe
     gap: 20,
     marginBottom: 24,
   },
@@ -198,6 +186,9 @@ const styles = {
     borderRadius: 12,
     border: "1px solid #e5e5e5",
     padding: 20,
+    height: 360,                         // 🔥 locks layout
+    display: "flex",
+    flexDirection: "column",
   },
 
   recentWrapper: {
