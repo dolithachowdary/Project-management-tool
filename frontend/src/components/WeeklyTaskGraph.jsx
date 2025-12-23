@@ -1,122 +1,93 @@
 import React, { useState } from "react";
 
 export default function WeeklyTaskGraph() {
-  /* ---------------- PROJECT CONFIG ---------------- */
-
-  const projects = {
-    TourO: { label: "TourO", color: "#e57373" },
-    Dashboard: { label: "Dashboard", color: "#64b5f6" },
-    Designing: { label: "Designing", color: "#81c784" },
-  };
-
-  /* ---------------- WEEKLY DATA ---------------- */
-
   const data = [
-    { day: "Mon", projects: { TourO: 20, Dashboard: 12, Designing: 8 } },
-    { day: "Tue", projects: { TourO: 25, Dashboard: 18, Designing: 12 } },
-    { day: "Wed", projects: { TourO: 18, Dashboard: 15, Designing: 10 } },
-    { day: "Thu", projects: { TourO: 22, Dashboard: 17, Designing: 13 } },
-    { day: "Fri", projects: { TourO: 35, Dashboard: 25, Designing: 15 } },
-    { day: "Sat", projects: { TourO: 15, Dashboard: 10, Designing: 5 } },
-    { day: "Sun", projects: { TourO: 10, Dashboard: 6, Designing: 4 } },
+    { day: "Mon", today: 20, completed: 15 },
+    { day: "Tue", today: 15, completed: 20 }, // ⚠ inconsistent input
+    { day: "Wed", today: 18, completed: 12 },
+    { day: "Thu", today: 22, completed: 16 },
+    { day: "Fri", today: 30, completed: 25 },
+    { day: "Sat", today: 10, completed: 6 },
+    { day: "Sun", today: 8, completed: 4 },
   ];
 
-  /* ---------------- FILTER ---------------- */
+  // 🔒 Clamp completed so it never exceeds today
+  const normalized = data.map(d => ({
+    ...d,
+    completed: Math.min(d.completed, d.today),
+  }));
 
-  const [selectedProject, setSelectedProject] = useState("All");
+  const maxToday = Math.max(...normalized.map(d => d.today));
 
-  const max = Math.max(
-    ...data.map(d =>
-      selectedProject === "All"
-        ? Object.values(d.projects).reduce((a, b) => a + b, 0)
-        : d.projects[selectedProject]
-    )
-  );
-
-  /* ---------------- SVG CONSTANTS ---------------- */
-
-  const width = 700;
-  const barAreaHeight = 110;
-  const baseY = 130;
-
-
+  const [tooltip, setTooltip] = useState(null);
 
   return (
-    <div>
-      {/* ---------- HEADER ---------- */}
-      <div style={styles.header}>
-        {/* LEGEND */}
-        <div style={styles.legend}>
-          {Object.entries(projects).map(([key, p]) => (
-            <div key={key} style={styles.legendItem}>
-              <span
-                style={{
-                  ...styles.legendDot,
-                  background: p.color,
-                }}
-              />
-              {p.label}
-            </div>
-          ))}
-        </div>
-
-        {/* FILTER */}
-        <select
-          value={selectedProject}
-          onChange={(e) => setSelectedProject(e.target.value)}
-          style={styles.select}
+    <div style={styles.wrapper}>
+      {/* TOOLTIP */}
+      {tooltip && (
+        <div
+          style={{
+            ...styles.tooltip,
+            left: tooltip.x + 12,
+            top: tooltip.y + 12,
+          }}
         >
-          <option value="All">All Projects</option>
-          {Object.keys(projects).map(p => (
-            <option key={p} value={p}>
-              {projects[p].label}
-            </option>
-          ))}
-        </select>
-      </div>
+          <strong>{tooltip.day}</strong>
+          <div>Completed: {tooltip.completed}</div>
+          <div>Today: {tooltip.today}</div>
+          <div>Total: {tooltip.today}</div>
+        </div>
+      )}
 
-      {/* ---------- GRAPH ---------- */}
       <div style={styles.graphBox}>
-        <svg viewBox={`0 0 ${width} 200`} width="100%" height="200">
+        <svg viewBox="0 0 620 160" width="100%" height="160">
+          {normalized.map((d, i) => {
+            const slot = 620 / normalized.length;
+            const barWidth = slot * 0.78;
+            const x = i * slot + (slot - barWidth) / 2;
 
-          {data.map((d, i) => {
-            const slotWidth = width / data.length;
-            
-            const barWidth = slotWidth * 0.42;
+            const todayHeight = (d.today / maxToday) * 90;
+            const completedHeight =
+              (d.completed / d.today) * todayHeight;
 
-            const x = i * slotWidth + (slotWidth - barWidth) / 2;
-
-            let currentY = baseY;
-
-            const entries =
-              selectedProject === "All"
-                ? Object.entries(d.projects)
-                : [[selectedProject, d.projects[selectedProject]]];
+            const baseY = 125;
 
             return (
-              <g key={d.day}>
-                {/* STACKED BARS */}
-                {entries.map(([projectKey, value]) => {
-                  const h = (value / max) * barAreaHeight;
-                  currentY -= h;
+              <g
+                key={d.day}
+                onMouseMove={e =>
+                  setTooltip({
+                    ...d,
+                    x: e.clientX,
+                    y: e.clientY,
+                  })
+                }
+                onMouseLeave={() => setTooltip(null)}
+              >
+                {/* TODAY (light, total) */}
+                <rect
+                  x={x}
+                  y={baseY - todayHeight}
+                  width={barWidth}
+                  height={todayHeight}
+                  rx="7"
+                  fill="#ffd8d8"
+                />
 
-                  return (
-                    <rect
-                      key={projectKey}
-                      x={x}
-                      y={currentY}
-                      width={barWidth}
-                      height={h}
-                      rx="2"
-                      fill={projects[projectKey].color}
-                    />
-                  );
-                })}
+                {/* COMPLETED (dark, inside today) */}
+                <rect
+                  x={x}
+                  y={baseY - completedHeight}
+                  width={barWidth}
+                  height={completedHeight}
+                  rx="7"
+                  fill="#e88989"
+                />
 
                 {/* DAY LABEL */}
                 <text
                   x={x + barWidth / 2}
-                  y={170}
+                  y={148}
                   textAnchor="middle"
                   style={styles.dayLabel}
                 >
@@ -131,51 +102,38 @@ export default function WeeklyTaskGraph() {
   );
 }
 
-/* ---------------- STYLES ---------------- */
+/* ================= STYLES ================= */
 
 const styles = {
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-
-  legend: {
-    display: "flex",
-    gap: 14,
-  },
-
-  legendItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    fontSize: 13,
-    color: "#444",
-  },
-
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: "50%",
-  },
-
-  select: {
-    padding: "6px 10px",
-    borderRadius: 6,
-    border: "1px solid #ccc",
-    fontSize: 13,
+  wrapper: {
+    position: "relative",
   },
 
   graphBox: {
     background: "#f6f6f6",
-    borderRadius: 12,
-    padding: "2px",
+    borderRadius: 14,
+    height: 260,
+    padding: 16,
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "center",
   },
 
-
   dayLabel: {
-    fontSize: 12,
-    fill: "#8a8a8a",
+    fontSize: 13,
+    fontWeight: 600,
+    fill: "#6f6f6f",
+  },
+
+  tooltip: {
+    position: "fixed",
+    background: "#fff",
+    border: "1px solid #e5e5e5",
+    borderRadius: 8,
+    padding: "10px 12px",
+    fontSize: 13,
+    boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+    pointerEvents: "none",
+    zIndex: 9999,
   },
 };
