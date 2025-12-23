@@ -10,6 +10,7 @@ import Tasks from "./pages/Tasks";
 import Timesheets from "./pages/Timesheets";
 import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
+import Notes from "./pages/Notes"
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path="/timesheets" element={<Timesheets />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/notes" element={<Notes />} />
       </Routes>
     </Router>
   );

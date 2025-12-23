@@ -1,5 +1,5 @@
 import React from "react";
-import { FaSignOutAlt, FaStickyNote } from "react-icons/fa";
+import { StickyNote, LogOut} from 'lucide-react';
 import { useNavigate, useLocation } from "react-router-dom";
 
 import DashboardIcon from "../assets/icons/dashboard.svg";
@@ -9,6 +9,7 @@ import TasksIcon from "../assets/icons/tasks.svg";
 import TimesheetsIcon from "../assets/icons/timesheets.svg";
 import analyticsIcon from "../assets/icons/analytics.svg";
 import reportsicon from "../assets/icons/reports.svg";
+
 
 
 const Sidebar = () => {
@@ -23,6 +24,7 @@ const Sidebar = () => {
     { name: "Timesheets", path: "/timesheets", icon: TimesheetsIcon },
     { name: "Analytics", path: "/analytics", icon: analyticsIcon },
     { name: "Reports", path: "/reports", icon: reportsicon },
+    
   ];
 
   const handleSignOut = () => {
@@ -30,6 +32,7 @@ const Sidebar = () => {
     localStorage.removeItem("userRole");
     navigate("/login");
   };
+const isNotesActive = location.pathname === "/notes";
 
   return (
     <aside style={styles.sidebar}>
@@ -70,12 +73,30 @@ const Sidebar = () => {
 
       {/* BOTTOM */}
       <div style={styles.bottomSection}>
-        <button style={styles.bottomButton}>
-          <FaStickyNote /> Notes
+        <button
+          style={{
+            ...styles.bottomButton,
+            ...(isNotesActive ? styles.activeButton : {}),
+          }}
+          onClick={() => navigate("/notes")}
+        >
+          <StickyNote
+            size={20}
+            strokeWidth={2}
+            style={{
+              opacity: 0.85,
+              filter: isNotesActive
+                ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
+                : "invert(0%) brightness(0%)",
+            }}
+          />
+          Notes
         </button>
 
+
         <button style={styles.bottomButton} onClick={handleSignOut}>
-          <FaSignOutAlt /> Sign Out
+          <LogOut size={20} strokeWidth={2} style={{ opacity: 0.85 }} /> 
+          Sign Out
         </button>
       </div>
     </aside>
