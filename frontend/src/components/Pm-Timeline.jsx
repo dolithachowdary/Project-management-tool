@@ -1,195 +1,217 @@
 import React from "react";
 
-export default function PMTimeline() {
-  const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+export default function TimesheetTimeline() {
+  const hours = [
+    "10 AM","11 AM","12 PM","1 PM","2 PM","3 PM","4 PM","5 PM","6 PM"
+  ];
 
-  const employees = [
+  const members = [
     {
       name: "Hank Williams",
+      meta: "3 tasks · 35 hours",
       tasks: [
-        { title: "Contact customers with failed payments", start: "10:00", end: "12:00", color: "#FFE5B4" },
-        { title: "Task detail modal", start: "13:00", end: "15:00", color: "#FFD2D2" }
+        { title: "Contact customers with failed payments", start: "10:00", end: "12:00", color: "#F7E3B1" },
+        { title: "Dashboard: concept", start: "13:00", end: "17:00", color: "#CDEED8" }
       ]
     },
     {
       name: "Hanna Rodrigues",
+      meta: "3 tasks · 35 hours",
       tasks: [
-        { title: "Dashboard: concept", start: "11:00", end: "15:00", color: "#C7F5D7" }
+        { title: "Task detail modal", start: "12:00", end: "15:00", color: "#F3C6C6" }
       ]
     },
     {
       name: "Mitchel Fleen",
+      meta: "3 tasks · 35 hours",
       tasks: [
-        { title: "Reporting: Visual dashboard", start: "10:00", end: "18:00", color: "#D5E4FF" }
+        { title: "Reporting: Visual dashboard", start: "10:00", end: "18:00", color: "#D9E5F7" }
+      ]
+    },
+    {
+      name: "Joanna Salem",
+      meta: "2 tasks · 32 hours",
+      tasks: [
+        { title: "Task detail modal", start: "12:00", end: "16:00", color: "#F3C6C6" }
+      ]
+    },
+    {
+      name: "Mandy Harley",
+      meta: "3 tasks · 35 hours",
+      tasks: [
+        { title: "Contact customers", start: "10:00", end: "14:00", color: "#F7E3B1" },
+        { title: "Dashboard: concept", start: "14:00", end: "18:00", color: "#CDEED8" }
       ]
     }
   ];
 
-  // Convert HH:MM → minutes
-  const toMinutes = (t) => {
-    const [h, m] = t.split(":").map(Number);
+  const toMinutes = (time) => {
+    const [h, m] = time.split(":").map(Number);
     return h * 60 + m;
   };
 
-  const startMinutes = toMinutes("10:00");
-  const endMinutes = toMinutes("18:00");
-  const totalMinutes = endMinutes - startMinutes; // 480 minutes
+  const startDay = toMinutes("10:00");
+  const endDay = toMinutes("18:00");
+  const totalMinutes = endDay - startDay;
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.container}>
 
-      {/* TOP HOURS */}
-      <div style={styles.hoursRow}>
-        <div style={styles.leftSpacer}></div>
-
-        <div style={styles.hoursGrid}>
-          {hours.map((h) => (
-            <div key={h} style={styles.hourCell}>{h}</div>
+      {/* HOURS HEADER */}
+      <div style={styles.header}>
+        <div style={styles.memberHeader}>Members</div>
+        <div style={styles.hours}>
+          {hours.map(h => (
+            <div key={h} style={styles.hour}>{h}</div>
           ))}
         </div>
       </div>
 
-      {/* MAIN GRID */}
-      <div style={styles.mainSection}>
+      {/* BODY */}
+      <div style={styles.body}>
 
-        {/* LEFT EMPLOYEES */}
-        <div style={styles.employeeColumn}>
-          {employees.map((emp, idx) => (
-            <div key={idx} style={styles.employeeRow}>
-              <span style={styles.employeeName}>{emp.name}</span>
+        {/* MEMBERS COLUMN */}
+        <div style={styles.membersCol}>
+          {members.map((m, i) => (
+            <div key={i} style={styles.memberRow}>
+              <div style={styles.memberName}>{m.name}</div>
+              <div style={styles.memberMeta}>{m.meta}</div>
             </div>
           ))}
         </div>
 
-        {/* RIGHT GANTT AREA */}
-        <div style={styles.chartArea}>
+        {/* TIMELINE */}
+        <div style={styles.timeline}>
 
-          {/* BACKGROUND GRID LINES */}
-          <div style={styles.verticalLines}>
+          {/* GRID */}
+          <div style={styles.grid}>
             {hours.map((_, i) => (
-              <div key={i} style={styles.vLine}></div>
+              <div key={i} style={styles.gridLine} />
             ))}
           </div>
 
-          {/* TASK BLOCKS */}
-          {employees.map((emp, rowIndex) =>
-            emp.tasks.map((task, i) => {
-              const start = toMinutes(task.start) - startMinutes;
-              const end = toMinutes(task.end) - startMinutes;
+          {/* ROWS */}
+          {members.map((member, rowIndex) => (
+            <div key={rowIndex} style={styles.timelineRow}>
+              {member.tasks.map((task, i) => {
+                const start = toMinutes(task.start) - startDay;
+                const end = toMinutes(task.end) - startDay;
 
-              const left = (start / totalMinutes) * 100;
-              const width = (end - start) / totalMinutes * 100;
-
-              return (
-                <div
-                  key={i}
-                  style={{
-                    ...styles.taskBlock,
-                    background: task.color,
-                    top: rowIndex * 70 + 20,       // center vertically
-                    left: `${left}%`,
-                    width: `${width}%`,
-                  }}
-                >
-                  <div style={styles.taskTitle}>{task.title}</div>
-                  <div style={styles.taskTime}>{task.start} - {task.end}</div>
-                </div>
-              );
-            })
-          )}
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      ...styles.task,
+                      background: task.color,
+                      left: `${(start / totalMinutes) * 100}%`,
+                      width: `${((end - start) / totalMinutes) * 100}%`
+                    }}
+                  >
+                    {task.title}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
 
         </div>
       </div>
-
     </div>
   );
 }
 
-
-/* ----------------------------------------------------------
-   STYLES – Matches the PDF EXACTLY
----------------------------------------------------------- */
+/* ================= STYLES ================= */
 
 const styles = {
-  wrapper: {
+  container: {
     background: "#fff",
-    borderRadius: 12,
     border: "1px solid #ddd",
-    padding: 20,
-    width: "100%"
+    borderRadius: 12,
+    padding: 16
   },
 
-  /* HOURS ROW (TOP) */
-  hoursRow: { display: "flex", marginBottom: 10 },
-  leftSpacer: { width: 160 },
-  hoursGrid: {
+  header: {
+    display: "flex",
+    marginBottom: 10
+  },
+
+  memberHeader: {
+    width: 220,
+    fontWeight: 600,
+    fontSize: 14
+  },
+
+  hours: {
     flex: 1,
     display: "grid",
     gridTemplateColumns: "repeat(9, 1fr)"
   },
-  hourCell: {
+
+  hour: {
     textAlign: "center",
-    fontSize: 14,
-    fontWeight: 500,
-    paddingBottom: 4,
-    color: "#444"
-  },
-
-  /* MAIN */
-  mainSection: { display: "flex", position: "relative" },
-
-  /* EMPLOYEES LIST */
-  employeeColumn: { width: 160 },
-  employeeRow: {
-    height: 70,
-    borderBottom: "1px solid #e6e6e6",
-    display: "flex",
-    alignItems: "center"
-  },
-  employeeName: {
-    fontSize: 14,
-    fontWeight: 600
-  },
-
-  /* CHART AREA */
-  chartArea: {
-    flex: 1,
-    position: "relative",
-  },
-
-  /* GRID LINES */
-  verticalLines: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    width: "100%",
-    display: "grid",
-    gridTemplateColumns: "repeat(9, 1fr)",
-    zIndex: 0,
-  },
-  vLine: {
-    borderRight: "1px solid #d0d0d0" // darker as requested
-  },
-
-  /* TASK BLOCKS */
-  taskBlock: {
-    position: "absolute",
-    height: 50,
-    borderRadius: 12,
-    padding: "6px 12px",
     fontSize: 13,
+    color: "#555"
+  },
+
+  body: {
+    display: "flex"
+  },
+
+  membersCol: {
+    width: 220
+  },
+
+  memberRow: {
+    height: 72,
+    borderBottom: "1px solid #eee",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-    zIndex: 3
+    justifyContent: "center"
   },
-  taskTitle: {
+
+  memberName: {
     fontWeight: 600,
-    marginBottom: 2
+    fontSize: 14
   },
-  taskTime: {
+
+  memberMeta: {
     fontSize: 12,
-    color: "#555"
+    color: "#777"
+  },
+
+  timeline: {
+    flex: 1,
+    position: "relative"
+  },
+
+  grid: {
+    position: "absolute",
+    inset: 0,
+    display: "grid",
+    gridTemplateColumns: "repeat(9, 1fr)"
+  },
+
+  gridLine: {
+    borderRight: "1px solid #e0e0e0"
+  },
+
+  timelineRow: {
+    position: "relative",
+    height: 72,
+    borderBottom: "1px solid #eee"
+  },
+
+  task: {
+    position: "absolute",
+    top: 14,
+    height: 44,
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontSize: 13,
+    fontWeight: 500,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
   }
 };
