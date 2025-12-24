@@ -36,8 +36,8 @@ export default function WeeklyTaskGraph() {
           }}
         >
           <strong>{tooltip.day}</strong>
-          <div>Completed: {tooltip.completed}</div>
           <div>Total Tasks: {tooltip.today}</div>
+          <div>Completed: {tooltip.completed}</div>         
         </div>
       )}
 
@@ -62,17 +62,17 @@ export default function WeeklyTaskGraph() {
 
       {/* GRAPH */}
       <div style={styles.graphBox}>
-        <svg viewBox="0 0 620 160" width="100%" height="230">
+        <svg viewBox="0 0 620 90" width="100%" height="210">
           {normalized.map((d, i) => {
             const slot = 620 / normalized.length;
-            const barWidth = slot * 0.7;
+            const barWidth = slot * 0.6;
             const x = i * slot + (slot - barWidth) / 2;
 
-            const todayHeight = (d.today / maxToday) * 230;
+            const todayHeight = (d.today / maxToday) * 210;
             const completedHeight =
               (d.completed / d.today) * todayHeight;
 
-            const baseY = 125;
+            const baseY = 130;
 
             return (
               <g

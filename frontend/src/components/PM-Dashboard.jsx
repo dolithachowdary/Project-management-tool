@@ -112,7 +112,6 @@ export default function PMDashboard() {
               <RecentActivity />
             </div>
           </div>
-
           <h3 style={styles.sectionTitle}>Active Projects</h3>
           <div style={styles.cardGrid}>
             {activeProjects.map(card => (
@@ -177,15 +176,15 @@ const styles = {
   graphRow: {
     display: "grid",
     gridTemplateColumns: "2.2fr 1.3fr",   // 🔥 zoom-safe
-    gap: 20,
-    marginBottom: 24,
+    gap: 15,
+    marginBottom: 18,
   },
 
   graphWrapper: {
     background: "#fff",
     borderRadius: 12,
     border: "1px solid #e5e5e5",
-    padding: 20,
+    padding: 24,
     height: 360,                         // 🔥 locks layout
     display: "flex",
     flexDirection: "column",
@@ -196,6 +195,8 @@ const styles = {
     borderRadius: 12,
     border: "1px solid #e5e5e5",
     padding: 16,
+    flex: 1, 
+    display: "flex",
   },
 
   sectionTitle: {
