@@ -112,7 +112,7 @@ const Projects = ({ role = "Project Manager" }) => {
         <Header role={role} />
 
         <div style={styles.pageInner}>
-          <h2 style={styles.pageTitle}>Projects</h2>
+          
 
           {Object.entries(projectsByStatus).map(([section, projects]) => (
             <section key={section} style={styles.section}>
@@ -154,7 +154,7 @@ const styles = {
   },
 
   pageInner: {
-    padding: 30,
+    padding: 20,
   },
 
   pageTitle: {
@@ -164,11 +164,11 @@ const styles = {
   },
 
   section: {
-    marginBottom: 40,
+    marginBottom: 20,
   },
 
   sectionTitle: {
-    marginBottom: 15,
+    marginBottom: 8,
     fontWeight: 600,
     fontSize: 18,
   },
