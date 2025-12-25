@@ -6,7 +6,7 @@ export default function WeeklyTaskGraph() {
     { day: "Tue", today: 15, completed: 20 }, // inconsistent input
     { day: "Wed", today: 18, completed: 12 },
     { day: "Thu", today: 22, completed: 16 },
-    { day: "Fri", today: 30, completed: 25 },
+    { day: "Fri", today: 45, completed: 30 },
     { day: "Sat", today: 10, completed: 6 },
     { day: "Sun", today: 8, completed: 4 },
   ];
@@ -36,8 +36,8 @@ export default function WeeklyTaskGraph() {
           }}
         >
           <strong>{tooltip.day}</strong>
-          <div>Completed: {tooltip.completed}</div>
           <div>Total Tasks: {tooltip.today}</div>
+          <div>Completed: {tooltip.completed}</div>         
         </div>
       )}
 
@@ -62,17 +62,17 @@ export default function WeeklyTaskGraph() {
 
       {/* GRAPH */}
       <div style={styles.graphBox}>
-        <svg viewBox="0 0 620 160" width="100%" height="160">
+        <svg viewBox="0 0 620 90" width="100%" height="210">
           {normalized.map((d, i) => {
             const slot = 620 / normalized.length;
-            const barWidth = slot * 0.7;
+            const barWidth = slot * 0.6;
             const x = i * slot + (slot - barWidth) / 2;
 
-            const todayHeight = (d.today / maxToday) * 150;
+            const todayHeight = (d.today / maxToday) * 210;
             const completedHeight =
               (d.completed / d.today) * todayHeight;
 
-            const baseY = 125;
+            const baseY = 130;
 
             return (
               <g

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaBell } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import avatar from "../assets/icons/avatar.png";
+import { Search, Bell } from "lucide-react";
+
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -43,15 +44,27 @@ const Header = () => {
     <header style={styles.header}>
       <div style={styles.left}>
         <h2 style={styles.title}>{getPageTitle()}</h2>
-        <input type="text" placeholder="Search..." style={styles.searchBox} />
+        <div style={styles.searchWrapper}>
+          <Search size={16} style={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="Search..."
+            style={styles.searchBox}
+          />
+        </div>
+
       </div>
 
       <div style={styles.right}>
-        <div ref={dropdownRef} style={{ position: "relative" }}>
-          <FaBell
-            style={{ fontSize: 18, color: "#c62828", cursor: "pointer" }}
+        <div ref={dropdownRef} style={styles.bellWrapper}>
+          <Bell
+            size={24}
+            style={styles.bellIcon}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           />
+
+          {/* Notification count */}
+          <span style={styles.notificationBadge}>2</span>
 
           {isDropdownOpen && (
             <div style={styles.dropdown}>
@@ -59,6 +72,7 @@ const Header = () => {
             </div>
           )}
         </div>
+
 
         <div style={styles.profileContainer}>
           <img src={avatar} alt="Profile" style={styles.profileImg} />
@@ -99,11 +113,27 @@ const styles = {
   },
 
   searchBox: {
-    padding: "6px 10px",
+    width: "250px",
+    padding: "6px 10px 6px 32px", // space for icon
     border: "1px solid #ccc",
-    borderRadius: "4px",
+    borderRadius: "6px",
     fontSize: "14px",
   },
+
+  searchWrapper: {
+    position: "relative",
+    marginLeft: "610px",   // ⬅ moves search slightly right
+    
+  },
+
+  searchIcon: {
+    position: "absolute",
+    left: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    color: "#888",
+  },
+
 
   right: {
     display: "flex",
@@ -151,6 +181,38 @@ const styles = {
     fontSize: "14px",
     color: "#555",
   },
+  bellWrapper: {
+    position: "relative",
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    backgroundColor: "#f5f6fa",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+  },
+
+  bellIcon: {
+    color: "#888",
+  },
+
+  notificationBadge: {
+    position: "absolute",
+    top: "2px",
+    right: "2px",
+    backgroundColor: "#C62828",
+    color: "#fff",
+    borderRadius: "50%",
+    width: "15px",
+    height: "15px",
+    fontSize: "11px",
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
 };
 
 export default Header;
