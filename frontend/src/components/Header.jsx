@@ -44,6 +44,11 @@ const Header = () => {
     <header style={styles.header}>
       <div style={styles.left}>
         <h2 style={styles.title}>{getPageTitle()}</h2>
+        
+
+      </div>
+
+      <div style={styles.right}>
         <div style={styles.searchWrapper}>
           <Search size={16} style={styles.searchIcon} />
           <input
@@ -52,10 +57,6 @@ const Header = () => {
             style={styles.searchBox}
           />
         </div>
-
-      </div>
-
-      <div style={styles.right}>
         <div ref={dropdownRef} style={styles.bellWrapper}>
           <Bell
             size={24}
@@ -122,7 +123,7 @@ const styles = {
 
   searchWrapper: {
     position: "relative",
-    marginLeft: "610px",   // ⬅ moves search slightly right
+    //marginRight: "210px",   // ⬅ moves search slightly right
     
   },
 
