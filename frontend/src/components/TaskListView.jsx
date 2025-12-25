@@ -11,7 +11,7 @@ export default function TaskListView({
   formatShortDate, 
   formatFullDate 
 }) {
-  // Remove hoveredRow since it's not used
+  const [hoveredRow, setHoveredRow] = useState(null); // Restored hoveredRow
   const [hoveredAvatar, setHoveredAvatar] = useState({ id: null, type: null });
   const [hoveredDate, setHoveredDate] = useState({ id: null, field: null });
 
@@ -52,32 +52,31 @@ export default function TaskListView({
       backgroundColor: "#fff",
       borderRadius: 12,
       boxShadow: "0 4px 14px rgba(15,23,42,0.05)",
-      padding: "20px",
+      padding: "12px 14px",
     },
     table: { 
       width: "100%", 
-      borderCollapse: "collapse",
+      borderCollapse: "separate", 
+      borderSpacing: "0 10px" // This creates spacing between rows
     },
     th: {
       textAlign: "left",
-      padding: "16px 12px",
+      padding: "10px 12px",
       color: "#111827",
-      fontWeight: 600,
+      fontWeight: 700,
       fontSize: 13,
-      borderBottom: "2px solid #EEF2F7",
+      borderBottom: "1px solid #EEF2F7",
       background: "transparent",
       whiteSpace: "nowrap",
     },
     tableRow: {
       background: "#fff",
+      borderRadius: 10,
+      boxShadow: "0 4px 8px rgba(15,23,42,0.03)",
       transition: "all 180ms ease",
-      borderBottom: "1px solid #F3F4F6",
-      ":hover": {
-        backgroundColor: "#F9FAFB",
-      }
     },
     td: {
-      padding: "16px 12px",
+      padding: "10px 12px",
       color: "#374151",
       fontSize: 14,
       verticalAlign: "middle",
@@ -256,11 +255,18 @@ export default function TaskListView({
             const priorityColors = getPriorityColor(task.priority);
             const createdByUser = userData[task.createdBy] || { name: task.createdBy, role: "User", color: "#E6E6E6" };
             const assignedToUser = userData[task.assignedTo] || { name: task.assignedTo, role: "User", color: "#E6E6E6" };
+            const isHovered = hoveredRow === task.id; // Check if this row is hovered
             
             return React.createElement("tr", {
               key: task.id,
-              style: styles.tableRow,
+              style: {
+                ...styles.tableRow,
+                boxShadow: isHovered ? "0 6px 18px rgba(15,23,42,0.08)" : "0 4px 8px rgba(15,23,42,0.03)",
+                transform: isHovered ? "translateY(-4px)" : "translateY(0)",
+              },
+              onMouseEnter: () => setHoveredRow(task.id), // Set hovered row
               onMouseLeave: () => {
+                setHoveredRow(null);
                 setHoveredAvatar({ id: null, type: null });
                 setHoveredDate({ id: null, field: null });
               }
