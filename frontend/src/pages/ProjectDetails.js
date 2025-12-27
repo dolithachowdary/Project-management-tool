@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import ProjectHeader from "../components/ProjectHeader";
+import Modules from "../components/Modules";
+import RecentActivity from "../components/RecentActivity";
 
 /* ================= MOCK DATA ================= */
 
@@ -47,6 +49,19 @@ const ProjectDetails = ({ role = "Project Manager" }) => {
 
           {/* TOP OVERVIEW */}
           <ProjectHeader {...project} />
+
+          {/* MODULES + ACTIVITY GRID */}
+          <div style={styles.contentWrapper}>
+            {/* LEFT : MODULES */}
+            <div style={styles.modulesSection}>
+              <Modules />
+            </div>
+
+            {/* RIGHT : RECENT ACTIVITY */}
+            <div style={styles.activitySection}>
+              <RecentActivity />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -63,18 +78,42 @@ const styles = {
     height: "100vh",
     background: "#f9f9f9",
   },
+
   mainContent: {
     flex: 1,
     overflowY: "auto",
   },
+
   pageInner: {
-    padding: 20,
+    padding: "20px 28px",
+    maxWidth: "1400px",
   },
+
   backBtn: {
     background: "none",
     border: "none",
     color: "#c62828",
     cursor: "pointer",
     marginBottom: 16,
+    fontSize: 14,
+  },
+
+  /* 🔥 THIS FIXES SINGLE COLUMN ISSUE */
+  contentWrapper: {
+    display: "grid",
+    gridTemplateColumns: "3fr 1.2fr", // left wide, right narrow
+    gap: 24,
+    marginTop: 24,
+    alignItems: "start",
+  },
+
+  modulesSection: {
+    width: "100%",
+  },
+
+  activitySection: {
+    width: "100%",
+    position: "sticky",
+    top: 90,
   },
 };
