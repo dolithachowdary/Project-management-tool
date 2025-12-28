@@ -1,54 +1,46 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import api from "../api/axios";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    if (!email || !password) {
-      alert("Please enter your credentials");
-      return;
-    }
+  if (!email || !password) {
+    alert("Please enter your credentials");
+    return;
+  }
 
-    // 🔹 Dummy users
-    const dummyUsers = [
-      {
-        email: "pm@redsage.com",
-        password: "pm123",
-        name: "Project Manager",
-        role: "Project Manager",
-      },
-      {
-        email: "dev@redsage.com",
-        password: "dev123",
-        name: "Developer User",
-        role: "Developer",
-      },
-    ];
+  try {
+    const res = await api.post("/auth/login", {
+      email,
+      password,
+    });
 
-    // 🔍 Validate credentials
-    const foundUser = dummyUsers.find(
-      (user) => user.email === email && user.password === password
-    );
+    const { user, accessToken, refreshToken } = res.data;
 
-    if (foundUser) {
-      const userData = {
-        name: foundUser.name,
-        email: foundUser.email,
-        role: foundUser.role,
-        token: "dummy-token",
-      };
-      localStorage.setItem("userData", JSON.stringify(userData));
-      navigate("/dashboard");
-    } else {
-      alert("Invalid credentials. Please try again.");
-    }
-  };
+    const userData = {
+      id: user.id,
+      name: user.full_name,
+      email: user.email,
+      role: user.role,
+      accessToken,
+      refreshToken,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(userData));
+
+    navigate("/dashboard");
+  } catch (err) {
+    alert(err.response?.data?.error || "Login failed");
+  }
+};
+
 
   return (
     <div
