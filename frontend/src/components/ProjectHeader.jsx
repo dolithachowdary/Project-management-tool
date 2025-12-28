@@ -67,26 +67,42 @@ const ProjectHeader = ({
         <div style={styles.rightCards}>
           {/* SPRINT */}
           <div style={styles.sprintCard}>
-            <ClockFading size={16} />
-            <div style={styles.sprintHeader}>Sprint 5</div>
-            <div style={styles.sprintDates}>{sprintSummary}</div>
-            <div style={styles.sprintBar}>
-              <div style={{ ...styles.sprintFill, width: "60%" }} />
+            <div style={styles.iconWrapBlue}>
+              <ClockFading size={16} />
+            </div>
+
+            <div style={styles.sprintContent}>
+              <div style={styles.sprintHeader}>Sprint 5</div>
+              <div style={styles.sprintDates}>{sprintSummary}</div>
+
+              <div style={styles.sprintBar}>
+                <div style={{ ...styles.sprintFill, width: "60%" }} />
+              </div>
             </div>
           </div>
 
           {/* MODULES */}
           <div style={styles.statCardPurple}>
-            <Box size={16} />
-            <strong>Modules</strong>
-            <span>{modulesSummary}</span>
+            <div style={styles.iconWrapPurple}>
+              <Box size={16} />
+            </div>
+
+            <div>
+              <div style={styles.cardTitle}>Modules</div>
+              <div style={styles.cardSub}>{modulesSummary}</div>
+            </div>
           </div>
 
           {/* TASKS */}
           <div style={styles.statCardOrange}>
-            <ClipboardCheck size={16} />
-            <strong>Tasks</strong>
-            <span>{tasksSummary}</span>
+            <div style={styles.iconWrapOrange}>
+              <ClipboardCheck size={16} />
+            </div>
+
+            <div>
+              <div style={styles.cardTitle}>Tasks</div>
+              <div style={styles.cardSub}>{tasksSummary}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -102,7 +118,7 @@ const styles = {
     alignItems: "center",
     background: "#fff",
     borderRadius: 16,
-    padding: "22px 26px",
+    padding: "18px 26px",
     gap: 32,
     boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
   },
@@ -114,8 +130,9 @@ const styles = {
   },
 
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 600,
+    marginTop: 3,
     marginBottom: 6,
   },
 
@@ -125,7 +142,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: 6,
-    marginBottom: 18,
+    marginBottom: 10,
   },
 
   progressRow: {

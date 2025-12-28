@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Card from "../components/Card";
+import AddProject from "../components/AddProject"; 
 import { useNavigate } from "react-router-dom";
 
 const Projects = ({ role = "Project Manager" }) => {
   const navigate = useNavigate();
+  const [showAddProject, setShowAddProject] = useState(false); 
 
-  /* ---------------- MOCK DATA (BACKEND READY) ---------------- */
+  /* ---------------- MOCK DATA ---------------- */
 
   const allMembers = [
     { id: 1, name: "Deepak Chandra", color: "#f6c1cc" },
@@ -25,7 +27,6 @@ const Projects = ({ role = "Project Manager" }) => {
         startDate: "January 10, 2024",
         endDate: "July 30, 2024",
         members: [allMembers[0], allMembers[1]],
-        availableMembers: allMembers,
         timeLeft: "2 Days Left",
         color: "#d47b4a",
       },
@@ -36,7 +37,6 @@ const Projects = ({ role = "Project Manager" }) => {
         startDate: "January 10, 2024",
         endDate: "July 30, 2024",
         members: [allMembers[2]],
-        availableMembers: allMembers,
         timeLeft: "2 Weeks Left",
         color: "#cddc39",
       },
@@ -47,7 +47,6 @@ const Projects = ({ role = "Project Manager" }) => {
         startDate: "January 10, 2024",
         endDate: "July 30, 2024",
         members: [allMembers[1], allMembers[3]],
-        availableMembers: allMembers,
         timeLeft: "1 Month Left",
         color: "#1e88e5",
       },
@@ -61,18 +60,6 @@ const Projects = ({ role = "Project Manager" }) => {
         startDate: "March 01, 2024",
         endDate: "August 15, 2024",
         members: [allMembers[0]],
-        availableMembers: allMembers,
-        timeLeft: "On Hold",
-        color: "#fbc02d",
-      },
-      {
-        id: 5,
-        title: "Legacy Migration",
-        progress: 30,
-        startDate: "February 10, 2024",
-        endDate: "September 30, 2024",
-        members: [allMembers[2]],
-        availableMembers: allMembers,
         timeLeft: "On Hold",
         color: "#fbc02d",
       },
@@ -80,29 +67,22 @@ const Projects = ({ role = "Project Manager" }) => {
 
     "Completed Projects": [
       {
-        id: 6,
+        id: 5,
         title: "Automation System",
         progress: 100,
         startDate: "January 2024",
         endDate: "June 2024",
         members: [allMembers[1]],
-        availableMembers: allMembers,
-        timeLeft: "Completed",
-        color: "#2e7d32",
-      },
-      {
-        id: 7,
-        title: "Marketing Dashboard",
-        progress: 100,
-        startDate: "February 2024",
-        endDate: "May 2024",
-        members: [allMembers[3]],
-        availableMembers: allMembers,
         timeLeft: "Completed",
         color: "#2e7d32",
       },
     ],
   };
+
+  /* --------- COLORS ALREADY USED (FOR MODAL) --------- */
+  const usedColors = Object.values(projectsByStatus)
+    .flat()
+    .map((p) => p.color);
 
   return (
     <div style={styles.pageContainer}>
@@ -112,14 +92,15 @@ const Projects = ({ role = "Project Manager" }) => {
         <Header role={role} />
 
         <div style={styles.pageInner}>
-          
 
+
+          {/* PROJECT SECTIONS */}
           {Object.entries(projectsByStatus).map(([section, projects]) => (
             <section key={section} style={styles.section}>
               <h3 style={styles.sectionTitle}>{section}</h3>
 
               <div style={styles.cardGrid}>
-                {projects.map(project => (
+                {projects.map((project) => (
                   <div
                     key={project.id}
                     style={styles.cardWrapper}
@@ -133,6 +114,22 @@ const Projects = ({ role = "Project Manager" }) => {
           ))}
         </div>
       </div>
+
+      {/* ADD PROJECT MODAL */}
+      <AddProject
+        isOpen={showAddProject}
+        onClose={() => setShowAddProject(false)}
+        members={allMembers}
+        usedColors={usedColors}
+      />
+      {/* FLOATING ADD PROJECT BUTTON */}
+      <button
+        style={styles.fab}
+        onClick={() => setShowAddProject(true)}
+      >
+        + Add Project
+      </button>
+
     </div>
   );
 };
@@ -157,14 +154,36 @@ const styles = {
     padding: 20,
   },
 
+  pageHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
   pageTitle: {
-    fontSize: "1.5rem",
+    fontSize: "1.6rem",
     fontWeight: 600,
-    marginBottom: 25,
+  },
+
+  fab: {
+    position: "fixed",
+    bottom: 24,
+    right: 24,
+    padding: "14px 18px",
+    background: "#4F7DFF",
+    color: "#fff",
+    border: "none",
+    borderRadius: "999px",
+    fontSize: 15,
+    fontWeight: 500,
+    cursor: "pointer",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+    zIndex: 1001,
   },
 
   section: {
-    marginBottom: 20,
+    marginBottom: 25,
   },
 
   sectionTitle: {
