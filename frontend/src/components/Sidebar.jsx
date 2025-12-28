@@ -1,5 +1,5 @@
 import React from "react";
-import { StickyNote, LogOut} from 'lucide-react';
+import { StickyNote, LogOut } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import DashboardIcon from "../assets/icons/dashboard.svg";
@@ -10,29 +10,36 @@ import TimesheetsIcon from "../assets/icons/timesheets.svg";
 import analyticsIcon from "../assets/icons/analytics.svg";
 import reportsicon from "../assets/icons/reports.svg";
 
-
-
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const role = userData.role; // "Project Manager" | "Developer"
+
 
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: DashboardIcon },
     { name: "Projects", path: "/projects", icon: ProjectsIcon },
     { name: "Sprints", path: "/sprints", icon: SprintsIcon },
     { name: "Tasks", path: "/tasks", icon: TasksIcon },
-    { name: "Timesheets", path: "/timesheets", icon: TimesheetsIcon },
+
+    //  Hide Timesheets for DEV
+    ...(role === "Project Manager" || role === "Admin"
+      ? [{ name: "Timesheets", path: "/timesheets", icon: TimesheetsIcon }]
+      : []),
+
     { name: "Analytics", path: "/analytics", icon: analyticsIcon },
     { name: "Reports", path: "/reports", icon: reportsicon },
-    
   ];
 
   const handleSignOut = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userRole");
+    localStorage.removeItem("userData");
     navigate("/login");
   };
-const isNotesActive = location.pathname === "/notes";
+
+
+  const isNotesActive = location.pathname === "/notes";
 
   return (
     <aside style={styles.sidebar}>
@@ -45,6 +52,7 @@ const isNotesActive = location.pathname === "/notes";
         <nav style={styles.nav}>
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
+
             return (
               <button
                 key={item.name}
@@ -93,9 +101,8 @@ const isNotesActive = location.pathname === "/notes";
           Notes
         </button>
 
-
         <button style={styles.bottomButton} onClick={handleSignOut}>
-          <LogOut size={20} strokeWidth={2} style={{ opacity: 0.85 }} /> 
+          <LogOut size={20} strokeWidth={2} style={{ opacity: 0.85 }} />
           Sign Out
         </button>
       </div>
@@ -107,13 +114,13 @@ const styles = {
   sidebar: {
     width: "230px",
     height: "100vh",
-    overflow: "hidden",        // 🔒 NO SCROLL EVER
+    overflow: "hidden",
     backgroundColor: "#fff",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
     borderRight: "1px solid #e0e0e0",
-    flexShrink: 0,             // 🔒 never shrink
+    flexShrink: 0,
   },
 
   logoContainer: {
