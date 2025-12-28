@@ -31,7 +31,7 @@ function Dashboard() {
   /* ---------- TAB CONTENT ---------- */
   const renderContent = () => {
     if (activeTab === "Overview") {
-      return role === "pm" || role === "Admin"
+      return role === "Project Manager" || role === "Admin"
         ? <PMDashboard />
         : <DevDashboard />;
     }

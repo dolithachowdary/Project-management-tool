@@ -1,74 +1,44 @@
-import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import ProjectHeader from "../components/ProjectHeader";
 import Modules from "../components/Modules";
-import RecentActivity from "../components/RecentActivity";
+import { getProjectById } from "../api/projects";
 
-/* ================= MOCK DATA ================= */
-
-const allMembers = [
-  { name: "Deepak Chandra", color: "#f6c1cc" },
-  { name: "Harsha Anand", color: "#dfe6d8" },
-];
-
-const projectDetails = {
-  1: {
-    title: "TourO Web Development",
-    progress: 70,
-    startDate: "January 10, 2024",
-    endDate: "July 30, 2024",
-    timeLeft: "2 Days Left",
-    members: allMembers,
-    modulesSummary: "4 active · 5 to do",
-    tasksSummary: "4 active · 11 total",
-  },
-};
-
-/* ================= COMPONENT ================= */
-
-const ProjectDetails = ({ role = "Project Manager" }) => {
+export default function ProjectDetails() {
   const { projectId } = useParams();
-  const navigate = useNavigate();
+  const [project, setProject] = useState(null);
 
-  const project = projectDetails[projectId];
-  if (!project) return <div>Project not found</div>;
+  useEffect(() => {
+    getProjectById(projectId).then((r) => setProject(r.data));
+  }, [projectId]);
+
+  if (!project) return null;
 
   return (
-    <div style={styles.pageContainer}>
+    <div style={{ display: "flex" }}>
       <Sidebar />
+      <div style={{ flex: 1 }}>
+        <Header />
 
-      <div style={styles.mainContent}>
-        <Header role={role} />
+        <div style={{ padding: 24 }}>
+          <ProjectHeader
+            title={project.name}
+            startDate={project.start_date}
+            endDate={project.end_date}
+            progress={0}
+            members={[]}
+            timeLeft={project.status}
+          />
 
-        <div style={styles.pageInner}>
-          <button onClick={() => navigate("/projects")} style={styles.backBtn}>
-            ← Back to Projects
-          </button>
-
-          {/* TOP OVERVIEW */}
-          <ProjectHeader {...project} />
-
-          {/* MODULES + ACTIVITY GRID */}
-          <div style={styles.contentWrapper}>
-            {/* LEFT : MODULES */}
-            <div style={styles.modulesSection}>
-              <Modules />
-            </div>
-
-            {/* RIGHT : RECENT ACTIVITY */}
-            <div style={styles.activitySection}>
-              <RecentActivity />
-            </div>
-          </div>
+          <Modules projectId={projectId} />
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default ProjectDetails;
 
 /* ================= STYLES ================= */
 

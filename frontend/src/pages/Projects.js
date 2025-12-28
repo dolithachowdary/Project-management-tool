@@ -1,112 +1,68 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Card from "../components/Card";
-import AddProject from "../components/AddProject"; 
+import AddProject from "../components/AddProject";
+import { getProjects } from "../api/projects";
 import { useNavigate } from "react-router-dom";
 
-const Projects = ({ role = "Project Manager" }) => {
+export default function Projects() {
   const navigate = useNavigate();
-  const [showAddProject, setShowAddProject] = useState(false); 
+  const [groups, setGroups] = useState({});
+  const [open, setOpen] = useState(false);
 
-  /* ---------------- MOCK DATA ---------------- */
+  const load = async () => {
+    const res = await getProjects();
 
-  const allMembers = [
-    { id: 1, name: "Deepak Chandra", color: "#f6c1cc" },
-    { id: 2, name: "Harsha Anand", color: "#dfe6d8" },
-    { id: 3, name: "Nikhil Kumar", color: "#d8edf6" },
-    { id: 4, name: "Varun Chaitanya", color: "#e0e7ff" },
-  ];
+    const grouped = res.data.reduce((acc, p) => {
+      const key =
+        p.status === "active"
+          ? "Active Projects"
+          : p.status === "on_hold"
+          ? "On Hold Projects"
+          : "Completed Projects";
 
-  const projectsByStatus = {
-    "Active Projects": [
-      {
-        id: 1,
-        title: "TourO Web Development",
-        progress: 70,
-        startDate: "January 10, 2024",
-        endDate: "July 30, 2024",
-        members: [allMembers[0], allMembers[1]],
-        timeLeft: "2 Days Left",
+      acc[key] = acc[key] || [];
+      acc[key].push({
+        id: p.id,
+        title: p.name,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        progress: 0,
+        members: [],
+        timeLeft: p.status.replace("_", " "),
         color: "#d47b4a",
-      },
-      {
-        id: 2,
-        title: "Dashboard Portal",
-        progress: 45,
-        startDate: "January 10, 2024",
-        endDate: "July 30, 2024",
-        members: [allMembers[2]],
-        timeLeft: "2 Weeks Left",
-        color: "#cddc39",
-      },
-      {
-        id: 3,
-        title: "Designing",
-        progress: 55,
-        startDate: "January 10, 2024",
-        endDate: "July 30, 2024",
-        members: [allMembers[1], allMembers[3]],
-        timeLeft: "1 Month Left",
-        color: "#1e88e5",
-      },
-    ],
+      });
+      return acc;
+    }, {});
 
-    "On Hold Projects": [
-      {
-        id: 4,
-        title: "Client Onboarding",
-        progress: 20,
-        startDate: "March 01, 2024",
-        endDate: "August 15, 2024",
-        members: [allMembers[0]],
-        timeLeft: "On Hold",
-        color: "#fbc02d",
-      },
-    ],
-
-    "Completed Projects": [
-      {
-        id: 5,
-        title: "Automation System",
-        progress: 100,
-        startDate: "January 2024",
-        endDate: "June 2024",
-        members: [allMembers[1]],
-        timeLeft: "Completed",
-        color: "#2e7d32",
-      },
-    ],
+    setGroups(grouped);
   };
 
-  /* --------- COLORS ALREADY USED (FOR MODAL) --------- */
-  const usedColors = Object.values(projectsByStatus)
-    .flat()
-    .map((p) => p.color);
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
-    <div style={styles.pageContainer}>
+    <div style={{ display: "flex", height: "100vh" }}>
       <Sidebar />
 
-      <div style={styles.mainContent}>
-        <Header role={role} />
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        <Header />
 
-        <div style={styles.pageInner}>
+        <div style={{ padding: 20 }}>
+          {Object.entries(groups).map(([section, projects]) => (
+            <section key={section} style={{ marginBottom: 25 }}>
+              <h3 style={{ marginBottom: 8 }}>{section}</h3>
 
-
-          {/* PROJECT SECTIONS */}
-          {Object.entries(projectsByStatus).map(([section, projects]) => (
-            <section key={section} style={styles.section}>
-              <h3 style={styles.sectionTitle}>{section}</h3>
-
-              <div style={styles.cardGrid}>
-                {projects.map((project) => (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+                {projects.map((p) => (
                   <div
-                    key={project.id}
-                    style={styles.cardWrapper}
-                    onClick={() => navigate(`/projects/${project.id}`)}
+                    key={p.id}
+                    style={{ minWidth: 280, maxWidth: 340, cursor: "pointer" }}
+                    onClick={() => navigate(`/projects/${p.id}`)}
                   >
-                    <Card {...project} />
+                    <Card {...p} />
                   </div>
                 ))}
               </div>
@@ -115,28 +71,34 @@ const Projects = ({ role = "Project Manager" }) => {
         </div>
       </div>
 
-      {/* ADD PROJECT MODAL */}
       <AddProject
-        isOpen={showAddProject}
-        onClose={() => setShowAddProject(false)}
-        members={allMembers}
-        usedColors={usedColors}
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        onCreated={load}
       />
-      {/* FLOATING ADD PROJECT BUTTON */}
+
       <button
-        style={styles.fab}
-        onClick={() => setShowAddProject(true)}
+        onClick={() => setOpen(true)}
+        style={{
+          position: "fixed",
+          right: 24,
+          bottom: 24,
+          padding: "14px 18px",
+          background: "#4F7DFF",
+          color: "#fff",
+          borderRadius: 999,
+          border: "none",
+          cursor: "pointer",
+        }}
       >
         + Add Project
       </button>
-
     </div>
   );
-};
+}
 
-export default Projects;
 
-/* ---------------- STYLES ---------------- */
+/* ---------------- STYLES (RESTORED) ---------------- */
 
 const styles = {
   pageContainer: {
@@ -152,34 +114,6 @@ const styles = {
 
   pageInner: {
     padding: 20,
-  },
-
-  pageHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-
-  pageTitle: {
-    fontSize: "1.6rem",
-    fontWeight: 600,
-  },
-
-  fab: {
-    position: "fixed",
-    bottom: 24,
-    right: 24,
-    padding: "14px 18px",
-    background: "#4F7DFF",
-    color: "#fff",
-    border: "none",
-    borderRadius: "999px",
-    fontSize: 15,
-    fontWeight: 500,
-    cursor: "pointer",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
-    zIndex: 1001,
   },
 
   section: {
@@ -203,5 +137,21 @@ const styles = {
     maxWidth: 340,
     minWidth: 280,
     cursor: "pointer",
+  },
+
+  fab: {
+    position: "fixed",
+    bottom: 24,
+    right: 24,
+    padding: "14px 18px",
+    background: "#4F7DFF",
+    color: "#fff",
+    border: "none",
+    borderRadius: "999px",
+    fontSize: 15,
+    fontWeight: 500,
+    cursor: "pointer",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+    zIndex: 1001,
   },
 };
