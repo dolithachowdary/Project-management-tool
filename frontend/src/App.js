@@ -27,7 +27,7 @@ function App() {
 
         {/* Projects */}
         <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/:projectId" element={<ProjectDetails />} />
+        <Route path="/projects/:id" element={<ProjectDetails />} />
 
         {/* Other pages */}
         <Route path="/sprints" element={<Sprints />} />
