@@ -3,102 +3,128 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Card from "../components/Card";
 import AddProject from "../components/AddProject";
-import { getProjects } from "../api/projects";
 import { useNavigate } from "react-router-dom";
+import { getProjects } from "../api/projects";
 
-export default function Projects() {
+const Projects = ({ role = "Project Manager" }) => {
   const navigate = useNavigate();
-  const [groups, setGroups] = useState({});
-  const [open, setOpen] = useState(false);
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [projects, setProjects] = useState([]);
 
-  const load = async () => {
-    const res = await getProjects();
-
-    const grouped = res.data.reduce((acc, p) => {
-      const key =
-        p.status === "active"
-          ? "Active Projects"
-          : p.status === "on_hold"
-          ? "On Hold Projects"
-          : "Completed Projects";
-
-      acc[key] = acc[key] || [];
-      acc[key].push({
-        id: p.id,
-        title: p.name,
-        startDate: p.start_date,
-        endDate: p.end_date,
-        progress: 0,
-        members: [],
-        timeLeft: p.status.replace("_", " "),
-        color: "#d47b4a",
-      });
-      return acc;
-    }, {});
-
-    setGroups(grouped);
-  };
+  /* ---------------- LOAD PROJECTS ---------------- */
 
   useEffect(() => {
-    load();
+    loadProjects();
   }, []);
 
+  const loadProjects = async () => {
+    const res = await getProjects();
+    setProjects(res.data);
+  };
+
+  /* ---------------- GROUP BY STATUS ---------------- */
+
+  const projectsByStatus = {
+    "Active Projects": projects.filter(p => p.status === "active"),
+    "On Hold Projects": projects.filter(p => p.status === "on_hold"),
+    "Completed Projects": projects.filter(p => p.status === "completed"),
+  };
+
+  /* ---------------- UTIL ---------------- */
+
+  const formatDate = (d) =>
+    d ? new Date(d).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }) : "—";
+
+  const getBadgeColor = (status) => {
+    if (status === "completed") return "#2e7d32";
+    if (status === "on_hold") return "#fbc02d";
+    return "#1e88e5";
+  };
+
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div style={styles.pageContainer}>
       <Sidebar />
 
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        <Header />
+      <div style={styles.mainContent}>
+        <Header role={role} />
 
-        <div style={{ padding: 20 }}>
-          {Object.entries(groups).map(([section, projects]) => (
-            <section key={section} style={{ marginBottom: 25 }}>
-              <h3 style={{ marginBottom: 8 }}>{section}</h3>
+        <div style={styles.pageInner}>
+          {/* PROJECT SECTIONS */}
+          {Object.entries(projectsByStatus).map(([section, list]) => (
+            list.length > 0 && (
+              <section key={section} style={styles.section}>
+                <h3 style={styles.sectionTitle}>{section}</h3>
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
-                {projects.map((p) => (
-                  <div
-                    key={p.id}
-                    style={{ minWidth: 280, maxWidth: 340, cursor: "pointer" }}
-                    onClick={() => navigate(`/projects/${p.id}`)}
-                  >
-                    <Card {...p} />
-                  </div>
-                ))}
-              </div>
-            </section>
+                <div style={styles.cardGrid}>
+                  {list.map((project) => (
+                    <div
+                      key={project.id}
+                      style={styles.cardWrapper}
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                    >
+                      <Card
+                        title={project.name}
+                        progress={
+                          project.status === "completed" ? 100 : 50
+                        }
+                        startDate={formatDate(project.start_date)}
+                        endDate={formatDate(project.end_date)}
+                        members={[]}             // will plug later
+                        timeLeft={
+                          project.status === "completed"
+                            ? "Completed"
+                            : project.status === "on_hold"
+                            ? "On Hold"
+                            : "In Progress"
+                        }
+                        color={getBadgeColor(project.status)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )
           ))}
         </div>
       </div>
 
-      <AddProject
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        onCreated={load}
-      />
+      {/* ADD PROJECT MODAL */}
+      {["admin", "pm"].includes(role) && (
+        <AddProject
+          isOpen={showAddProject}
+          onClose={() => {
+          setShowAddProject(false);
+            loadProjects();
+          }}
+        />
+      )}  
 
+      {/* FLOATING ADD PROJECT BUTTON */}
+      {/* <button
+        style={styles.fab}
+        onClick={() => setShowAddProject(true)}
+      >
+        + Add Project
+      </button> */}
+      {["admin", "Project Manager"].includes(role) && (
       <button
-        onClick={() => setOpen(true)}
-        style={{
-          position: "fixed",
-          right: 24,
-          bottom: 24,
-          padding: "14px 18px",
-          background: "#4F7DFF",
-          color: "#fff",
-          borderRadius: 999,
-          border: "none",
-          cursor: "pointer",
-        }}
+        style={styles.fab}
+        onClick={() => setShowAddProject(true)}
       >
         + Add Project
       </button>
+    )}
     </div>
   );
-}
+};
 
+export default Projects;
 
-/* ---------------- STYLES (RESTORED) ---------------- */
+/* ---------------- STYLES (UNCHANGED) ---------------- */
 
 const styles = {
   pageContainer: {
@@ -106,39 +132,13 @@ const styles = {
     height: "100vh",
     background: "#f9f9f9",
   },
-
   mainContent: {
     flex: 1,
     overflowY: "auto",
   },
-
   pageInner: {
     padding: 20,
   },
-
-  section: {
-    marginBottom: 25,
-  },
-
-  sectionTitle: {
-    marginBottom: 8,
-    fontWeight: 600,
-    fontSize: 18,
-  },
-
-  cardGrid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 20,
-  },
-
-  cardWrapper: {
-    flex: "1 1 300px",
-    maxWidth: 340,
-    minWidth: 280,
-    cursor: "pointer",
-  },
-
   fab: {
     position: "fixed",
     bottom: 24,
@@ -153,5 +153,24 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
     zIndex: 1001,
+  },
+  section: {
+    marginBottom: 25,
+  },
+  sectionTitle: {
+    marginBottom: 8,
+    fontWeight: 600,
+    fontSize: 18,
+  },
+  cardGrid: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 20,
+  },
+  cardWrapper: {
+    flex: "1 1 300px",
+    maxWidth: 340,
+    minWidth: 280,
+    cursor: "pointer",
   },
 };
