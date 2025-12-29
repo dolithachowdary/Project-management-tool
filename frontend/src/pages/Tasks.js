@@ -168,7 +168,7 @@ export default function Tasks() {
   const styles = {
     pageContainer: { display: "flex", backgroundColor: "#FBFAFC", minHeight: "100vh" },
     mainContent: { flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" },
-    pageInner: { padding: "24px" },
+    pageInner: { padding: "20px 10px" },
     
     // Remove pageTitle since it's in Header
 

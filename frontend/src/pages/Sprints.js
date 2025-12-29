@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Card from "../components/Card";
 import { useNavigate } from "react-router-dom";
+import AddSprint from "../components/AddSprint";
 
 const Sprints = ({ role = "Project Manager" }) => {
   const navigate = useNavigate();
+  const [openAddSprint, setOpenAddSprint] = useState(false);
 
   /* ---------------- MEMBERS ---------------- */
 
@@ -54,7 +56,7 @@ const Sprints = ({ role = "Project Manager" }) => {
     },
   ];
 
-  /* ---------------- COMPLETED SPRINTS (OF ACTIVE PROJECTS) ---------------- */
+  /* ---------------- COMPLETED SPRINTS ---------------- */
 
   const completedSprints = [
     {
@@ -89,7 +91,6 @@ const Sprints = ({ role = "Project Manager" }) => {
         <Header role={role} />
 
         <div style={styles.pageInner}>
-          <h2 style={styles.pageTitle}>Sprints</h2>
 
           {/* ACTIVE SPRINTS */}
           <section style={styles.section}>
@@ -125,6 +126,20 @@ const Sprints = ({ role = "Project Manager" }) => {
             </div>
           </section>
         </div>
+
+        {/* ADD SPRINT BUTTON */}
+        <button
+          style={styles.addSprintBtn}
+          onClick={() => setOpenAddSprint(true)}
+        >
+          + Add Sprint
+        </button>
+
+        {/* ADD SPRINT MODAL */}
+        <AddSprint
+          isOpen={openAddSprint}
+          onClose={() => setOpenAddSprint(false)}
+        />
       </div>
     </div>
   );
@@ -147,23 +162,18 @@ const styles = {
   },
 
   pageInner: {
-    padding: 30,
-  },
-
-  pageTitle: {
-    fontSize: "1.6rem",
-    fontWeight: 600,
-    marginBottom: 20,
+    padding: 20,
   },
 
   section: {
-    marginBottom: 40,
+    marginBottom: 20,
   },
 
   sectionTitle: {
     fontSize: "1.2rem",
     fontWeight: 600,
     marginBottom: 15,
+    marginTop: 3,
   },
 
   cardGrid: {
@@ -177,5 +187,20 @@ const styles = {
     minWidth: 280,
     maxWidth: 340,
     cursor: "pointer",
+  },
+
+  addSprintBtn: {
+    position: "fixed",
+    bottom: 24,
+    right: 24,
+    backgroundColor: "#c71b1b",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: 999,
+    padding: "12px 18px",
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: "pointer",
+    zIndex: 999,
   },
 };
