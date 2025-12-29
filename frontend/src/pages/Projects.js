@@ -93,7 +93,7 @@ const Projects = ({ role = "Project Manager" }) => {
       </div>
 
       {/* ADD PROJECT MODAL */}
-      {["admin", "pm"].includes(role) && (
+      {["admin", "Project Manager"].includes(role) && (
         <AddProject
           isOpen={showAddProject}
           onClose={() => {
