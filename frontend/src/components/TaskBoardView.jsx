@@ -59,57 +59,65 @@ export default function TaskBoardView({
       justifyContent: "space-between",
       alignItems: "flex-start",
       flexWrap: "nowrap",
-      gap: 16,
+      gap: 12,            
       marginTop: 8,
       width: "100%",
-      overflowX: "auto",
+      overflowX: "hidden",  
       paddingBottom: 6,
       minHeight: "calc(100vh - 300px)",
     },
+
     column: {
-      flex: "1 1 18%",
-      minWidth: 280,
-      maxWidth: 320,
+      flex: "1 1 0",               // ❗ critical
+      minWidth: 180,               // ↓ was 280
+      maxWidth: "none",            // ❗ remove cap
       backgroundColor: "#fff",
-      borderRadius: 12,
-      padding: 16,
+      borderRadius: 10,            // ↓ was 12
+      padding: 8,                 // ↓ was 16
       boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
-      transition: "all 0.18s ease",
       height: "fit-content",
-      maxHeight: "calc(100vh - 200px)",
+      maxHeight: "calc(100vh - 220px)",
       overflowY: "auto",
     },
+
     columnTitle: { 
-      fontSize: 16, 
-      fontWeight: 700, 
-      color: RED, 
-      marginBottom: 16, 
+      fontSize: 15,         // ↓ was 16
+      fontWeight: 700,
+      color: RED,
+      marginBottom: 12,     // ↓ was 16
       whiteSpace: "nowrap",
-      paddingBottom: 12,
+      paddingBottom: 8,     // ↓ was 12
       borderBottom: "2px solid #F3F4F6",
     },
+
     taskCard: {
-      borderRadius: 10,
-      padding: 14,
-      marginBottom: 12,
+      borderRadius: 8,       // ↓ was 10
+      padding: 10,           // ↓ was 14
+      marginBottom: 10,      // ↓ was 12
       boxShadow: "0 3px 8px rgba(15,23,42,0.03)",
-      transition: "all 160ms ease",
       cursor: "grab",
       border: "1px solid",
       position: "relative",
     },
+
     taskName: { 
-      fontWeight: 700, 
-      fontSize: 15, 
-      marginBottom: 8,
-      lineHeight: 1.3,
+      fontWeight: 700,
+      fontSize: 14,          // ↓ was 15
+      marginBottom: 6,
+      lineHeight: 1.25,
     },
+
     taskMeta: { 
-      fontSize: 13, 
-      color: "#374151",
-      marginBottom: 12,
+      fontSize: 12,          // ↓ was 13
+      marginBottom: 8,
       opacity: 0.8,
     },
+
+    dateInfo: {
+      fontSize: 10,          // ↓ was 11
+      marginTop: 4,
+    },
+
     taskFooter: {
       display: "flex",
       justifyContent: "space-between",
@@ -125,26 +133,20 @@ export default function TaskBoardView({
       fontSize: 11,
     },
     assignedAvatar: {
-      width: 28,
-      height: 28,
+      width: 24,             // ↓ was 28
+      height: 24,
+      fontSize: 10,
+      fontWeight: 600,
+      border: "2px solid #fff",
       borderRadius: "50%",
-      display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: 11,
-      fontWeight: 600,
-      color: "#374151",
-      border: "2px solid #fff",
-      cursor: "pointer",
-      transition: "transform 0.2s",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      position: "relative",
+      display: "flex",
+      cursor: "default",
     },
-    dateInfo: {
-      fontSize: 11,
-      color: "#666",
-      marginTop: 4,
-    },
+
+
+
     emptyColumn: {
       textAlign: "center",
       color: "#999",
