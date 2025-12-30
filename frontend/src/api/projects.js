@@ -1,15 +1,24 @@
 import api from "./axios";
 
-export const getProjects = () => api.get("/projects");
+/* ---------------- READ ---------------- */
+
+export const getProjects = () =>
+  api.get("/projects");
 
 export const getProjectById = (id) =>
-  api.get("/projects", { params: { id } });
+  api.get(`/projects/${id}`); 
+
+export const getProjectSummary = (id) =>
+  api.get(`/projects/${id}/summary`);
+
+export const getProjectActivity = (id) =>
+  api.get(`/projects/${id}/activity`);
 
 export const createProject = (data) =>
   api.post("/projects", data);
 
 export const updateProject = (id, data) =>
-  api.patch("/projects", data, { params: { id } });
+  api.patch(`/projects/${id}`, data);
 
 export const deleteProject = (id) =>
-  api.delete("/projects", { params: { id } });
+  api.delete(`/projects/${id}`);

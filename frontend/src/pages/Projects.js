@@ -4,141 +4,119 @@ import Header from "../components/Header";
 import Card from "../components/Card";
 import AddProject from "../components/AddProject";
 import { useNavigate } from "react-router-dom";
-import { getProjects } from "../api/projects";
+import { getProjects } from "../api/projects"; //
 
 const Projects = ({ role = "Project Manager" }) => {
   const navigate = useNavigate();
-  const [showAddProject, setShowAddProject] = useState(false);
   const [projects, setProjects] = useState([]);
-
-  /* ---------------- LOAD PROJECTS ---------------- */
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadProjects();
   }, []);
 
   const loadProjects = async () => {
-    const res = await getProjects();
-    setProjects(res.data);
+    try {
+      setLoading(true);
+      const res = await getProjects();
+      // Ensure we extract the array correctly
+      const data = res.data?.data || res.data || [];
+      console.log("Projects Loaded:", data); // Debug log
+      setProjects(data);
+    } catch (err) {
+      console.error("Failed to load projects:", err);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  /* ---------------- GROUP BY STATUS ---------------- */
 
   const projectsByStatus = {
-    "Active Projects": projects.filter(p => p.status === "active"),
-    "On Hold Projects": projects.filter(p => p.status === "on_hold"),
-    "Completed Projects": projects.filter(p => p.status === "completed"),
+    "Active Projects": projects.filter((p) => p.status === "active"),
+    "On Hold Projects": projects.filter((p) => p.status === "on_hold"),
+    "Completed Projects": projects.filter((p) => p.status === "completed"),
   };
 
-  /* ---------------- UTIL ---------------- */
-
+  // Helper to safely format dates
   const formatDate = (d) =>
-    d ? new Date(d).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }) : "—";
+    d ? new Date(d).toLocaleDateString() : "TBD";
 
-  const getBadgeColor = (status) => {
-    if (status === "completed") return "#2e7d32";
-    if (status === "on_hold") return "#fbc02d";
-    return "#1e88e5";
+  const handleProjectClick = (id) => {
+    console.log("Navigating to project ID:", id); // ✅ Debug log
+    if (id) {
+      navigate(`/projects/${id}`);
+    } else {
+      console.error("Error: Project ID is missing");
+    }
   };
 
   return (
     <div style={styles.pageContainer}>
       <Sidebar />
-
       <div style={styles.mainContent}>
         <Header role={role} />
 
         <div style={styles.pageInner}>
-          {/* PROJECT SECTIONS */}
-          {Object.entries(projectsByStatus).map(([section, list]) => (
-            list.length > 0 && (
-              <section key={section} style={styles.section}>
-                <h3 style={styles.sectionTitle}>{section}</h3>
+          {loading ? (
+            <div style={{ padding: 20 }}>Loading...</div>
+          ) : (
+            Object.entries(projectsByStatus).map(([title, list]) =>
+              list.length > 0 && (
+                <section key={title} style={styles.section}>
+                  <h3 style={styles.sectionTitle}>{title}</h3>
 
-                <div style={styles.cardGrid}>
-                  {list.map((project) => (
-                    <div
-                      key={project.id}
-                      style={styles.cardWrapper}
-                      onClick={() => navigate(`/projects/${project.id}`)}
-                    >
-                      <Card
-                        title={project.name}
-                        progress={
-                          project.status === "completed" ? 100 : 50
-                        }
-                        startDate={formatDate(project.start_date)}
-                        endDate={formatDate(project.end_date)}
-                        members={[]}             // will plug later
-                        timeLeft={
-                          project.status === "completed"
-                            ? "Completed"
-                            : project.status === "on_hold"
-                            ? "On Hold"
-                            : "In Progress"
-                        }
-                        color={getBadgeColor(project.status)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
+                  <div style={styles.cardGrid}>
+                    {list.map((p) => (
+                      <div
+                        key={p.id}
+                        style={styles.cardWrapper}
+                        // ✅ Updated Click Handler
+                        onClick={() => handleProjectClick(p.id)}
+                      >
+                        <Card
+                          title={p.name}
+                          progress={p.status === "completed" ? 100 : 50}
+                          startDate={formatDate(p.start_date)}
+                          endDate={formatDate(p.end_date)}
+                          members={[]}
+                          timeLeft={p.status}
+                          color="#1e88e5"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )
             )
-          ))}
+          )}
         </div>
       </div>
 
-      {/* ADD PROJECT MODAL */}
-      {["admin", "pm"].includes(role) && (
-        <AddProject
-          isOpen={showAddProject}
-          onClose={() => {
-          setShowAddProject(false);
-            loadProjects();
-          }}
-        />
-      )}  
-
-      {/* FLOATING ADD PROJECT BUTTON */}
-      {/* <button
-        style={styles.fab}
-        onClick={() => setShowAddProject(true)}
-      >
-        + Add Project
-      </button> */}
       {["admin", "Project Manager"].includes(role) && (
-      <button
-        style={styles.fab}
-        onClick={() => setShowAddProject(true)}
-      >
-        + Add Project
-      </button>
-    )}
+        <>
+          <AddProject
+            isOpen={showAddProject}
+            onClose={() => {
+              setShowAddProject(false);
+              loadProjects();
+            }}
+          />
+          <button style={styles.fab} onClick={() => setShowAddProject(true)}>
+            + Add Project
+          </button>
+        </>
+      )}
     </div>
   );
 };
 
 export default Projects;
 
-/* ---------------- STYLES (UNCHANGED) ---------------- */
-
+/* ---------------- STYLES (Unchanged) ---------------- */
 const styles = {
-  pageContainer: {
-    display: "flex",
-    height: "100vh",
-    background: "#f9f9f9",
-  },
-  mainContent: {
-    flex: 1,
-    overflowY: "auto",
-  },
-  pageInner: {
-    padding: 20,
-  },
+  pageContainer: { display: "flex", height: "100vh", background: "#f9f9f9" },
+  mainContent: { flex: 1, overflowY: "auto" },
+  pageInner: { padding: 20 },
   fab: {
     position: "fixed",
     bottom: 24,
@@ -154,23 +132,13 @@ const styles = {
     boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
     zIndex: 1001,
   },
-  section: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    marginBottom: 8,
-    fontWeight: 600,
-    fontSize: 18,
-  },
-  cardGrid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 20,
-  },
+  section: { marginBottom: 25 },
+  sectionTitle: { marginBottom: 8, fontWeight: 600, fontSize: 18 },
+  cardGrid: { display: "flex", flexWrap: "wrap", gap: 20 },
   cardWrapper: {
     flex: "1 1 300px",
     maxWidth: 340,
     minWidth: 280,
-    cursor: "pointer",
+    cursor: "pointer", // Essential for UX
   },
 };
