@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import { getNotes, createNote as createNoteApi, updateNote as updateNoteApi, deleteNote as deleteNoteApi } from "../api/notes";
 import {
   Bold,
   Italic,
@@ -46,6 +47,37 @@ export default function Notes() {
   const widgetEditorRef = useRef(null);
   const inlineEditorRef = useRef(null);
 
+  /* -------- FETCH NOTES -------- */
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  const fetchNotes = async () => {
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("userData"));
+      const token = savedUser?.accessToken;
+      if (!token) return;
+
+      const res = await fetch("http://localhost:5000/api/notes", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const formatted = data.map(n => ({
+          id: n.id,
+          html: n.content_html,
+          color: COLORS.find(c => c.id === n.color_id) || COLORS[0],
+          updatedAt: new Date(n.updated_at).toLocaleDateString("en-US", {
+            month: "short", day: "numeric", year: "numeric"
+          })
+        }));
+        setNotes(formatted);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notes:", err);
+    }
+  };
+
   /* -------- TEXT FORMATTING -------- */
   const format = (cmd, isInline = false) => {
     // Determine which editor to focus
@@ -60,48 +92,81 @@ export default function Notes() {
   };
 
   /* -------- CREATE NEW NOTE -------- */
-  const createNote = () => {
+  const createNote = async () => {
     const el = document.getElementById("new-note-editor");
     if (!el) return;
     const content = el.innerHTML.trim();
     if (!content) return;
 
-    const timestamp = new Date().toLocaleDateString("en-US", {
-      month: "short", day: "numeric", year: "numeric"
-    });
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("userData"));
+      const token = savedUser?.accessToken;
+      if (!token) return;
 
-    setNotes((prev) => [
-      {
-        id: Date.now(),
-        html: content,
-        color: newNoteColor,
-        updatedAt: timestamp
-      },
-      ...prev
-    ]);
+      console.log("Sending Note:", { content, color: newNoteColor.id });
 
-    // Reset widget
-    el.innerHTML = "";
-    setNewNoteContent("");
-    setNewNoteColor(COLORS[0]);
+      const res = await fetch("http://localhost:5000/api/notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          content_html: content,
+          color_id: newNoteColor.id
+        })
+      });
+
+      if (res.ok) {
+        // Refresh notes or locally append
+        // Let's refetch to get exact server      if (res.ok) {
+        fetchNotes();
+
+        // Reset widget
+        el.innerHTML = "";
+        setNewNoteContent("");
+        setNewNoteColor(COLORS[0]);
+      } else {
+        const errData = await res.json();
+        console.error("Server Error:", errData);
+        alert("Failed to create note: " + (errData.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Network/Client Error:", err);
+      alert("Network error: " + err.message);
+    }
   };
 
   /* -------- UPDATE EXISTING NOTE -------- */
-  const updateNote = (id) => {
+  const updateNote = async (id) => {
     const el = document.getElementById(`inline-editor-${id}`);
     if (!el) return;
     const content = el.innerHTML.trim();
-    if (!content) return; // Or allow empty? usually avoid empty notes
+    // if (!content) return; // Allow empty? 
 
-    const timestamp = new Date().toLocaleDateString("en-US", {
-      month: "short", day: "numeric", year: "numeric"
-    });
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("userData"));
+      const token = savedUser?.accessToken;
+      if (!token) return;
 
-    setNotes(prev => prev.map(n =>
-      n.id === id
-        ? { ...n, html: content, color: editColor || n.color, updatedAt: timestamp }
-        : n
-    ));
+      const res = await fetch(`http://localhost:5000/api/notes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          content_html: content,
+          color_id: editColor?.id // or current note color
+        })
+      });
+
+      if (res.ok) {
+        fetchNotes(); // Sync with server
+      }
+    } catch (err) {
+      console.error(err);
+    }
 
     setEditingId(null);
     setEditContent("");
@@ -109,10 +174,23 @@ export default function Notes() {
   };
 
   /* -------- ACTIONS -------- */
-  const deleteNote = (id) => {
+  const deleteNote = async (id) => {
+    // Optimistic remove
     setNotes((prev) => prev.filter((n) => n.id !== id));
-    if (editingId === id) {
-      setEditingId(null);
+    if (editingId === id) setEditingId(null);
+
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("userData"));
+      const token = savedUser?.accessToken;
+      if (!token) return;
+
+      await fetch(`http://localhost:5000/api/notes/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error("Failed to delete", err);
+      fetchNotes(); // Revert on failure
     }
   };
 
