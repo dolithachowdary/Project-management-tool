@@ -164,19 +164,24 @@ const styles = {
   },
 
   bottomSection: {
-    padding: "10px 20px",
+    padding: "10px 0", // Remove horizontal padding to allow full-width buttons
+    display: "flex",
+    flexDirection: "column",
   },
 
   bottomButton: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "14px", // Match menuButton gap
+    padding: "12px 20px", // Match menuButton padding
+    width: "100%", // Ensure full width
     background: "none",
     border: "none",
     cursor: "pointer",
-    fontSize: "17px",
-    marginTop: "10px",
+    fontSize: "18px", // Match menuButton size
+    textAlign: "left",
     fontFamily: "Poppins, sans-serif",
+    // marginTop: "5px", // Optional spacing
   },
 };
 

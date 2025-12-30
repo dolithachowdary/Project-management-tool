@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import {
@@ -8,85 +8,178 @@ import {
   Strikethrough,
   List,
   MoreHorizontal,
-  Check
+  Check,
+  Pencil,
+  Copy,
+  Trash2,
+  SquareX,
 } from "lucide-react";
 
 /* ================= CONSTANTS ================= */
 
 const COLORS = [
-  "#FFF6A8",
-  "#DFF3DC",
-  "#F9D3E3",
-  "#E6DAFF",
-  "#DCEBFF",
-  "#E5E5E5",
-  "#9E9E9E"
+  { body: "#F3E8FF", header: "#E9D5FF", id: "purple" },
+  { body: "#FEF9C3", header: "#FEF08A", id: "yellow" },
+  { body: "#DCFCE7", header: "#BBF7D0", id: "green" },
+  { body: "#FCE7F3", header: "#FBCFE8", id: "pink" },
+  { body: "#DBEAFE", header: "#BFDBFE", id: "blue" },
+  { body: "#E5E7EB", header: "#D1D5DB", id: "gray" },
+  { body: "#4B5563", header: "#374151", id: "dark" }
 ];
-
-/* ================= COMPONENT ================= */
 
 export default function Notes() {
   const [notes, setNotes] = useState([]);
-  const [activeColor, setActiveColor] = useState(COLORS[0]);
-  const [openMenu, setOpenMenu] = useState(null);
-  const [editingId, setEditingId] = useState(null);
-  const editorRef = useRef(null);
+
+  // New Note Widget State
+  const [newNoteColor, setNewNoteColor] = useState(COLORS[0]);
+  const [isWidgetMenuOpen, setIsWidgetMenuOpen] = useState(false);
+  const [newNoteContent, setNewNoteContent] = useState("");
+
+  // Inline Editing State
+  const [editingId, setEditingId] = useState(null); // ID of note being edited
+  const [editContent, setEditContent] = useState("");
+  const [editColor, setEditColor] = useState(null);
+
+  // Menu State
+  const [openCardMenuId, setOpenCardMenuId] = useState(null);
+
+  const widgetEditorRef = useRef(null);
+  const inlineEditorRef = useRef(null);
 
   /* -------- TEXT FORMATTING -------- */
-  const format = (cmd) => {
-    editorRef.current.focus();
-    document.execCommand(cmd);
-  };
+  const format = (cmd, isInline = false) => {
+    // Determine which editor to focus
+    const el = isInline
+      ? document.getElementById(`inline-editor-${editingId}`)
+      : document.getElementById("new-note-editor");
 
-  /* -------- SAVE NOTE (✓ ONLY) -------- */
-  const saveNote = () => {
-    const html = editorRef.current.innerHTML.trim();
-    if (!html) return;
-
-    if (editingId) {
-      setNotes((prev) =>
-        prev.map((n) =>
-          n.id === editingId
-            ? {
-                ...n,
-                html,
-                color: activeColor,
-                updatedAt: new Date().toLocaleDateString()
-              }
-            : n
-        )
-      );
-    } else {
-      setNotes((prev) => [
-        {
-          id: Date.now(),
-          html,
-          color: activeColor,
-          updatedAt: new Date().toLocaleDateString()
-        },
-        ...prev
-      ]);
+    if (el) {
+      el.focus();
+      document.execCommand(cmd);
     }
+  };
 
-    editorRef.current.innerHTML = "";
+  /* -------- CREATE NEW NOTE -------- */
+  const createNote = () => {
+    const el = document.getElementById("new-note-editor");
+    if (!el) return;
+    const content = el.innerHTML.trim();
+    if (!content) return;
+
+    const timestamp = new Date().toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric"
+    });
+
+    setNotes((prev) => [
+      {
+        id: Date.now(),
+        html: content,
+        color: newNoteColor,
+        updatedAt: timestamp
+      },
+      ...prev
+    ]);
+
+    // Reset widget
+    el.innerHTML = "";
+    setNewNoteContent("");
+    setNewNoteColor(COLORS[0]);
+  };
+
+  /* -------- UPDATE EXISTING NOTE -------- */
+  const updateNote = (id) => {
+    const el = document.getElementById(`inline-editor-${id}`);
+    if (!el) return;
+    const content = el.innerHTML.trim();
+    if (!content) return; // Or allow empty? usually avoid empty notes
+
+    const timestamp = new Date().toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric"
+    });
+
+    setNotes(prev => prev.map(n =>
+      n.id === id
+        ? { ...n, html: content, color: editColor || n.color, updatedAt: timestamp }
+        : n
+    ));
+
     setEditingId(null);
+    setEditContent("");
+    setEditColor(null);
   };
 
-  /* -------- MENU ACTIONS -------- */
-  const deleteNote = (id) =>
+  /* -------- ACTIONS -------- */
+  const deleteNote = (id) => {
     setNotes((prev) => prev.filter((n) => n.id !== id));
-
-  const copyNote = (html) =>
-    navigator.clipboard.writeText(
-      html.replace(/<[^>]*>/g, "")
-    );
-
-  const editNote = (note) => {
-    editorRef.current.innerHTML = note.html;
-    setActiveColor(note.color);
-    setEditingId(note.id);
-    setOpenMenu(null);
+    if (editingId === id) {
+      setEditingId(null);
+    }
   };
+
+  const copyNote = (html) => {
+    const text = html.replace(/<[^>]*>/g, "");
+    navigator.clipboard.writeText(text);
+  };
+
+  const startEditing = (note) => {
+    setEditingId(note.id);
+    setEditContent(note.html);
+    setEditColor(note.color);
+    setOpenCardMenuId(null);
+
+    // Defer focus
+    setTimeout(() => {
+      const el = document.getElementById(`inline-editor-${note.id}`);
+      if (el) {
+        el.innerHTML = note.html;
+        el.focus();
+        // Move cursor to end (simplified)
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }, 50);
+  };
+
+  /* -------- HELPER: CLOSE MENUS -------- */
+  const closeAllMenus = () => {
+    setOpenCardMenuId(null);
+    setIsWidgetMenuOpen(false);
+    // If we need to close the inline editor menu specifically, we might need state for it?
+    // Currently using openCardMenuId for inline editor menu too? 
+    // Let's verify state usage.
+  };
+
+  /* -------- CLICK OUTSIDE TO SAVE (INLINE EDITOR) -------- */
+  useEffect(() => {
+    const handleMouseDown = (e) => {
+      // 1. Handle Menu Closing
+      if (openCardMenuId !== null || isWidgetMenuOpen) {
+        const menu = document.getElementById("active-menu");
+        // If click is outside the menu, close it.
+        if (menu && !menu.contains(e.target)) {
+          closeAllMenus();
+          return; // Stop here
+        }
+      }
+
+      // 2. Handle Auto-Save & Close Editor
+      if (editingId) {
+        const card = document.getElementById(`editing-card-${editingId}`);
+        // If click is outside the card, save and close
+        if (card && !card.contains(e.target)) {
+          updateNote(editingId);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [editingId, openCardMenuId, isWidgetMenuOpen, notes, editColor]);
+  // Added dependencies to ensure updateNote has access to latest state scope if needed (though updateNote uses refs mostly)
 
   /* ================= RENDER ================= */
 
@@ -94,267 +187,511 @@ export default function Notes() {
     <div style={styles.page}>
       <Sidebar />
 
+      {/* GLOBAL CLICK OUTSIDE BACKDROP */}
+      {(openCardMenuId !== null || isWidgetMenuOpen) && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 998, cursor: "default" }}
+          onClick={closeAllMenus}
+        />
+      )}
+
       <div style={styles.main}>
         <Header title="Notes" />
 
         <div style={styles.content}>
-          <div style={styles.layout}>
 
-            {/* ================= NOTES GRID ================= */}
-            <div style={styles.grid}>
-              {notes.map((note) => (
+          <div style={styles.grid}>
+            {notes.map((note) => {
+              const isEditing = editingId === note.id;
+              const displayColor = isEditing ? (editColor || note.color) : note.color;
+
+              if (isEditing) {
+                /* -------- INLINE EDITOR CARD -------- */
+                // Ensure z-index is high enough to be above backdrop (998) when menu is open or just generally for priority
+                const zIndex = (openCardMenuId === note.id) ? 1000 : 10;
+
+                return (
+                  <div
+                    key={note.id}
+                    id={`editing-card-${note.id}`}
+                    style={{ ...styles.note, background: displayColor.body, zIndex: zIndex, outline: "2px solid #333" }}
+                  >
+                    {/* Header Strip & Controls */}
+                    <div style={{ position: "relative", height: 12 }}>
+                      <div style={{ ...styles.colorStrip, background: displayColor.header, position: "absolute", top: 0 }} />
+
+                      {/* INLINE EDIT MENU BUTTON */}
+                      <div style={{ position: "absolute", top: 8, right: 8, zIndex: 11 }}>
+                        <button
+                          style={styles.iconBtnSmall}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenCardMenuId(openCardMenuId === note.id ? null : note.id);
+                          }}
+                        >
+                          <MoreHorizontal size={16} color="#333" />
+                        </button>
+
+                        {openCardMenuId === note.id && (
+                          <ColorMenu
+                            showColors={true}
+                            activeColor={displayColor}
+                            onSelectColor={(c) => setEditColor(c)}
+                            onCopy={() => copyNote(editContent)} // Copy current edit content
+                            onDelete={() => deleteNote(note.id)}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Inline Content */}
+                    <div
+                      id={`inline-editor-${note.id}`}
+                      contentEditable
+                      suppressContentEditableWarning
+                      style={{ ...styles.inlineEditorInput, marginTop: 24 }} // add space for top menu
+                      onInput={(e) => setEditContent(e.currentTarget.innerHTML)}
+                    />
+
+                    {/* Inline Toolbar & Save */}
+                    <div style={styles.inlineToolbar}>
+                      <div style={styles.toolsLeftSmall}>
+                        <button onClick={() => format("bold", true)} style={styles.toolBtnSmall}><Bold size={14} /></button>
+                        <button onClick={() => format("italic", true)} style={styles.toolBtnSmall}><Italic size={14} /></button>
+                        <button onClick={() => format("underline", true)} style={styles.toolBtnSmall}><Underline size={14} /></button>
+                        <button onClick={() => format("strikeThrough", true)} style={styles.toolBtnSmall}><Strikethrough size={14} /></button>
+                        <button onClick={() => format("insertUnorderedList", true)} style={styles.toolBtnSmall}><List size={14} /></button>
+                      </div>
+                      <button onClick={() => updateNote(note.id)} style={styles.saveBtnSmall}>
+                        <Check size={16} color="#333" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              /* -------- NORMAL VIEW CARD -------- */
+              const noteZIndex = (openCardMenuId === note.id) ? 1000 : "auto"; // Raise if menu currently open
+
+              const gridStyle = { ...styles.note, background: note.color.body, zIndex: noteZIndex };
+
+              const i = notes.indexOf(note); // Get index carefully (map provides it but we need cleanly)
+
+
+              if (i > 3 && (i - 4) % 3 === 0) {
+                gridStyle.gridColumnStart = 1;
+              }
+
+              return (
                 <div
                   key={note.id}
-                  style={{ ...styles.note, background: note.color }}
+                  style={gridStyle}
                 >
+                  <div style={{ ...styles.colorStrip, background: note.color.header }} />
+
                   <div
                     style={styles.noteBody}
+                    className="hide-scrollbar"
                     dangerouslySetInnerHTML={{ __html: note.html }}
                   />
 
                   <div style={styles.noteFooter}>
-                    <span>Last updated {note.updatedAt}</span>
+                    <span style={styles.date}>{note.updatedAt}</span>
 
-                    <div style={styles.menuWrapper}>
-                      <MoreHorizontal
-                        size={16}
-                        onClick={() =>
-                          setOpenMenu(openMenu === note.id ? null : note.id)
-                        }
-                      />
+                    <div style={styles.relativeContainer}>
+                      <button
+                        style={styles.iconBtnSmall}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenCardMenuId(openCardMenuId === note.id ? null : note.id);
+                        }}
+                      >
+                        <MoreHorizontal size={16} color="#555" />
+                      </button>
 
-                      {openMenu === note.id && (
-                        <div style={styles.menu}>
-                          <MenuItem onClick={() => editNote(note)}>
-                            Edit
-                          </MenuItem>
-                          <MenuItem onClick={() => copyNote(note.html)}>
-                            Copy
-                          </MenuItem>
-                          <MenuItem danger onClick={() => deleteNote(note.id)}>
-                            Delete
-                          </MenuItem>
-                        </div>
+                      {openCardMenuId === note.id && (
+                        <ColorMenu
+                          showColors={false}
+                          activeColor={note.color}
+                          // onSelectColor not needed
+                          onEdit={() => startEditing(note)}
+                          onCopy={() => copyNote(note.html)}
+                          onDelete={() => {
+                            deleteNote(note.id);
+                            setOpenCardMenuId(null);
+                          }}
+                        />
                       )}
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            {/* ================= EDITOR ================= */}
-            <div style={{ ...styles.editor, background: activeColor }}>
+        </div>
 
-              {/* COLOR PICKER */}
-              <div style={styles.colorRow}>
-                {COLORS.map((c) => (
-                  <span
-                    key={c}
-                    onClick={() => setActiveColor(c)}
-                    style={{
-                      ...styles.colorDot,
-                      background: c,
-                      outline:
-                        c === activeColor ? "2px solid #333" : "none"
+        {/* ================= FIXED WIDGET (NEW NOTE ONLY) ================= */}
+        <div style={{ ...styles.editorWidget, background: newNoteColor.body, zIndex: isWidgetMenuOpen ? 1000 : 100 }}>
+          <div style={styles.editorHeader}>
+            <div style={{ ...styles.colorStrip, background: newNoteColor.header, position: "absolute", top: 0, left: 0, right: 0, borderRadius: "12px 12px 0 0" }} />
+
+            <div style={styles.editorTopControls}>
+              <div style={styles.relativeContainer}>
+                <button
+                  style={styles.iconBtnSmall}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsWidgetMenuOpen(!isWidgetMenuOpen);
+                  }}
+                >
+                  <MoreHorizontal size={18} color="#333" />
+                </button>
+                {isWidgetMenuOpen && (
+                  <ColorMenu
+                    showColors={true}
+                    activeColor={newNoteColor}
+                    onSelectColor={(c) => setNewNoteColor(c)}
+                    onCopy={() => {
+                      const el = document.getElementById("new-note-editor");
+                      if (el) copyNote(el.innerHTML);
+                      setIsWidgetMenuOpen(false);
                     }}
+                    // No Edit option here, only Color/Copy/Clear
+                    customActions={
+                      <div style={styles.menuItemDanger} onClick={() => {
+                        document.getElementById("new-note-editor").innerHTML = "";
+                        setIsWidgetMenuOpen(false);
+                      }}>
+                        <span><SquareX size={16} color="#EF4444" style={{ marginRight: 8 }} /> Clear</span>
+                      </div>
+                    }
                   />
-                ))}
+                )}
               </div>
-
-              {/* EDITABLE AREA */}
-              <div
-                ref={editorRef}
-                contentEditable
-                suppressContentEditableWarning
-                style={styles.editorBody}
-                placeholder="Type anything to remember"
-              />
-
-              {/* TOOLBAR */}
-              <div style={styles.toolbar}>
-                <IconBtn onClick={() => format("bold")}>
-                  <Bold size={14} />
-                </IconBtn>
-                <IconBtn onClick={() => format("italic")}>
-                  <Italic size={14} />
-                </IconBtn>
-                <IconBtn onClick={() => format("underline")}>
-                  <Underline size={14} />
-                </IconBtn>
-                <IconBtn onClick={() => format("strikeThrough")}>
-                  <Strikethrough size={14} />
-                </IconBtn>
-                <IconBtn onClick={() => format("insertUnorderedList")}>
-                  <List size={14} />
-                </IconBtn>
-
-                <IconBtn primary onClick={saveNote}>
-                  <Check size={16} />
-                </IconBtn>
-              </div>
-
             </div>
           </div>
+
+          {/* Input */}
+          <div
+            id="new-note-editor"
+            contentEditable
+            suppressContentEditableWarning
+            style={styles.editorInput}
+            placeholder="Type anything to remember..."
+            onInput={(e) => setNewNoteContent(e.currentTarget.innerHTML)}
+          />
+
+          {/* Toolbar */}
+          <div style={styles.editorToolbar}>
+            <div style={styles.toolsLeft}>
+              <button onClick={() => format("bold")} style={styles.toolBtn}><Bold size={16} /></button>
+              <button onClick={() => format("italic")} style={styles.toolBtn}><Italic size={16} /></button>
+              <button onClick={() => format("underline")} style={styles.toolBtn}><Underline size={16} /></button>
+              <button onClick={() => format("strikeThrough")} style={styles.toolBtn}><Strikethrough size={16} /></button>
+              <button onClick={() => format("insertUnorderedList")} style={styles.toolBtn}><List size={16} /></button>
+            </div>
+
+            <button onClick={createNote} style={styles.saveBtn}>
+              <Check size={20} color="#333" />
+            </button>
+          </div>
         </div>
+
       </div>
     </div>
   );
 }
 
-/* ================= SMALL UI COMPONENTS ================= */
+/* ================= HELPER COMPONENT ================= */
 
-function IconBtn({ children, onClick, primary }) {
+function ColorMenu({ showColors = true, activeColor, onSelectColor, onEdit, onCopy, onDelete, customActions }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        ...styles.iconBtn,
-        background: primary ? "#111" : "transparent",
-        color: primary ? "#fff" : "#333"
-      }}
-    >
-      {children}
-    </button>
-  );
-}
+    <div id="active-menu" style={styles.popupMenu}>
+      {showColors && (
+        <>
+          <div style={styles.menuColorRow}>
+            {COLORS.map((c) => (
+              <div
+                key={c.id}
+                onClick={() => onSelectColor && onSelectColor(c)}
+                style={{
+                  ...styles.menuColorSwatch,
+                  background: c.body,
+                  border: activeColor?.id === c.id ? "1px solid #000" : "1px solid rgba(0,0,0,0.1)"
+                }}
+              >
+                {activeColor?.id === c.id && <Check size={10} color="#000" />}
+              </div>
+            ))}
+          </div>
+          <div style={styles.menuDivider} />
+        </>
+      )}
 
-function MenuItem({ children, onClick, danger }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        padding: "8px 14px",
-        fontSize: 13,
-        cursor: "pointer",
-        color: danger ? "#c62828" : "#333"
-      }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.background = "#f2f2f2")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.background = "transparent")
-      }
-    >
-      {children}
+      {onEdit && (
+        <div style={styles.menuItem} onClick={onEdit}>
+          <Pencil size={14} style={{ marginRight: 8 }} />
+          <span>Edit Note</span>
+        </div>
+      )}
+      <div style={styles.menuItem} onClick={onCopy}>
+        <Copy size={14} style={{ marginRight: 8 }} />
+        <span>Copy Note</span>
+      </div>
+
+      {onDelete ? (
+        <div style={styles.menuItemDanger} onClick={onDelete}>
+          <Trash2 size={14} style={{ marginRight: 8 }} />
+          <span>Delete</span>
+        </div>
+      ) : customActions}
     </div>
   );
 }
 
-/* ================= INTERNAL CSS ================= */
+/* ================= STYLES ================= */
 
 const styles = {
   page: {
     display: "flex",
     height: "100vh",
-    background: "#f5f6f8"
+    background: "#F9FAFB",
+    fontFamily: "'Inter', sans-serif"
   },
-
   main: {
     flex: 1,
-    overflow: "auto"
-  },
-
-  content: {
-    padding: 28
-  },
-
-  layout: {
-    display: "flex",
-    gap: 40,
-    alignItems: "flex-start"
-  },
-
-  /* -------- NOTES GRID -------- */
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, 220px)",
-    gap: 20,
-    flex: 1
-  },
-
-  note: {
-    minHeight: 180,
-    padding: 14,
-    borderRadius: 10,
-    boxShadow: "0 6px 18px rgba(0,0,0,.15)",
+    overflow: "hidden",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between",
-    fontSize: 14
+    position: "relative"
   },
-
-  noteBody: {
-    whiteSpace: "pre-wrap"
-  },
-
-  noteFooter: {
-    display: "flex",
-    justifyContent: "space-between",
-    fontSize: 11,
-    color: "#555",
-    marginTop: 12
-  },
-
-  menuWrapper: {
-    position: "relative",
-    cursor: "pointer"
-  },
-
-  menu: {
-    position: "absolute",
-    right: 0,
-    top: 20,
-    background: "#fff",
-    borderRadius: 8,
-    boxShadow: "0 6px 20px rgba(0,0,0,.25)",
-    minWidth: 120,
-    zIndex: 20
-  },
-
-  /* -------- EDITOR -------- */
-  editor: {
-    width: 340,
-    height: 280,
-    borderRadius: 12,
-    padding: 12,
-    boxShadow: "0 8px 24px rgba(0,0,0,.25)",
-    display: "flex",
-    flexDirection: "column"
-  },
-
-  colorRow: {
-    display: "flex",
-    gap: 8,
-    marginBottom: 10
-  },
-
-  colorDot: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    cursor: "pointer"
-  },
-
-  editorBody: {
+  content: {
+    padding: "15px",
     flex: 1,
-    outline: "none",
-    fontSize: 14,
-    lineHeight: 1.5
+    overflowY: "auto"
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)", // Fixed 4 columns as requested
+    gap: 24,
+    paddingBottom: 100
   },
 
-  toolbar: {
+  /* ---- NOTE CARD ---- */
+  note: {
+    height: 200, // Fixed height so all cards are same size
+    borderRadius: 16,
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)",
     display: "flex",
-    gap: 6,
-    paddingTop: 8
+    flexDirection: "column",
+    position: "relative",
+  },
+  colorStrip: {
+    height: 12,
+    width: "100%",
+    borderRadius: "16px 16px 0 0"
+  },
+  noteBody: {
+    padding: "16px 20px 8px",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+    overflowWrap: "anywhere",
+    color: "#1F2937",
+    fontSize: 15,
+    lineHeight: 1.6,
+    flex: 1,
+    overflowY: "auto", // Scrollable if content is long
+    // scrollbarWidth removed, handled by CSS class
+  },
+  noteFooter: {
+    padding: "10px 16px 16px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  date: {
+    fontSize: 12,
+    color: "rgba(0,0,0,0.5)"
+  },
+  iconBtnSmall: {
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    padding: 4,
+    borderRadius: 4,
+    display: "flex",
+    alignItems: "center"
+  },
+  relativeContainer: {
+    position: "relative"
   },
 
-  iconBtn: {
+  /* ---- INLINE EDITING STYLES ---- */
+  inlineEditorInput: {
+    flex: 1,
+    padding: "16px 20px 8px",
+    outline: "none",
+    fontSize: 15,
+    lineHeight: 1.6,
+    color: "#333",
+    background: "rgba(255,255,255,0.4)",
+    margin: "0 10px",
+    borderRadius: 8
+  },
+  inlineToolbar: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "8px 16px",
+    borderTop: "1px solid rgba(0,0,0,0.05)"
+  },
+  toolsLeftSmall: {
+    display: "flex",
+    gap: 2
+  },
+  toolBtnSmall: {
     border: "none",
+    background: "transparent",
+    padding: 4,
+    borderRadius: 4,
+    cursor: "pointer",
+    color: "#555",
+    display: "flex"
+  },
+  saveBtnSmall: {
+    border: "none",
+    background: "rgba(255,255,255,0.5)",
     padding: 6,
     borderRadius: 6,
     cursor: "pointer",
     display: "flex",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.1)"
+  },
+
+  /* ---- FIXED EDITOR WIDGET ---- */
+  editorWidget: {
+    position: "fixed", // Changed from absolute to fixed
+    bottom: 30,
+    right: 30,
+    width: 320,
+    minHeight: 280,
+    borderRadius: 12,
+    boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+    display: "flex",
+    flexDirection: "column",
+    zIndex: 100
+  },
+  editorHeader: {
+    height: 40,
+    position: "relative"
+  },
+  editorTopControls: {
+    position: "absolute",
+    top: 6,
+    right: 8,
+    zIndex: 2,
+    display: "flex",
+    gap: 8,
+    alignItems: "center"
+  },
+  editingBadge: {
+    fontSize: 10,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    background: "rgba(0,0,0,0.1)",
+    padding: "2px 6px",
+    borderRadius: 4,
+    color: "#555"
+  },
+  editorInput: {
+    flex: 1,
+    padding: "10px 20px 20px",
+    outline: "none",
+    fontSize: 16,
+    lineHeight: 1.5,
+    color: "#333",
+    background: "transparent",
+    minHeight: 180
+  },
+  editorToolbar: {
+    height: 50,
+    borderTop: "1px solid rgba(0,0,0,0.06)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "0 16px"
+  },
+  toolsLeft: {
+    display: "flex",
+    gap: 4
+  },
+  toolBtn: {
+    border: "none",
+    background: "transparent",
+    padding: 6,
+    borderRadius: 4,
+    cursor: "pointer",
+    color: "#555",
+    display: "flex"
+  },
+  saveBtn: {
+    border: "none",
+    background: "transparent",
+    padding: 6,
+    borderRadius: 4,
+    cursor: "pointer",
+    display: "flex"
+  },
+
+  /* ---- POPUP MENU ---- */
+  popupMenu: {
+    position: "absolute",
+    right: 0,
+    top: "100%",
+    marginTop: 6,
+    background: "#fff",
+    borderRadius: 8,
+    boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+    border: "1px solid rgba(0,0,0,0.05)",
+    width: 200,
+    overflow: "hidden",
+    zIndex: 999
+  },
+  menuColorRow: {
+    display: "flex",
+    padding: 10,
+    gap: 6,
+    justifyContent: "center"
+  },
+  menuColorSwatch: {
+    width: 20,
+    height: 20,
+    borderRadius: "50%",
+    cursor: "pointer",
+    display: "flex",
     alignItems: "center",
     justifyContent: "center"
+  },
+  menuDivider: {
+    height: 1,
+    background: "#eee",
+    margin: "0"
+  },
+  menuItem: {
+    padding: "10px 16px",
+    fontSize: 14,
+    color: "#333",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center"
+  },
+  menuItemDanger: {
+    padding: "10px 16px",
+    fontSize: 14,
+    color: "#EF4444",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center"
   }
 };
