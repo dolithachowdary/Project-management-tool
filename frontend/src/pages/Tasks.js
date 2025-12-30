@@ -10,6 +10,7 @@ import dashboardIcon from "../assets/icons/dashboard.svg";
 
 import { getTasks, createTask, updateTask } from "../api/tasks";
 import { getProjects } from "../api/projects";
+import { getAssignableUsers } from "../api/users";
 
 const role = localStorage.getItem("role") || "Project Manager";
 const currentUser = localStorage.getItem("userName") || "A";
@@ -30,17 +31,36 @@ export default function Tasks() {
 
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [userData, setUserData] = useState({});
 
   // Data Fetching
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const [tasksRes, projectsRes] = await Promise.all([
+        const [tasksRes, projectsRes, usersRes] = await Promise.all([
           getTasks(),
-          getProjects()
+          getProjects(),
+          getAssignableUsers().catch(() => ({ data: [] }))
         ]);
-        setTasks(tasksRes.data);
-        setProjects(projectsRes.data);
+
+        const tasksData = tasksRes.data?.data || tasksRes.data || [];
+        const projectsData = projectsRes.data?.data || projectsRes.data || [];
+        const usersData = usersRes.data?.data || usersRes.data || [];
+
+        setTasks(tasksData);
+        setProjects(projectsData);
+
+        // Map users by id
+        const userMap = {};
+        usersData.forEach(u => {
+          userMap[u.id || u._id] = {
+            name: u.full_name || u.name,
+            role: u.role,
+            color: u.color || "#C62828",
+            avatar_url: u.avatar_url
+          };
+        });
+        setUserData(userMap);
       } catch (err) {
         console.error("Failed to fetch data", err);
       }
@@ -48,11 +68,17 @@ export default function Tasks() {
     fetchData();
   }, []);
 
-  const statuses = ["All", "To Do", "In Progress", "Review", "Done", "Blocked"];
+  const statuses = [
+    { label: "All", value: "All" },
+    { label: "To Do", value: "To Do" },
+    { label: "In Progress", value: "In Progress" },
+    { label: "Review", value: "Review" },
+    { label: "Done", value: "Done" },
+    { label: "Blocked", value: "Blocked" }
+  ];
+
   const projectList = ["All", ...projects.map(p => p.name)];
-  // We can't really get a full "peopleList" easily without an endpoint, 
-  // but for filtering tasks we might want to collect all assignees from loaded tasks
-  const peopleList = ["All", ...Array.from(new Set(tasks.map(t => t.assignedTo || "Unassigned")))];
+  const peopleList = ["All", ...Array.from(new Set(tasks.map(t => t.assignee_name || t.assignedTo || "Unassigned")))];
 
   // Format date to DD-MM-YY
   const formatShortDate = (dateString) => {
@@ -83,6 +109,7 @@ export default function Tasks() {
 
   const filteredTasks = tasks.map(t => ({
     ...t,
+    taskName: t.title || t.taskName || "", // Backward compatibility
     projectName: getProjectName(t),
     moduleName: getModuleName(t),
     sprintName: getSprintName(t)
@@ -91,7 +118,7 @@ export default function Tasks() {
     const pName = t.projectName.toLowerCase();
     const mName = t.moduleName.toLowerCase();
     const sName = t.sprintName.toLowerCase();
-    const tName = t.taskName?.toLowerCase() || "";
+    const tName = t.taskName.toLowerCase();
     const tCode = t.taskCode?.toLowerCase() || "";
 
     return (
@@ -103,10 +130,12 @@ export default function Tasks() {
         tCode.includes(q)) &&
       (selectedStatus === "All" || t.status === selectedStatus) &&
       (selectedProject === "All" || t.projectName === selectedProject) &&
-      (selectedPerson === "All" || t.assignedTo === selectedPerson) &&
+      (selectedPerson === "All" || (t.assignee_name || t.assignedTo) === selectedPerson) &&
       (!selectedDate ||
         t.startDate === selectedDate ||
-        t.endDate === selectedDate)
+        t.start_date === selectedDate ||
+        t.endDate === selectedDate ||
+        t.end_date === selectedDate)
     );
   });
 
@@ -116,11 +145,13 @@ export default function Tasks() {
       if (editingTask) {
         // Update existing
         res = await updateTask(editingTask.id, taskData);
-        setTasks(prev => prev.map(t => t.id === editingTask.id ? res.data : t));
+        const updated = res.data?.data || res.data;
+        setTasks(prev => prev.map(t => t.id === editingTask.id ? updated : t));
       } else {
         // Create new
         res = await createTask(taskData);
-        setTasks([res.data, ...tasks]);
+        const created = res.data?.data || res.data;
+        setTasks([created, ...tasks]);
       }
       setShowAddTask(false);
       setEditingTask(null);
@@ -141,27 +172,44 @@ export default function Tasks() {
   };
 
   const handleStatusChange = async (id, newStatus) => {
+    // Find the task we're updating to send full data if needed by PUT
+    const taskToUpdate = tasks.find(t => t.id === id);
+    if (!taskToUpdate) return;
+
     // Optimistic Update
     const previousTasks = [...tasks];
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
 
     try {
-      await updateTask(id, { status: newStatus });
+      // Send the whole task object with the updated status
+      const res = await updateTask(id, {
+        ...taskToUpdate,
+        status: newStatus,
+        // Ensure we use snake_case for fields during update
+        title: taskToUpdate.title || taskToUpdate.taskName,
+        start_date: taskToUpdate.start_date || taskToUpdate.startDate || null,
+        end_date: taskToUpdate.end_date || taskToUpdate.endDate || null,
+        project_id: taskToUpdate.project_id || (taskToUpdate.project?.id || taskToUpdate.project?._id),
+        created_by: taskToUpdate.created_by || taskToUpdate.createdBy || null
+      });
+
+      const updatedTask = res.data?.data || res.data;
+      setTasks(prev => prev.map(t => (t.id === id || t._id === id) ? updatedTask : t));
     } catch (err) {
       console.error("Failed to update status", err);
       // Revert on failure
       setTasks(previousTasks);
-      alert("Failed to update task status");
+      alert("Failed to update task status. Please try again.");
     }
   };
 
-  const getCount = (status) => {
-    if (status === "All") return tasks.length;
-    return tasks.filter((t) => t.status === status).length;
+  const getCount = (statusValue) => {
+    if (statusValue === "All") return tasks.length;
+    return tasks.filter((t) => t.status === statusValue).length;
   };
 
   const canEdit = (task) => {
-    return role === "PROJECT_MANAGER" || role === "Project Manager" || role === "ADMIN" || task.created_by === currentUserId;
+    return role === "Project Manager" || role === "admin" || (task.created_by && task.created_by === currentUserId);
   };
 
   const styles = {
@@ -460,17 +508,17 @@ export default function Tasks() {
 
         viewMode === "grid" && React.createElement("div", { style: styles.statusFilterContainer },
           statuses.map((status) => {
-            const isActive = selectedStatus === status;
+            const isActive = selectedStatus === status.value;
             return React.createElement("button", {
-              key: status,
+              key: status.value,
               style: {
                 ...styles.statusChip,
                 ...(isActive ? styles.activeChip : {})
               },
-              onClick: () => setSelectedStatus(status)
+              onClick: () => setSelectedStatus(status.value)
             },
-              React.createElement("span", null, status),
-              React.createElement("span", { style: styles.chipCount }, getCount(status))
+              React.createElement("span", null, status.label),
+              React.createElement("span", { style: styles.chipCount }, getCount(status.value))
             );
           }),
           selectedDate && React.createElement("button", {
@@ -485,8 +533,8 @@ export default function Tasks() {
           projects: projects,
           projectList: projectList,
           peopleList: peopleList,
-          statusList: statuses.filter(s => s !== "All"),
-          userData: {},
+          statusList: statuses.filter(s => s.value !== "All"),
+          userData: userData,
           initialData: editingTask,
           currentUserId: currentUserId
         }),
@@ -495,18 +543,20 @@ export default function Tasks() {
           ? React.createElement(TaskListView, {
             tasks: filteredTasks,
             onStatusChange: handleStatusChange,
+            onEdit: handleEditTask,
             canEdit: canEdit,
             currentUser: currentUser,
-            userData: {}, // Mock removed
+            userData: userData,
             formatShortDate: formatShortDate,
             formatFullDate: formatFullDate
           })
           : React.createElement(TaskBoardView, {
             tasks: filteredTasks,
             onStatusChange: handleStatusChange,
+            onEdit: handleEditTask,
             canEdit: canEdit,
             currentUser: currentUser,
-            userData: {}, // Mock removed
+            userData: userData,
             formatShortDate: formatShortDate,
             formatFullDate: formatFullDate
           })

@@ -117,7 +117,7 @@ const Sprints = () => {
         </div>
 
         {/* ADD SPRINT BUTTON */}
-        {["Project Manager", "Admin", "admin"].includes(role) && (
+        {["Project Manager","admin"].includes(role) && (
           <button
             style={styles.addSprintBtn}
             onClick={() => setOpenAddSprint(true)}
