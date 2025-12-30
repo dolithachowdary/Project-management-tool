@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { FaTimes } from "react-icons/fa";
+import toast from "react-hot-toast";
 import { getModules } from "../api/modules";
 import { getProjectMembers } from "../api/projects";
 import { getSprints } from "../api/sprints";
+import { formatStatus } from "../utils/helpers";
 
 const RED = "#C62828";
 
@@ -28,32 +30,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
     collaborators: []
   });
 
-  React.useEffect(() => {
-    if (initialData) {
-      setIsEdit(true);
-      setFormData({
-        title: initialData.title || initialData.taskName || "",
-        description: initialData.description || "",
-        module_id: initialData.module_id || initialData.module?._id || "",
-        project_id: initialData.project_id || initialData.project?._id || initialData.project?.[0]?.id || "",
-        sprint_id: initialData.sprint_id || initialData.sprint?._id || "",
-        assignee_id: initialData.assignee_id || initialData.assignedTo?._id || initialData.assignedTo || "",
-        status: initialData.status || "To Do",
-        start_date: initialData.start_date ? initialData.start_date.split('T')[0] : (initialData.startDate ? initialData.startDate.split('T')[0] : ""),
-        end_date: initialData.end_date ? initialData.end_date.split('T')[0] : (initialData.endDate ? initialData.endDate.split('T')[0] : ""),
-        priority: initialData.priority || "Medium",
-        est_hours: initialData.est_hours || "",
-        created_by: initialData.created_by || currentUserId || localStorage.getItem("userId") || "",
-        collaborators: initialData.collaborators || []
-      });
-      const pid = initialData.project_id || initialData.project?._id;
-      if (pid) {
-        fetchProjectDetails(pid);
-      }
-    }
-  }, [initialData]);
-
-  const fetchProjectDetails = async (pid) => {
+  const fetchProjectDetails = useCallback(async (pid) => {
     try {
       const [mods, mems, sprnts] = await Promise.all([
         getModules(pid),
@@ -66,12 +43,37 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
     } catch (err) {
       console.error("Failed to load project details", err);
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    if (initialData) {
+      setIsEdit(true);
+      setFormData({
+        title: initialData.title || initialData.taskName || "",
+        description: initialData.description || "",
+        module_id: initialData.module_id || initialData.module?._id || "",
+        project_id: initialData.project_id || initialData.project?._id || initialData.project?.[0]?.id || "",
+        sprint_id: initialData.sprint_id || initialData.sprint?._id || "",
+        assignee_id: initialData.assignee_id || initialData.assignedTo?._id || initialData.assignedTo || "",
+        status: formatStatus(initialData.status) || "To Do",
+        start_date: initialData.start_date ? initialData.start_date.split('T')[0] : (initialData.startDate ? initialData.startDate.split('T')[0] : ""),
+        end_date: initialData.end_date ? initialData.end_date.split('T')[0] : (initialData.endDate ? initialData.endDate.split('T')[0] : ""),
+        priority: initialData.priority || "Medium",
+        est_hours: initialData.est_hours || "",
+        created_by: initialData.created_by || currentUserId || localStorage.getItem("userId") || "",
+        collaborators: initialData.collaborators || []
+      });
+      const pid = initialData.project_id || initialData.project?._id;
+      if (pid) {
+        fetchProjectDetails(pid);
+      }
+    }
+  }, [initialData, currentUserId, fetchProjectDetails]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      alert("Please enter title");
+      toast.error("Please enter title");
       return;
     }
     // Sanitize payload: convert empty strings to null for optional/date fields

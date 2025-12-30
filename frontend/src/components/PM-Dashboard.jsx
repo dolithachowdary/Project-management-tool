@@ -1,5 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { getProjects } from "../api/projects";
+import { getSprints } from "../api/sprints";
+import Loader from "./Loader";
 
 import Stats from "./Stats";
 import Card from "./Card";
@@ -12,84 +15,81 @@ import WeeklyTaskGraph from "./WeeklyTaskGraph";
 export default function PMDashboard() {
   const navigate = useNavigate();
 
-  const allMembers = [
-    { id: 1, name: "Deepak Chandra", color: "#f6c1cc" },
-    { id: 2, name: "Harsha Anand", color: "#dfe6d8" },
-    { id: 3, name: "Nikhil Kumar", color: "#d8edf6" },
-    { id: 4, name: "Varun Chaitanya", color: "#e0e7ff" },
-  ];
+  /* ---------------- STATE ---------------- */
+  const [activeProjects, setActiveProjects] = React.useState([]);
+  const [activeSprints, setActiveSprints] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const activeProjects = [
-    {
-      id: 1,
-      title: "TourO Web Development",
-      progress: 70,
-      startDate: "January 10, 2024",
-      endDate: "July 30, 2024",
-      members: [allMembers[0], allMembers[1]],
-      availableMembers: allMembers,
-      timeLeft: "2 Days Left",
-      color: "#d47b4a",
-    },
-    {
-      id: 2,
-      title: "Dashboard Portal",
-      progress: 50,
-      startDate: "January 10, 2024",
-      endDate: "July 30, 2024",
-      members: [allMembers[2]],
-      availableMembers: allMembers,
-      timeLeft: "2 Weeks Left",
-      color: "#cddc39",
-    },
-    {
-      id: 3,
-      title: "Designing",
-      progress: 85,
-      startDate: "January 10, 2024",
-      endDate: "July 30, 2024",
-      members: [allMembers[1], allMembers[3]],
-      availableMembers: allMembers,
-      timeLeft: "1 Month Left",
-      color: "#1e88e5",
-    },
-  ];
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [projectsRes, sprintsRes] = await Promise.all([
+          getProjects(), // Assuming this fetches all projects
+          getSprints()   // Assuming this fetches all sprints
+        ]);
 
-  const activeSprints = [
-    {
-      id: 4,
-      title: "TourO Web Development, Sprint 1",
-      progress: 40,
-      startDate: "January 10, 2024",
-      endDate: "July 30, 2024",
-      members: [allMembers[0]],
-      availableMembers: allMembers,
-      timeLeft: "1 Week Left",
-      color: "#d47b4a",
-    },
-    {
-      id: 5,
-      title: "Dashboard Portal, Sprint 2",
-      progress: 65,
-      startDate: "January 10, 2024",
-      endDate: "July 30, 2024",
-      members: [allMembers[1], allMembers[2]],
-      availableMembers: allMembers,
-      timeLeft: "2 Weeks Left",
-      color: "#cddc39",
-    },
-    {
-      id: 6,
-      title: "Designing, Sprint 3",
-      progress: 90,
-      startDate: "January 10, 2024",
-      endDate: "July 30, 2024",
-      members: [allMembers[3]],
-      availableMembers: allMembers,
-      timeLeft: "1 Week Left",
-      color: "#1e88e5",
-    },
-  ];
+        const projectsData = projectsRes.data?.data || projectsRes.data || [];
+        const sprintsData = sprintsRes.data?.data || sprintsRes.data || [];
+
+        // Filter for active projects if needed, or take top 3 latest
+        const mappedProjects = projectsData.slice(0, 3).map(p => ({
+          id: p.id || p._id,
+          title: p.name,
+          progress: p.progress || (() => {
+            const total = p.totalTasks || p.total_tasks || p.tasks_count || p.summary?.total_tasks || p.summary?.tasks?.total || 0;
+            const completed = p.completedTasks || p.completed_tasks || p.summary?.completed_tasks || p.summary?.tasks?.completed || 0;
+            return total > 0 ? Math.round((completed / total) * 100) : 0;
+          })(),
+          startDate: formatDate(p.start_date || p.startDate),
+          endDate: formatDate(p.end_date || p.endDate),
+          members: (p.members || []).map(m => ({
+            id: m.user_id || m,
+            name: m.name || "Member",
+            color: m.color || "#e0e7ff"
+          })),
+          availableMembers: [], // Not critical for card view
+          timeLeft: p.status || "Active",
+          color: getRandomColor(p.id)
+        }));
+
+        const mappedSprints = sprintsData.slice(0, 3).map(s => ({
+          id: s.id,
+          title: s.name,
+          progress: s.progress || (() => {
+            const total = s.totalTasks || s.total_tasks || s.tasks_count || s.summary?.total_tasks || s.summary?.tasks?.total || 0;
+            const completed = s.completedTasks || s.completed_tasks || s.summary?.completed_tasks || s.summary?.tasks?.completed || 0;
+            return total > 0 ? Math.round((completed / total) * 100) : 0;
+          })(),
+          startDate: formatDate(s.start_date),
+          endDate: formatDate(s.end_date),
+          members: [],
+          availableMembers: [],
+          timeLeft: s.status || "Active",
+          color: getRandomColor(s.id)
+        }));
+
+        setActiveProjects(mappedProjects);
+        setActiveSprints(mappedSprints);
+      } catch (err) {
+        console.error("Dashboard fetch error", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const formatDate = (d) => {
+    if (!d) return "-";
+    return new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  }
+
+  const getRandomColor = (id) => {
+    const colors = ["#d47b4a", "#cddc39", "#1e88e5", "#e91e63", "#9c27b0"];
+    return colors[(typeof id === 'number' ? id : 0) % colors.length] || colors[0];
+  }
+
+  if (loading) return <Loader />;
 
   return (
     <div style={styles.page}>
@@ -123,6 +123,7 @@ export default function PMDashboard() {
                 <Card {...card} />
               </div>
             ))}
+            {activeProjects.length === 0 && <p style={{ color: '#999' }}>No active projects found.</p>}
           </div>
 
           <h3 style={styles.sectionTitle}>Active Sprints</h3>
@@ -136,6 +137,7 @@ export default function PMDashboard() {
                 <Card {...card} />
               </div>
             ))}
+            {activeSprints.length === 0 && <p style={{ color: '#999' }}>No active sprints found.</p>}
           </div>
         </div>
 
@@ -195,7 +197,7 @@ const styles = {
     borderRadius: 12,
     border: "1px solid #e5e5e5",
     padding: 16,
-    flex: 1, 
+    flex: 1,
     display: "flex",
   },
 

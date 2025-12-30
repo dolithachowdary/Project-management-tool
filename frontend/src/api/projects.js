@@ -3,13 +3,13 @@ import api from "./axios";
 /* ---------------- READ ---------------- */
 
 export const getProjects = () =>
-  api.get("/projects");
+  api.getWithCache("/projects");
 
 export const getProjectById = (id) =>
   api.get(`/projects/${id}`);
 
 export const getProjectSummary = (id) =>
-  api.get(`/projects/${id}/summary`);
+  api.getWithCache(`/projects/${id}/summary`);
 
 export const getProjectActivity = (id) =>
   api.get(`/projects/${id}/activity`);

@@ -30,8 +30,7 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [showMembers, setShowMembers] = useState(false);
 
-  // kept only for UI (NOT sent to backend)
-  const [document, setDocument] = useState(null);
+
 
   const [modules, setModules] = useState([{ name: "", description: "" }]);
 
@@ -162,11 +161,7 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
             <input type="date" style={styles.input} onChange={(e) => setEndDate(e.target.value)} />
           </div>
 
-          {/* DOCUMENT (UI ONLY) */}
-          <div style={styles.field}>
-            <label>Project document</label>
-            <input type="file" style={styles.input} onChange={(e) => setDocument(e.target.files[0])} />
-          </div>
+
 
           {/* MEMBERS */}
           <div style={styles.field}>

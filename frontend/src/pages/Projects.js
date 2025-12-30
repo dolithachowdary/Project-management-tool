@@ -4,7 +4,8 @@ import Header from "../components/Header";
 import Card from "../components/Card";
 import AddProject from "../components/AddProject";
 import { useNavigate } from "react-router-dom";
-import { getProjects } from "../api/projects"; //
+import { getProjects } from "../api/projects";
+import Loader from "../components/Loader";
 
 const Projects = ({ role = "Project Manager" }) => {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ const Projects = ({ role = "Project Manager" }) => {
 
         <div style={styles.pageInner}>
           {loading ? (
-            <div style={{ padding: 20 }}>Loading...</div>
+            <Loader />
           ) : (
             Object.entries(projectsByStatus).map(([title, list]) =>
               list.length > 0 && (
@@ -75,11 +76,19 @@ const Projects = ({ role = "Project Manager" }) => {
                       >
                         <Card
                           title={p.name}
-                          progress={p.totalTasks > 0 ? Math.round((p.completedTasks / p.totalTasks) * 100) : 0}
-                          startDate={formatDate(p.start_date)}
+                          progress={(() => {
+                            const total = p.totalTasks || p.total_tasks || p.tasks_count || p.summary?.total_tasks || p.summary?.tasks?.total || 0;
+                            const completed = p.completedTasks || p.completed_tasks || p.summary?.completed_tasks || p.summary?.tasks?.completed || 0;
+                            return total > 0 ? Math.round((completed / total) * 100) : 0;
+                          })()}
+                          startDate={formatDate(p.start_date || p.startDate)}
                           endDate={formatDate(p.end_date)}
-                          members={[]}
-                          timeLeft={p.status}
+                          members={(p.members || []).map(m => ({
+                            id: m.id || m.user_id || m,
+                            name: m.name || m.full_name || "Member",
+                            color: m.color || "#e0e7ff"
+                          }))}
+                          timeLeft={p.status === "active" ? "Active" : p.status === "completed" ? "Completed" : "On Hold"}
                           color="#1e88e5"
                         />
                       </div>

@@ -1,7 +1,7 @@
 import api from "./axios";
 
 export const getModules = (project_id) =>
-  api.get("/modules", { params: { project_id } });
+  api.getWithCache("/modules", { params: { project_id } });
 
 export const createModule = (data) =>
   api.post("/modules", data);

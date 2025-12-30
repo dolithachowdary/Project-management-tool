@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Edit2, Users, UserPlus, Info } from "lucide-react";
+import { Edit2, UserPlus } from "lucide-react";
+import Avatar from "./Avatar";
+import { formatStatus } from "../utils/helpers";
 
 const RED = "#C62828";
 
@@ -249,15 +251,20 @@ export default function TaskListView({
             const priorityColors = getPriorityColor(task.priority);
 
             // Fixed user lookup with fallback to names in task object
-            const createdByUser = userData[task.created_by || task.createdBy] || {
-              name: task.created_by_name || task.createdBy || task.created_by,
-              role: "User",
-              color: "#E6E6E6"
+            const createdById = task.created_by?.id || task.created_by?._id || task.created_by || task.createdBy;
+            const createdByUser = userData[createdById] || {
+              name: task.created_by_name || task.created_by?.full_name || task.created_by?.name || (typeof createdById === 'string' ? createdById : "Unknown"),
+              role: task.created_by?.role || "User",
+              color: task.created_by?.color || "#E6E6E6",
+              avatar_url: task.created_by?.avatar_url
             };
-            const assignedToUser = userData[task.assignee_id || task.assignedTo] || {
-              name: task.assignee_name || task.assignedTo || task.assignee_id,
-              role: "User",
-              color: "#E6E6E6"
+
+            const assignedToId = task.assignee_id?.id || task.assignee_id?._id || task.assignee_id || task.assignedTo;
+            const assignedToUser = userData[assignedToId] || {
+              name: task.assignee_name || task.assignee_id?.full_name || task.assignee_id?.name || task.assignedTo?.full_name || task.assignedTo?.name || (typeof assignedToId === 'string' ? assignedToId : "Unassigned"),
+              role: task.assignee_id?.role || task.assignedTo?.role || "User",
+              color: task.assignee_id?.color || task.assignedTo?.color || "#E6E6E6",
+              avatar_url: task.assignee_id?.avatar_url || task.assignedTo?.avatar_url
             };
             const isHovered = hoveredRow === task.id;
 
@@ -283,16 +290,13 @@ export default function TaskListView({
               // Assigned To
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.avatarContainer },
-                  React.createElement("div", {
-                    style: {
-                      ...styles.avatar,
-                      backgroundColor: assignedToUser.color || "#888",
-                      backgroundImage: assignedToUser.avatar_url ? `url(${assignedToUser.avatar_url})` : "none",
-                      backgroundSize: "cover"
-                    },
+                  React.createElement(Avatar, {
+                    name: assignedToUser.name || "Unassigned",
+                    size: 36,
+                    style: { marginLeft: -8, backgroundImage: assignedToUser.avatar_url ? `url(${assignedToUser.avatar_url})` : "none" },
                     onMouseEnter: () => setHoveredAvatar({ id: task.id, type: 'assigned' }),
                     onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                  }, !assignedToUser.avatar_url && (assignedToUser.name || "?").charAt(0)),
+                  }),
                   hoveredAvatar.id === task.id && hoveredAvatar.type === 'assigned' &&
                   React.createElement("div", { style: styles.tooltip },
                     `${assignedToUser.name || "Unassigned"} (${assignedToUser.role})`,
@@ -305,19 +309,21 @@ export default function TaskListView({
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.userAvatars },
                   (task.collaborators || []).slice(0, 3).map((collab, i) => {
-                    const collabUser = userData[collab] || { name: collab, role: "User", color: "#E6E6E6" };
+                    const collabId = collab?.id || collab?._id || (typeof collab === 'string' ? collab : null);
+                    const collabUser = userData[collabId] || {
+                      name: collab?.full_name || collab?.name || (typeof collab === 'string' ? collab : "Collaborator"),
+                      role: collab?.role || "User",
+                      color: collab?.color || "#E6E6E6",
+                      avatar_url: collab?.avatar_url
+                    };
                     return React.createElement("div", { key: i, style: { ...styles.avatarContainer, zIndex: 10 - i } },
-                      React.createElement("div", {
-                        style: {
-                          ...styles.avatar,
-                          backgroundColor: collabUser.color || "#666",
-                          marginLeft: i === 0 ? 0 : -8,
-                          backgroundImage: collabUser.avatar_url ? `url(${collabUser.avatar_url})` : "none",
-                          backgroundSize: "cover"
-                        },
+                      React.createElement(Avatar, {
+                        name: collabUser.name,
+                        size: 36,
+                        style: { marginLeft: i === 0 ? 0 : -8, backgroundImage: collabUser.avatar_url ? `url(${collabUser.avatar_url})` : "none" },
                         onMouseEnter: () => setHoveredAvatar({ id: task.id, type: `collab-${i}` }),
                         onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                      }, !collabUser.avatar_url && (collabUser.name || "?").charAt(0)),
+                      }),
                       hoveredAvatar.id === task.id && hoveredAvatar.type === `collab-${i}` &&
                       React.createElement("div", { style: styles.tooltip },
                         `${collabUser.name} (${collabUser.role})`,
@@ -333,17 +339,13 @@ export default function TaskListView({
               // Created By
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.avatarContainer },
-                  React.createElement("div", {
-                    style: {
-                      ...styles.avatar,
-                      backgroundColor: createdByUser.color || "#555",
-                      marginLeft: 0,
-                      backgroundImage: createdByUser.avatar_url ? `url(${createdByUser.avatar_url})` : "none",
-                      backgroundSize: "cover"
-                    },
+                  React.createElement(Avatar, {
+                    name: createdByUser.name || "Unknown",
+                    size: 36,
+                    style: { marginLeft: 0, backgroundImage: createdByUser.avatar_url ? `url(${createdByUser.avatar_url})` : "none" },
                     onMouseEnter: () => setHoveredAvatar({ id: task.id, type: 'creator' }),
                     onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                  }, !createdByUser.avatar_url && (createdByUser.name || "?").charAt(0)),
+                  }),
                   hoveredAvatar.id === task.id && hoveredAvatar.type === 'creator' &&
                   React.createElement("div", { style: styles.tooltip },
                     `${createdByUser.name || "Unknown"} (${createdByUser.role})`,
@@ -360,12 +362,12 @@ export default function TaskListView({
                     color: priorityColors.text,
                     borderColor: priorityColors.border
                   }
-                }, task.priority)
+                }, task.priority || task.Priority || "Medium")
               ),
 
               React.createElement("td", { style: styles.td },
                 React.createElement("select", {
-                  value: task.status,
+                  value: formatStatus(task.status),
                   onChange: (e) => onStatusChange(task.id, e.target.value),
                   style: {
                     ...styles.statusDropdown,

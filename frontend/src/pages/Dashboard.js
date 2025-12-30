@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import Loader from "../components/Loader";
 
 import PMDashboard from "../components/PM-Dashboard";
 import DevDashboard from "../components/Dev-Dashboard";
@@ -24,8 +25,9 @@ function Dashboard() {
     }
   }, []);
 
+
   if (!role) {
-    return <p style={{ textAlign: "center", marginTop: "50px" }}>Loading...</p>;
+    return <Loader />;
   }
 
   /* ---------- TAB CONTENT ---------- */

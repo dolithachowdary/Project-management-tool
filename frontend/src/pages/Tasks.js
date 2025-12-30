@@ -4,6 +4,8 @@ import Header from "../components/Header";
 import TaskForm from "../components/TaskForm";
 import TaskListView from "../components/TaskListView";
 import TaskBoardView from "../components/TaskBoardView";
+import Loader from "../components/Loader";
+import toast from "react-hot-toast";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import gridIcon from "../assets/icons/grid.svg";
 import dashboardIcon from "../assets/icons/dashboard.svg";
@@ -11,6 +13,7 @@ import dashboardIcon from "../assets/icons/dashboard.svg";
 import { getTasks, createTask, updateTask } from "../api/tasks";
 import { getProjects } from "../api/projects";
 import { getAssignableUsers } from "../api/users";
+import { toApiStatus, formatStatus } from "../utils/helpers";
 
 const role = localStorage.getItem("role") || "Project Manager";
 const currentUser = localStorage.getItem("userName") || "A";
@@ -28,6 +31,7 @@ export default function Tasks() {
   const [selectedPerson, setSelectedPerson] = useState("All");
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -36,6 +40,7 @@ export default function Tasks() {
   // Data Fetching
   React.useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const [tasksRes, projectsRes, usersRes] = await Promise.all([
           getTasks(),
@@ -63,6 +68,9 @@ export default function Tasks() {
         setUserData(userMap);
       } catch (err) {
         console.error("Failed to fetch data", err);
+        toast.error("Failed to fetch data");
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -128,7 +136,7 @@ export default function Tasks() {
         mName.includes(q) ||
         sName.includes(q) ||
         tCode.includes(q)) &&
-      (selectedStatus === "All" || t.status === selectedStatus) &&
+      (selectedStatus === "All" || formatStatus(t.status) === selectedStatus) &&
       (selectedProject === "All" || t.projectName === selectedProject) &&
       (selectedPerson === "All" || (t.assignee_name || t.assignedTo) === selectedPerson) &&
       (!selectedDate ||
@@ -141,15 +149,18 @@ export default function Tasks() {
 
   const handleSaveTask = async (taskData) => {
     try {
+      // Fabricate status to API format
+      const payload = { ...taskData, status: toApiStatus(taskData.status) };
+
       let res;
       if (editingTask) {
         // Update existing
-        res = await updateTask(editingTask.id, taskData);
+        res = await updateTask(editingTask.id, payload);
         const updated = res.data?.data || res.data;
         setTasks(prev => prev.map(t => t.id === editingTask.id ? updated : t));
       } else {
         // Create new
-        res = await createTask(taskData);
+        res = await createTask(payload);
         const created = res.data?.data || res.data;
         setTasks([created, ...tasks]);
       }
@@ -157,7 +168,7 @@ export default function Tasks() {
       setEditingTask(null);
     } catch (err) {
       console.error("Failed to save task", err);
-      alert("Failed to save task");
+      toast.error("Failed to save task");
     }
   };
 
@@ -181,17 +192,24 @@ export default function Tasks() {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
 
     try {
-      // Send the whole task object with the updated status
-      const res = await updateTask(id, {
-        ...taskToUpdate,
-        status: newStatus,
-        // Ensure we use snake_case for fields during update
+      // Send a SANITIZED payload. 
+      // Do NOT spread taskToUpdate directly as it may contain nested objects (project, assignee)
+      // that the backend PUT endpoint might choke on if it expects simple IDs.
+      const payload = {
+        status: toApiStatus(newStatus),
         title: taskToUpdate.title || taskToUpdate.taskName,
+        // Only include dates if they are valid strings
         start_date: taskToUpdate.start_date || taskToUpdate.startDate || null,
         end_date: taskToUpdate.end_date || taskToUpdate.endDate || null,
-        project_id: taskToUpdate.project_id || (taskToUpdate.project?.id || taskToUpdate.project?._id),
-        created_by: taskToUpdate.created_by || taskToUpdate.createdBy || null
-      });
+        // Ensure IDs are sent, not objects
+        project_id: taskToUpdate.project_id || (typeof taskToUpdate.project === 'object' ? taskToUpdate.project?.id : taskToUpdate.project),
+        created_by: taskToUpdate.created_by || (typeof taskToUpdate.createdBy === 'object' ? taskToUpdate.createdBy?.id : taskToUpdate.createdBy),
+        assignee_id: taskToUpdate.assignee_id || (typeof taskToUpdate.assignedTo === 'object' ? taskToUpdate.assignedTo?.id : taskToUpdate.assignedTo),
+        priority: taskToUpdate.priority || "Medium", // Ensure priority is preserved
+        description: taskToUpdate.description || ""
+      };
+
+      const res = await updateTask(id, payload);
 
       const updatedTask = res.data?.data || res.data;
       setTasks(prev => prev.map(t => (t.id === id || t._id === id) ? updatedTask : t));
@@ -199,7 +217,7 @@ export default function Tasks() {
       console.error("Failed to update status", err);
       // Revert on failure
       setTasks(previousTasks);
-      alert("Failed to update task status. Please try again.");
+      toast.error("Failed to update task status. Please try again.");
     }
   };
 
@@ -402,6 +420,7 @@ export default function Tasks() {
   };
 
   return React.createElement("div", { style: styles.pageContainer },
+    isLoading && React.createElement(Loader, null),
     React.createElement(Sidebar, null),
     React.createElement("div", { style: styles.mainContent },
       React.createElement(Header, { role: role }),

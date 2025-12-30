@@ -1,41 +1,51 @@
 import React, { useEffect, useState } from "react";
 import { getProjectActivity } from "../api/projects";
+import api from "../api/axios";
 
 export default function RecentActivity({ projectId }) {
   const [logs, setLogs] = useState([]);
 
-  useEffect(() => {
-    if (projectId) load();
+  const load = React.useCallback(async () => {
+    try {
+      const res = projectId
+        ? await getProjectActivity(projectId)
+        : await api.get("/change-logs");
+
+      const data = res.data?.data || res.data || [];
+      setLogs(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load activity logs", err);
+      setLogs([]);
+    }
   }, [projectId]);
 
-  const load = async () => {
-    const res = await getProjectActivity(projectId);
-    setLogs(res.data);
-  };
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <div style={styles.card}>
       <div style={styles.header}>Recent Activity</div>
-      <div style={styles.sub}>Project logs</div>
+      <div style={styles.sub}>{projectId ? "Project logs" : "Recent global activity"}</div>
 
-      {logs.length === 0 && (
+      {(!Array.isArray(logs) || logs.length === 0) ? (
         <div style={styles.empty}>No activity yet</div>
-      )}
-
-      {logs.map(l => (
-        <div key={l.id} style={styles.item}>
-          <div style={styles.iconWrap}>📝</div>
-          <div>
-            <div style={styles.title}>{l.action}</div>
-            <div style={styles.time}>
-              {new Date(l.changed_at).toLocaleString()}
-            </div>
-            <div style={styles.desc}>
-              By {l.user_name || "System"}
+      ) : (
+        logs.map((l, i) => (
+          <div key={l.id || l._id || i} style={styles.item}>
+            <div style={styles.iconWrap}>📝</div>
+            <div>
+              <div style={styles.title}>{l.action}</div>
+              <div style={styles.time}>
+                {new Date(l.changed_at).toLocaleString()}
+              </div>
+              <div style={styles.desc}>
+                By {l.user_name || "System"}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 }

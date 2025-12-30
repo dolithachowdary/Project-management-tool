@@ -1,7 +1,7 @@
 import api from "./axios";
 
 export const getSprints = (project_id) =>
-    api.get("/sprints", { params: { project_id } });
+    api.getWithCache("/sprints", { params: { project_id } });
 
 export const getSprintById = (id) =>
     api.get(`/sprints/${id}`);

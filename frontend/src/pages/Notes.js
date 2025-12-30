@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import {
@@ -33,7 +33,6 @@ export default function Notes() {
   // New Note Widget State
   const [newNoteColor, setNewNoteColor] = useState(COLORS[0]);
   const [isWidgetMenuOpen, setIsWidgetMenuOpen] = useState(false);
-  const [newNoteContent, setNewNoteContent] = useState("");
 
   // Inline Editing State
   const [editingId, setEditingId] = useState(null); // ID of note being edited
@@ -43,8 +42,7 @@ export default function Notes() {
   // Menu State
   const [openCardMenuId, setOpenCardMenuId] = useState(null);
 
-  const widgetEditorRef = useRef(null);
-  const inlineEditorRef = useRef(null);
+
 
   /* -------- TEXT FORMATTING -------- */
   const format = (cmd, isInline = false) => {
@@ -82,12 +80,11 @@ export default function Notes() {
 
     // Reset widget
     el.innerHTML = "";
-    setNewNoteContent("");
     setNewNoteColor(COLORS[0]);
   };
 
   /* -------- UPDATE EXISTING NOTE -------- */
-  const updateNote = (id) => {
+  const updateNote = useCallback((id) => {
     const el = document.getElementById(`inline-editor-${id}`);
     if (!el) return;
     const content = el.innerHTML.trim();
@@ -106,7 +103,7 @@ export default function Notes() {
     setEditingId(null);
     setEditContent("");
     setEditColor(null);
-  };
+  }, [editColor]);
 
   /* -------- ACTIONS -------- */
   const deleteNote = (id) => {
@@ -178,7 +175,7 @@ export default function Notes() {
 
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [editingId, openCardMenuId, isWidgetMenuOpen, notes, editColor]);
+  }, [editingId, openCardMenuId, isWidgetMenuOpen, updateNote]);
   // Added dependencies to ensure updateNote has access to latest state scope if needed (though updateNote uses refs mostly)
 
   /* ================= RENDER ================= */
@@ -379,7 +376,6 @@ export default function Notes() {
             suppressContentEditableWarning
             style={styles.editorInput}
             placeholder="Type anything to remember..."
-            onInput={(e) => setNewNoteContent(e.currentTarget.innerHTML)}
           />
 
           {/* Toolbar */}

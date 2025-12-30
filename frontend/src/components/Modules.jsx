@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getModules } from "../api/modules";
-import { Box, ChevronRight, Layers } from "lucide-react";
+import { ChevronRight, Layers } from "lucide-react";
+import Loader from "./Loader";
 
 export default function Modules({ projectId }) {
   const [modules, setModules] = useState([]);
@@ -19,7 +20,7 @@ export default function Modules({ projectId }) {
     }
   }, [projectId]);
 
-  if (loading) return <div style={styles.card}>Loading modules...</div>;
+  if (loading) return <Loader fullScreen={false} />;
 
   return (
     <div style={styles.container}>

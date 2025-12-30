@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -7,8 +7,12 @@ import Modules from "../components/Modules";
 import RecentActivity from "../components/RecentActivity";
 import TaskListView from "../components/TaskListView";
 import { getProjectById, getProjectSummary, getProjectMembers } from "../api/projects";
-import { getTasks } from "../api/tasks";
+import { getTasks, createTask, updateTask } from "../api/tasks";
 import { getAssignableUsers } from "../api/users";
+import Loader from "../components/Loader";
+import TaskForm from "../components/TaskForm";
+import { toApiStatus } from "../utils/helpers";
+import toast from "react-hot-toast";
 
 const ProjectDetails = ({ role = "Project Manager" }) => {
   const { id } = useParams();
@@ -21,15 +25,11 @@ const ProjectDetails = ({ role = "Project Manager" }) => {
   const [tasks, setTasks] = useState([]);
   const [userData, setUserData] = useState({});
 
-  useEffect(() => {
-    if (!id) {
-      navigate("/projects");
-      return;
-    }
-    loadData();
-  }, [id]);
+  // Editing state
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [pRes, sRes, mRes, tRes, uRes] = await Promise.all([
@@ -66,12 +66,71 @@ const ProjectDetails = ({ role = "Project Manager" }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) {
+      navigate("/projects");
+      return;
+    }
+    loadData();
+  }, [id, loadData, navigate]);
 
   const formatDate = (d) =>
     d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
-  if (loading) return <div style={{ padding: 40, textAlign: "center" }}>Loading project details...</div>;
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setShowAddTask(true);
+  };
+
+  const handleCancelSave = () => {
+    setShowAddTask(false);
+    setEditingTask(null);
+  };
+
+  const handleSaveTask = async (taskData) => {
+    try {
+      // Fabricate status to API format
+      const payload = { ...taskData, status: toApiStatus(taskData.status) };
+
+      let res;
+      if (editingTask) {
+        // Update existing (minimal payload logic similar to Tasks.js recommended but reusing simple update for now or duplicating logic if needed. 
+        // For consistency let's assume updateTask handles the PUT. Ideally we use the same sanitized logic as Tasks.js)
+
+        const sanitizedPayload = {
+          status: toApiStatus(taskData.status),
+          title: taskData.title,
+          start_date: taskData.startDate || taskData.start_date || null,
+          end_date: taskData.endDate || taskData.end_date || null,
+          project_id: id, // Ensure it stays in this project
+          created_by: taskData.createdBy || taskData.created_by,
+          assignee_id: taskData.assignedTo || taskData.assignee_id,
+          priority: taskData.priority,
+          description: taskData.description
+        };
+
+        res = await updateTask(editingTask.id, sanitizedPayload);
+        const updated = res.data?.data || res.data;
+        setTasks(prev => prev.map(t => t.id === editingTask.id ? updated : t));
+      } else {
+        // Create new
+        const createPayload = { ...payload, project_id: id }; // Force current project
+        res = await createTask(createPayload);
+        const created = res.data?.data || res.data;
+        setTasks([created, ...tasks]);
+      }
+      setShowAddTask(false);
+      setEditingTask(null);
+      toast.success("Task saved successfully");
+    } catch (err) {
+      console.error("Failed to save task", err);
+      toast.error("Failed to save task");
+    }
+  };
+
+  if (loading) return <Loader />;
   if (!project) return <div style={{ padding: 40, textAlign: "center" }}>Project not found.</div>;
 
   // Robust Summary Counts
@@ -112,12 +171,26 @@ const ProjectDetails = ({ role = "Project Manager" }) => {
               <TaskListView
                 tasks={tasks}
                 userData={userData}
-                onStatusChange={() => { }} // Read-only or implement later
-                onEdit={() => navigate("/tasks")} // Redirect to main tasks for now
-                canEdit={() => false}
+                onStatusChange={() => { }} // Read-only status change from list for now, or implement if needed
+                onEdit={handleEditTask}
+                canEdit={() => true}
                 formatShortDate={(d) => d ? new Date(d).toLocaleDateString() : "-"}
                 formatFullDate={(d) => d ? new Date(d).toLocaleString() : ""}
               />
+
+              {showAddTask && (
+                <TaskForm
+                  onSave={handleSaveTask}
+                  onCancel={handleCancelSave}
+                  projects={[{ id: project.id, name: project.name }]} // Limit to current project
+                  projectList={["All", project.name]}
+                  peopleList={["All", ...Object.values(userData).map(u => u.name)]} // Simple list
+                  statusList={[{ label: "To Do", value: "To Do" }, { label: "In Progress", value: "In Progress" }, { label: "Review", value: "Review" }, { label: "Done", value: "Done" }]}
+                  userData={userData}
+                  initialData={editingTask}
+                  currentUserId={localStorage.getItem("userId")}
+                />
+              )}
 
               <div style={{ marginTop: 24 }}>
                 <Modules projectId={id} />

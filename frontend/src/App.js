@@ -10,34 +10,39 @@ import Tasks from "./pages/Tasks";
 import Timesheets from "./pages/Timesheets";
 import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
-import Notes from "./pages/Notes"
+import Notes from "./pages/Notes";
+import ToastManager from "./components/ToastManager";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/login" />} />
+    <>
+      <ToastManager />
 
-        {/* Auth */}
-        <Route path="/login" element={<LoginPage />} />
+      <Router>
+        <Routes>
+          {/* Default redirect */}
+          <Route path="/" element={<Navigate to="/login" />} />
 
-        {/* Main pages */}
-        <Route path="/dashboard" element={<Dashboard />} />
+          {/* Auth */}
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Projects */}
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/:id" element={<ProjectDetails />} />
+          {/* Main pages */}
+          <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* Other pages */}
-        <Route path="/sprints" element={<Sprints />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/timesheets" element={<Timesheets />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/notes" element={<Notes />} />
-      </Routes>
-    </Router>
+          {/* Projects */}
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:id" element={<ProjectDetails />} />
+
+          {/* Other pages */}
+          <Route path="/sprints" element={<Sprints />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/timesheets" element={<Timesheets />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/notes" element={<Notes />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 

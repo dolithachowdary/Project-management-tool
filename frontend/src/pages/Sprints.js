@@ -5,6 +5,7 @@ import Card from "../components/Card";
 import { useNavigate } from "react-router-dom";
 import AddSprint from "../components/AddSprint";
 import { getSprints } from "../api/sprints";
+import Loader from "../components/Loader";
 
 const Sprints = () => {
   const navigate = useNavigate();
@@ -32,8 +33,8 @@ const Sprints = () => {
 
   // Progress calculation logic
   const processSprint = (s) => {
-    const total = s.totalTasks || 0;
-    const completed = s.completedTasks || 0;
+    const total = s.totalTasks || s.total_tasks || s.tasks_count || s.summary?.total_tasks || s.summary?.tasks?.total || 0;
+    const completed = s.completedTasks || s.completed_tasks || s.summary?.completed_tasks || s.summary?.tasks?.completed || 0;
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     // Status logic
@@ -70,7 +71,7 @@ const Sprints = () => {
 
         <div style={styles.pageInner}>
           {loading ? (
-            <div style={{ padding: 20 }}>Loading...</div>
+            <Loader />
           ) : (
             <>
               {/* ACTIVE SPRINTS */}
@@ -117,7 +118,7 @@ const Sprints = () => {
         </div>
 
         {/* ADD SPRINT BUTTON */}
-        {["Project Manager","admin"].includes(role) && (
+        {["Project Manager", "admin"].includes(role) && (
           <button
             style={styles.addSprintBtn}
             onClick={() => setOpenAddSprint(true)}

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import Avatar from "./Avatar";
+
 
 const RED = "#C62828";
 
@@ -201,15 +203,19 @@ export default function TaskBoardView({
                 const isHovered = hoveredCard === (task.id || task._id);
 
                 // Fixed user lookup with fallbacks
-                const assignedToUser = userData[task.assignee_id || task.assignedTo] || {
-                  name: task.assignee_name || task.assignedTo || task.assignee_id || "Unassigned",
+                const assignedToId = task.assignee_id?.id || task.assignee_id?._id || task.assignee_id || task.assignedTo;
+                const assignedToUser = userData[assignedToId] || {
+                  name: task.assignee_name || task.assignee_id?.full_name || task.assignee_id?.name || task.assignedTo?.full_name || task.assignedTo?.name || (typeof assignedToId === 'string' ? assignedToId : "Unassigned"),
                   role: "User",
-                  color: "#E6E6E6"
+                  color: "#E6E6E6",
+                  avatar_url: task.assignee_id?.avatar_url || task.assignedTo?.avatar_url
                 };
-                const createdByUser = userData[task.created_by || task.createdBy] || {
-                  name: task.created_by_name || task.createdBy || task.created_by || "Unknown",
+                const createdById = task.created_by?.id || task.created_by?._id || task.created_by || task.createdBy;
+                const createdByUser = userData[createdById] || {
+                  name: task.created_by_name || task.created_by?.full_name || task.created_by?.name || (typeof createdById === 'string' ? createdById : "Unknown"),
                   role: "User",
-                  color: "#E6E6E6"
+                  color: "#E6E6E6",
+                  avatar_url: task.created_by?.avatar_url
                 };
 
                 return React.createElement(Draggable, {
@@ -261,15 +267,15 @@ export default function TaskBoardView({
                         // Creator
                         React.createElement("div", { style: { position: "relative" } },
                           React.createElement("div", {
-                            style: {
-                              ...styles.avatar,
-                              backgroundColor: createdByUser.color || "#888",
-                              backgroundImage: createdByUser.avatar_url ? `url(${createdByUser.avatar_url})` : "none",
-                              backgroundSize: "cover"
-                            },
                             onMouseEnter: () => setHoveredAvatar({ id: task.id || task._id, type: "creator" }),
                             onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                          }, !createdByUser.avatar_url && (createdByUser.name || "?").charAt(0)),
+                          },
+                            React.createElement(Avatar, {
+                              name: createdByUser.name || "?",
+                              size: 26,
+                              style: { backgroundImage: createdByUser.avatar_url ? `url(${createdByUser.avatar_url})` : "none" }
+                            })
+                          ),
                           hoveredAvatar.id === (task.id || task._id) && hoveredAvatar.type === "creator" &&
                           React.createElement("div", { style: styles.tooltip },
                             `By: ${createdByUser.name}`,
@@ -279,15 +285,15 @@ export default function TaskBoardView({
                         // Assignee
                         React.createElement("div", { style: { position: "relative" } },
                           React.createElement("div", {
-                            style: {
-                              ...styles.avatar,
-                              backgroundColor: assignedToUser.color || "#777",
-                              backgroundImage: assignedToUser.avatar_url ? `url(${assignedToUser.avatar_url})` : "none",
-                              backgroundSize: "cover"
-                            },
                             onMouseEnter: () => setHoveredAvatar({ id: task.id || task._id, type: "assigned" }),
                             onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                          }, !assignedToUser.avatar_url && (assignedToUser.name || "?").charAt(0)),
+                          },
+                            React.createElement(Avatar, {
+                              name: assignedToUser.name || "?",
+                              size: 26,
+                              style: { backgroundImage: assignedToUser.avatar_url ? `url(${assignedToUser.avatar_url})` : "none" }
+                            })
+                          ),
                           hoveredAvatar.id === (task.id || task._id) && hoveredAvatar.type === "assigned" &&
                           React.createElement("div", { style: styles.tooltip },
                             `To: ${assignedToUser.name}`,

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 import api from "../api/axios";
 
 export default function LoginPage() {
@@ -8,38 +9,46 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-const handleLogin = async (e) => {
-  e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  if (!email || !password) {
-    alert("Please enter your credentials");
-    return;
-  }
+    if (!email || !password) {
+      toast.error("Please enter your credentials");
+      return;
+    }
 
-  try {
-    const res = await api.post("/auth/login", {
-      email,
-      password,
-    });
+    try {
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
-    const { user, accessToken, refreshToken } = res.data;
+      // Handle potentially nested response structures
+      // Sometimes it's res.data.data, sometimes res.data directly
+      const payload = res.data?.data || res.data || {};
+      const { user, accessToken, refreshToken } = payload;
 
-    const userData = {
-      id: user.id,
-      name: user.full_name,
-      email: user.email,
-      role: user.role,
-      accessToken,
-      refreshToken,
-    };
+      if (!user || !accessToken) {
+        throw new Error("Invalid response from server");
+      }
 
-    localStorage.setItem("userData", JSON.stringify(userData));
+      const userData = {
+        id: user.id,
+        name: user.full_name,
+        email: user.email,
+        role: user.role,
+        accessToken,
+        refreshToken,
+      };
 
-    navigate("/dashboard");
-  } catch (err) {
-    alert(err.response?.data?.error || "Login failed");
-  }
-};
+      localStorage.setItem("userData", JSON.stringify(userData));
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.error || "Login failed");
+    }
+  };
 
 
   return (
