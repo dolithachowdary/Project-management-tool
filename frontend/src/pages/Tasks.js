@@ -8,24 +8,15 @@ import { FaPlus, FaSearch } from "react-icons/fa";
 import gridIcon from "../assets/icons/grid.svg";
 import dashboardIcon from "../assets/icons/dashboard.svg";
 
-const RED = "#C62828";
+import { getTasks, createTask, updateTask } from "../api/tasks";
+import { getProjects } from "../api/projects";
 
-const role = localStorage.getItem("role") || "PROJECT_MANAGER";
+const role = localStorage.getItem("role") || "Project Manager";
 const currentUser = localStorage.getItem("userName") || "A";
+const currentUserId = localStorage.getItem("userId");
 
-// Mock user data with roles
-const userData = {
-  "A": { name: "Alice", role: "Project Manager", color: "#E3F2FD" },
-  "B": { name: "Bob", role: "Developer", color: "#FFF8E1" },
-  "C": { name: "Charlie", role: "Designer", color: "#E8EAF6" },
-  "D": { name: "David", role: "QA", color: "#E8F5E9" },
-  "E": { name: "Eve", role: "Developer", color: "#FCE4EC" },
-  "PM John": { name: "John", role: "Project Manager", color: "#FFE5E5" },
-  "PM Alice": { name: "Alice", role: "Project Manager", color: "#E3F2FD" },
-  "Current User": { name: "You", role: role, color: "#F3F4F6" }
-};
+// Remove mock userData and moduleList
 
-const moduleList = ["UI Module", "Backend Module", "Security Module", "Database Module", "API Module", "Mobile Module", "Web Module"];
 
 export default function Tasks() {
   const [viewMode, setViewMode] = useState("grid");
@@ -35,69 +26,33 @@ export default function Tasks() {
   const [selectedProject, setSelectedProject] = useState("All");
   const [selectedPerson, setSelectedPerson] = useState("All");
   const [showAddTask, setShowAddTask] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
-  const [tasks, setTasks] = useState([
-    {
-      id: "1",
-      taskCode: "TASK-001",
-      taskName: "Design Dashboard Layout",
-      moduleName: "UI Module",
-      projectName: "Analytics Dashboard",
-      assignedTo: "A",
-      collaborators: ["B", "C", "D"],
-      createdBy: "PM John",
-      status: "Done",
-      startDate: "2025-11-10",
-      endDate: "2025-11-14",
-      priority: "High"
-    },
-    {
-      id: "2",
-      taskCode: "TASK-002",
-      taskName: "API Integration",
-      moduleName: "Backend Module",
-      projectName: "Automation Suite",
-      assignedTo: "B",
-      collaborators: ["C"],
-      createdBy: "PM John",
-      status: "Blocked",
-      startDate: "2025-11-08",
-      endDate: "2025-11-12",
-      priority: "Medium"
-    },
-    {
-      id: "3",
-      taskCode: "TASK-003",
-      taskName: "User Authentication Setup",
-      moduleName: "Security Module",
-      projectName: "Enterprise Portal",
-      assignedTo: "A",
-      collaborators: ["D"],
-      createdBy: "PM Alice",
-      status: "In Progress",
-      startDate: "2025-11-05",
-      endDate: "2025-11-10",
-      priority: "High"
-    },
-    {
-      id: "4",
-      taskCode: "TASK-004",
-      taskName: "Database Optimization",
-      moduleName: "Backend Module",
-      projectName: "Analytics Dashboard",
-      assignedTo: "C",
-      collaborators: [],
-      createdBy: "PM John",
-      status: "To Do",
-      startDate: "2025-11-12",
-      endDate: "2025-11-20",
-      priority: "Low"
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
+  const [projects, setProjects] = useState([]);
+
+  // Data Fetching
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [tasksRes, projectsRes] = await Promise.all([
+          getTasks(),
+          getProjects()
+        ]);
+        setTasks(tasksRes.data);
+        setProjects(projectsRes.data);
+      } catch (err) {
+        console.error("Failed to fetch data", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const statuses = ["All", "To Do", "In Progress", "Review", "Done", "Blocked"];
-  const projectList = ["All", "Analytics Dashboard", "Automation Suite", "Enterprise Portal"];
-  const peopleList = ["All", "A", "B", "C", "D"];
+  const projectList = ["All", ...projects.map(p => p.name)];
+  // We can't really get a full "peopleList" easily without an endpoint, 
+  // but for filtering tasks we might want to collect all assignees from loaded tasks
+  const peopleList = ["All", ...Array.from(new Set(tasks.map(t => t.assignedTo || "Unassigned")))];
 
   // Format date to DD-MM-YY
   const formatShortDate = (dateString) => {
@@ -113,22 +68,39 @@ export default function Tasks() {
   const formatFullDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
 
-  const filteredTasks = tasks.filter((t) => {
+  // Robust getter for project/module/sprint names
+  const getProjectName = (task) => task.projectName || projects.find(p => (p._id || p.id) === task.project_id)?.name || "";
+  const getModuleName = (task) => task.moduleName || task.module?.name || "";
+  const getSprintName = (task) => task.sprintName || task.sprint?.name || "";
+
+  const filteredTasks = tasks.map(t => ({
+    ...t,
+    projectName: getProjectName(t),
+    moduleName: getModuleName(t),
+    sprintName: getSprintName(t)
+  })).filter((t) => {
     const q = searchQuery.toLowerCase();
+    const pName = t.projectName.toLowerCase();
+    const mName = t.moduleName.toLowerCase();
+    const sName = t.sprintName.toLowerCase();
+    const tName = t.taskName?.toLowerCase() || "";
+    const tCode = t.taskCode?.toLowerCase() || "";
+
     return (
       (!q ||
-        t.taskName.toLowerCase().includes(q) ||
-        t.projectName.toLowerCase().includes(q) ||
-        t.moduleName.toLowerCase().includes(q) ||
-        t.taskCode.toLowerCase().includes(q)) &&
+        tName.includes(q) ||
+        pName.includes(q) ||
+        mName.includes(q) ||
+        sName.includes(q) ||
+        tCode.includes(q)) &&
       (selectedStatus === "All" || t.status === selectedStatus) &&
       (selectedProject === "All" || t.projectName === selectedProject) &&
       (selectedPerson === "All" || t.assignedTo === selectedPerson) &&
@@ -138,20 +110,49 @@ export default function Tasks() {
     );
   });
 
-  const handleSaveTask = (newTask) => {
-    const task = {
-      id: Date.now().toString(),
-      taskCode: `TASK-${String(tasks.length + 1).padStart(3, '0')}`,
-      ...newTask,
-      collaborators: [],
-      createdBy: "Current User",
-    };
-    setTasks([task, ...tasks]);
-    setShowAddTask(false);
+  const handleSaveTask = async (taskData) => {
+    try {
+      let res;
+      if (editingTask) {
+        // Update existing
+        res = await updateTask(editingTask.id, taskData);
+        setTasks(prev => prev.map(t => t.id === editingTask.id ? res.data : t));
+      } else {
+        // Create new
+        res = await createTask(taskData);
+        setTasks([res.data, ...tasks]);
+      }
+      setShowAddTask(false);
+      setEditingTask(null);
+    } catch (err) {
+      console.error("Failed to save task", err);
+      alert("Failed to save task");
+    }
   };
 
-  const handleStatusChange = (id, newStatus) => {
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setShowAddTask(true);
+  };
+
+  const handleCancelSave = () => {
+    setShowAddTask(false);
+    setEditingTask(null);
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    // Optimistic Update
+    const previousTasks = [...tasks];
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
+
+    try {
+      await updateTask(id, { status: newStatus });
+    } catch (err) {
+      console.error("Failed to update status", err);
+      // Revert on failure
+      setTasks(previousTasks);
+      alert("Failed to update task status");
+    }
   };
 
   const getCount = (status) => {
@@ -160,16 +161,14 @@ export default function Tasks() {
   };
 
   const canEdit = (task) => {
-    return role === "ADMIN" ||
-           role === "PROJECT_MANAGER" ||
-           (role === "DEVELOPER" && task.assignedTo === currentUser);
+    return role === "PROJECT_MANAGER" || role === "Project Manager" || role === "ADMIN" || task.created_by === currentUserId;
   };
 
   const styles = {
     pageContainer: { display: "flex", backgroundColor: "#FBFAFC", minHeight: "100vh" },
     mainContent: { flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" },
     pageInner: { padding: "20px 10px" },
-    
+
     // Remove pageTitle since it's in Header
 
     searchFilterContainer: {
@@ -185,16 +184,16 @@ export default function Tasks() {
       flexWrap: "nowrap",
       overflowX: "auto",
     },
-    searchBox: { 
-      position: "relative", 
+    searchBox: {
+      position: "relative",
       flex: "0 0 300px",
       minWidth: 280,
     },
-    searchIcon: { 
-      position: "absolute", 
-      left: 14, 
-      top: "50%", 
-      transform: "translateY(-50%)", 
+    searchIcon: {
+      position: "absolute",
+      left: 14,
+      top: "50%",
+      transform: "translateY(-50%)",
       color: "#B91C1C",
       fontSize: 14,
     },
@@ -207,7 +206,7 @@ export default function Tasks() {
       outline: "none",
       backgroundColor: "#fff",
     },
-    toolbarControl: { 
+    toolbarControl: {
       flex: "0 0 auto",
       minWidth: 140,
     },
@@ -229,7 +228,7 @@ export default function Tasks() {
       outline: "none",
       background: "#fff",
     },
-    toggleWrapper: { 
+    toggleWrapper: {
       flex: "0 0 auto",
       marginLeft: 0,
     },
@@ -277,7 +276,7 @@ export default function Tasks() {
       transition: "filter 0.3s ease",
     },
     addTaskBtn: {
-      background: RED,
+      background: "#C62828", // Assuming RED is #C62828
       color: "#fff",
       border: "none",
       padding: "12px 20px",
@@ -389,7 +388,7 @@ export default function Tasks() {
               value: selectedProject,
               onChange: (e) => setSelectedProject(e.target.value)
             },
-              projectList.map((p) => 
+              projectList.map((p) =>
                 React.createElement("option", { key: p, value: p }, p)
               )
             )
@@ -401,7 +400,7 @@ export default function Tasks() {
               value: selectedPerson,
               onChange: (e) => setSelectedPerson(e.target.value)
             },
-              peopleList.map((p) => 
+              peopleList.map((p) =>
                 React.createElement("option", { key: p, value: p }, p)
               )
             )
@@ -424,7 +423,7 @@ export default function Tasks() {
                   alt: "Grid",
                   style: {
                     ...styles.toggleIcon,
-                    filter: viewMode === "grid" 
+                    filter: viewMode === "grid"
                       ? "invert(20%) sepia(90%) saturate(5000%) hue-rotate(350deg)"
                       : "invert(40%) brightness(0.5)",
                   }
@@ -439,7 +438,7 @@ export default function Tasks() {
                   alt: "Board",
                   style: {
                     ...styles.toggleIcon,
-                    filter: viewMode === "board" 
+                    filter: viewMode === "board"
                       ? "invert(20%) sepia(90%) saturate(5000%) hue-rotate(350deg)"
                       : "invert(40%) brightness(0.5)",
                   }
@@ -482,33 +481,35 @@ export default function Tasks() {
 
         showAddTask && React.createElement(TaskForm, {
           onSave: handleSaveTask,
-          onCancel: () => setShowAddTask(false),
-          projectList: projectList.filter(p => p !== "All"),
-          peopleList: peopleList.filter(p => p !== "All"),
+          onCancel: handleCancelSave,
+          projects: projects,
+          projectList: projectList,
+          peopleList: peopleList,
           statusList: statuses.filter(s => s !== "All"),
-          moduleList: moduleList,
-          userData: userData
+          userData: {},
+          initialData: editingTask,
+          currentUserId: currentUserId
         }),
 
-        viewMode === "grid" 
+        viewMode === "grid"
           ? React.createElement(TaskListView, {
-              tasks: filteredTasks,
-              onStatusChange: handleStatusChange,
-              canEdit: canEdit,
-              currentUser: currentUser,
-              userData: userData,
-              formatShortDate: formatShortDate,
-              formatFullDate: formatFullDate
-            })
+            tasks: filteredTasks,
+            onStatusChange: handleStatusChange,
+            canEdit: canEdit,
+            currentUser: currentUser,
+            userData: {}, // Mock removed
+            formatShortDate: formatShortDate,
+            formatFullDate: formatFullDate
+          })
           : React.createElement(TaskBoardView, {
-              tasks: filteredTasks,
-              onStatusChange: handleStatusChange,
-              canEdit: canEdit,
-              currentUser: currentUser,
-              userData: userData,
-              formatShortDate: formatShortDate,
-              formatFullDate: formatFullDate
-            })
+            tasks: filteredTasks,
+            onStatusChange: handleStatusChange,
+            canEdit: canEdit,
+            currentUser: currentUser,
+            userData: {}, // Mock removed
+            formatShortDate: formatShortDate,
+            formatFullDate: formatFullDate
+          })
       )
     )
   );

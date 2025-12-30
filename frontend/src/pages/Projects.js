@@ -75,7 +75,7 @@ const Projects = ({ role = "Project Manager" }) => {
                       >
                         <Card
                           title={p.name}
-                          progress={p.status === "completed" ? 100 : 50}
+                          progress={p.totalTasks > 0 ? Math.round((p.completedTasks / p.totalTasks) * 100) : 0}
                           startDate={formatDate(p.start_date)}
                           endDate={formatDate(p.end_date)}
                           members={[]}

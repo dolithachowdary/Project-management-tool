@@ -3,14 +3,15 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const RED = "#C62828";
 
-export default function TaskBoardView({ 
-  tasks, 
-  onStatusChange, 
-  canEdit, 
-  currentUser, 
-  userData, 
-  formatShortDate, 
-  formatFullDate 
+export default function TaskBoardView({
+  tasks,
+  onStatusChange,
+  onEdit, // Add onEdit
+  canEdit,
+  currentUser,
+  userData,
+  formatShortDate,
+  formatFullDate
 }) {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [hoveredAvatar, setHoveredAvatar] = useState({ id: null, type: null });
@@ -59,10 +60,10 @@ export default function TaskBoardView({
       justifyContent: "space-between",
       alignItems: "flex-start",
       flexWrap: "nowrap",
-      gap: 12,            
+      gap: 12,
       marginTop: 8,
       width: "100%",
-      overflowX: "hidden",  
+      overflowX: "hidden",
       paddingBottom: 6,
       minHeight: "calc(100vh - 300px)",
     },
@@ -80,7 +81,7 @@ export default function TaskBoardView({
       overflowY: "auto",
     },
 
-    columnTitle: { 
+    columnTitle: {
       fontSize: 15,         // ↓ was 16
       fontWeight: 700,
       color: RED,
@@ -100,14 +101,14 @@ export default function TaskBoardView({
       position: "relative",
     },
 
-    taskName: { 
+    taskName: {
       fontWeight: 700,
       fontSize: 14,          // ↓ was 15
       marginBottom: 6,
       lineHeight: 1.25,
     },
 
-    taskMeta: { 
+    taskMeta: {
       fontSize: 12,          // ↓ was 13
       marginBottom: 8,
       opacity: 0.8,
@@ -156,7 +157,7 @@ export default function TaskBoardView({
       borderRadius: 8,
       marginTop: 12,
     },
-    
+
     // Tooltip styles
     tooltip: {
       position: "absolute",
@@ -197,10 +198,10 @@ export default function TaskBoardView({
           },
             React.createElement("h3", { style: styles.columnTitle },
               colId,
-              React.createElement("span", { 
-                style: { 
-                  marginLeft: 8, 
-                  fontSize: 12, 
+              React.createElement("span", {
+                style: {
+                  marginLeft: 8,
+                  fontSize: 12,
                   color: "#666",
                   fontWeight: "normal",
                   backgroundColor: "#F3F4F6",
@@ -215,12 +216,12 @@ export default function TaskBoardView({
                 const isHovered = hoveredCard === task.id;
                 const assignedToUser = userData[task.assignedTo] || { name: task.assignedTo, role: "User", color: "#E6E6E6" };
                 const createdByUser = userData[task.createdBy] || { name: task.createdBy, role: "User", color: "#E6E6E6" };
-                
+
                 return React.createElement(Draggable, {
-                    key: task.id,
-                    draggableId: task.id,
-                    index: index
-                  },
+                  key: task.id,
+                  draggableId: task.id,
+                  index: index
+                },
                   (provided, snapshot) => React.createElement("div", {
                     ref: provided.innerRef,
                     ...provided.draggableProps,
@@ -233,16 +234,18 @@ export default function TaskBoardView({
                       boxShadow: snapshot.isDragging
                         ? "0 8px 22px rgba(15,23,42,0.12)"
                         : isHovered
-                        ? "0 8px 22px rgba(15,23,42,0.10)"
-                        : "0 3px 8px rgba(15,23,42,0.03)",
-                      transform: snapshot.isDragging 
-                        ? "scale(1.02)" 
-                        : isHovered 
-                        ? "translateY(-6px)" 
-                        : "translateY(0)",
+                          ? "0 8px 22px rgba(15,23,42,0.10)"
+                          : "0 3px 8px rgba(15,23,42,0.03)",
+                      transform: snapshot.isDragging
+                        ? "scale(1.02)"
+                        : isHovered
+                          ? "translateY(-6px)"
+                          : "translateY(0)",
                       transition: "all 0.18s ease",
+                      cursor: canEdit(task) ? "pointer" : "default",
                       ...provided.draggableProps.style,
                     },
+                    onDoubleClick: () => canEdit(task) && onEdit && onEdit(task),
                     onMouseEnter: () => setHoveredCard(task.id),
                     onMouseLeave: () => {
                       setHoveredCard(null);
@@ -253,13 +256,13 @@ export default function TaskBoardView({
                     React.createElement("p", { style: styles.taskMeta },
                       task.moduleName + " • " + task.projectName
                     ),
-                    
+
                     React.createElement("div", { style: styles.dateInfo },
                       "Start: " + formatShortDate(task.startDate),
                       React.createElement("br"),
                       "End: " + formatShortDate(task.endDate)
                     ),
-                    
+
                     React.createElement("div", { style: styles.taskFooter },
                       React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
                         // Created By Avatar
@@ -273,12 +276,12 @@ export default function TaskBoardView({
                             onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
                           }, createdByUser.name.charAt(0)),
                           hoveredAvatar.id === task.id && hoveredAvatar.type === 'creator' &&
-                            React.createElement("div", { style: styles.tooltip },
-                              `Created by: ${createdByUser.name} (${createdByUser.role})`,
-                              React.createElement("div", { style: styles.tooltipArrow })
-                            )
+                          React.createElement("div", { style: styles.tooltip },
+                            `Created by: ${createdByUser.name} (${createdByUser.role})`,
+                            React.createElement("div", { style: styles.tooltipArrow })
+                          )
                         ),
-                        
+
                         // Assigned To Avatar
                         React.createElement("div", { style: { position: "relative" } },
                           React.createElement("div", {
@@ -290,10 +293,10 @@ export default function TaskBoardView({
                             onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
                           }, assignedToUser.name.charAt(0)),
                           hoveredAvatar.id === task.id && hoveredAvatar.type === 'assigned' &&
-                            React.createElement("div", { style: styles.tooltip },
-                              `Assigned to: ${assignedToUser.name} (${assignedToUser.role})`,
-                              React.createElement("div", { style: styles.tooltipArrow })
-                            )
+                          React.createElement("div", { style: styles.tooltip },
+                            `Assigned to: ${assignedToUser.name} (${assignedToUser.role})`,
+                            React.createElement("div", { style: styles.tooltipArrow })
+                          )
                         ),
                       ),
                       React.createElement("span", { style: styles.taskCode }, task.taskCode)
@@ -301,8 +304,8 @@ export default function TaskBoardView({
                   )
                 );
               }),
-              boardColumns[colId].length === 0 && 
-                React.createElement("div", { style: styles.emptyColumn }, "No tasks in this column"),
+              boardColumns[colId].length === 0 &&
+              React.createElement("div", { style: styles.emptyColumn }, "No tasks in this column"),
               provided.placeholder
             )
           )

@@ -2,14 +2,15 @@ import React, { useState } from "react";
 
 const RED = "#C62828";
 
-export default function TaskListView({ 
-  tasks, 
-  onStatusChange, 
-  canEdit, 
-  currentUser, 
-  userData, 
-  formatShortDate, 
-  formatFullDate 
+export default function TaskListView({
+  tasks,
+  onStatusChange,
+  onEdit, // Add onEdit
+  canEdit,
+  currentUser,
+  userData,
+  formatShortDate,
+  formatFullDate
 }) {
   const [hoveredRow, setHoveredRow] = useState(null); // Restored hoveredRow
   const [hoveredAvatar, setHoveredAvatar] = useState({ id: null, type: null });
@@ -54,9 +55,9 @@ export default function TaskListView({
       boxShadow: "0 4px 14px rgba(15,23,42,0.05)",
       padding: "12px 14px",
     },
-    table: { 
-      width: "100%", 
-      borderCollapse: "separate", 
+    table: {
+      width: "100%",
+      borderCollapse: "separate",
       borderSpacing: "0 10px" // This creates spacing between rows
     },
     th: {
@@ -81,8 +82,8 @@ export default function TaskListView({
       fontSize: 14,
       verticalAlign: "middle",
     },
-    userAvatars: { 
-      display: "flex", 
+    userAvatars: {
+      display: "flex",
       alignItems: "center",
       position: "relative",
     },
@@ -171,7 +172,7 @@ export default function TaskListView({
       backgroundColor: "#F9FAFB",
       borderRadius: 8,
     },
-    
+
     // Tooltip styles
     tooltip: {
       position: "absolute",
@@ -199,7 +200,7 @@ export default function TaskListView({
       borderRight: "6px solid transparent",
       borderTop: "6px solid #1F2937",
     },
-    
+
     // Date cell with tooltip
     dateCell: {
       position: "relative",
@@ -256,7 +257,7 @@ export default function TaskListView({
             const createdByUser = userData[task.createdBy] || { name: task.createdBy, role: "User", color: "#E6E6E6" };
             const assignedToUser = userData[task.assignedTo] || { name: task.assignedTo, role: "User", color: "#E6E6E6" };
             const isHovered = hoveredRow === task.id; // Check if this row is hovered
-            
+
             return React.createElement("tr", {
               key: task.id,
               style: {
@@ -275,7 +276,7 @@ export default function TaskListView({
               React.createElement("td", { style: { ...styles.td, fontWeight: 600 } }, task.taskName),
               React.createElement("td", { style: styles.td }, task.moduleName),
               React.createElement("td", { style: styles.td }, task.projectName),
-              
+
               // Assigned To with tooltip
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.avatarContainer },
@@ -288,21 +289,21 @@ export default function TaskListView({
                     onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
                   }, assignedToUser.name.charAt(0)),
                   hoveredAvatar.id === task.id && hoveredAvatar.type === 'assigned' &&
-                    React.createElement("div", { style: styles.tooltip },
-                      `${assignedToUser.name} (${assignedToUser.role})`,
-                      React.createElement("div", { style: styles.tooltipArrow })
-                    )
+                  React.createElement("div", { style: styles.tooltip },
+                    `${assignedToUser.name} (${assignedToUser.role})`,
+                    React.createElement("div", { style: styles.tooltipArrow })
+                  )
                 )
               ),
-              
+
               // Collaborators
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.userAvatars },
                   task.collaborators.slice(0, 3).map((collab, i) => {
                     const collabUser = userData[collab] || { name: collab, role: "User", color: "#E6E6E6" };
-                    return React.createElement("div", { 
-                      key: i, 
-                      style: { 
+                    return React.createElement("div", {
+                      key: i,
+                      style: {
                         ...styles.avatarContainer,
                         zIndex: 10 - i
                       }
@@ -317,17 +318,17 @@ export default function TaskListView({
                         onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
                       }, collabUser.name.charAt(0)),
                       hoveredAvatar.id === task.id && hoveredAvatar.type === `collab-${i}` &&
-                        React.createElement("div", { style: styles.tooltip },
-                          `${collabUser.name} (${collabUser.role})`,
-                          React.createElement("div", { style: styles.tooltipArrow })
-                        )
+                      React.createElement("div", { style: styles.tooltip },
+                        `${collabUser.name} (${collabUser.role})`,
+                        React.createElement("div", { style: styles.tooltipArrow })
+                      )
                     );
                   }),
-                  task.collaborators.length > 3 && 
-                    React.createElement("div", { style: styles.plusAvatar }, "+" + (task.collaborators.length - 3))
+                  task.collaborators.length > 3 &&
+                  React.createElement("div", { style: styles.plusAvatar }, "+" + (task.collaborators.length - 3))
                 )
               ),
-              
+
               // Created By with tooltip
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.avatarContainer },
@@ -341,13 +342,13 @@ export default function TaskListView({
                     onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
                   }, createdByUser.name.charAt(0)),
                   hoveredAvatar.id === task.id && hoveredAvatar.type === 'creator' &&
-                    React.createElement("div", { style: styles.tooltip },
-                      `${createdByUser.name} (${createdByUser.role})`,
-                      React.createElement("div", { style: styles.tooltipArrow })
-                    )
+                  React.createElement("div", { style: styles.tooltip },
+                    `${createdByUser.name} (${createdByUser.role})`,
+                    React.createElement("div", { style: styles.tooltipArrow })
+                  )
                 )
               ),
-              
+
               React.createElement("td", { style: styles.td },
                 React.createElement("span", {
                   style: {
@@ -358,7 +359,7 @@ export default function TaskListView({
                   }
                 }, task.priority)
               ),
-              
+
               React.createElement("td", { style: styles.td },
                 React.createElement("select", {
                   value: task.status,
@@ -375,48 +376,49 @@ export default function TaskListView({
                   )
                 )
               ),
-              
+
               // Start Date with tooltip
-              React.createElement("td", { 
-                style: styles.td 
+              React.createElement("td", {
+                style: styles.td
               },
-                React.createElement("div", { 
+                React.createElement("div", {
                   style: styles.dateCell,
                   onMouseEnter: () => setHoveredDate({ id: task.id, field: 'start' }),
                   onMouseLeave: () => setHoveredDate({ id: null, field: null })
                 },
                   formatShortDate(task.startDate),
                   hoveredDate.id === task.id && hoveredDate.field === 'start' &&
-                    React.createElement("div", { style: styles.dateTooltip },
-                      formatFullDate(task.startDate)
-                    )
+                  React.createElement("div", { style: styles.dateTooltip },
+                    formatFullDate(task.startDate)
+                  )
                 )
               ),
-              
+
               // End Date with tooltip
-              React.createElement("td", { 
-                style: styles.td 
+              React.createElement("td", {
+                style: styles.td
               },
-                React.createElement("div", { 
+                React.createElement("div", {
                   style: styles.dateCell,
                   onMouseEnter: () => setHoveredDate({ id: task.id, field: 'end' }),
                   onMouseLeave: () => setHoveredDate({ id: null, field: null })
                 },
                   formatShortDate(task.endDate),
                   hoveredDate.id === task.id && hoveredDate.field === 'end' &&
-                    React.createElement("div", { style: styles.dateTooltip },
-                      formatFullDate(task.endDate)
-                    )
+                  React.createElement("div", { style: styles.dateTooltip },
+                    formatFullDate(task.endDate)
+                  )
                 )
               ),
-              
+
               React.createElement("td", { style: styles.td },
                 React.createElement("button", {
                   style: {
                     ...styles.editBtn,
                     opacity: canEdit(task) ? 1 : 0.4
                   },
-                  disabled: !canEdit(task)
+                  disabled: !canEdit(task),
+                  onClick: () => onEdit && onEdit(task)
                 }, "Edit")
               )
             );
