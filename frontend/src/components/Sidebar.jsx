@@ -25,7 +25,7 @@ const Sidebar = () => {
     { name: "Tasks", path: "/tasks", icon: TasksIcon },
 
     //  Hide Timesheets for DEV
-    ...(role === "Project Manager" || role === "Admin"
+    ...(role === "Project Manager" || role === "admin"
       ? [{ name: "Timesheets", path: "/timesheets", icon: TimesheetsIcon }]
       : []),
 

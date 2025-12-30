@@ -7,14 +7,34 @@ const STATUS_COLORS = {
   Review: { bg: "#E8EAF6", text: "#2E3A59" },
   Done: { bg: "#E8F5E9", text: "#2E7D32" },
   Blocked: { bg: "#FCE4EC", text: "#8B1E3F" },
+  "todo": { bg: "#E3F2FD", text: "#1565C0" },
+  "in_progress": { bg: "#FFF8E1", text: "#856404" },
+  "review": { bg: "#E8EAF6", text: "#2E3A59" },
+  "done": { bg: "#E8F5E9", text: "#2E7D32" },
+  "blocked": { bg: "#FCE4EC", text: "#8B1E3F" },
 };
+
+const STATUS_LABELS = {
+  "todo": "To Do",
+  "in_progress": "In Progress",
+  "review": "Review",
+  "done": "Done",
+  "blocked": "Blocked"
+};
+
+const getStatusLabel = (s) => STATUS_LABELS[s] || s;
 
 const DEV_ORDER = {
   "In Progress": 1,
+  "in_progress": 1,
   "To Do": 2,
+  "todo": 2,
   Review: 3,
+  review: 3,
   Blocked: 4,
+  blocked: 4,
   Done: 5,
+  done: 5,
 };
 
 export default function TaskOverviewList({
@@ -30,17 +50,17 @@ export default function TaskOverviewList({
   const sorted =
     role === "Developer"
       ? [...filtered].sort(
-          (a, b) => DEV_ORDER[a.status] - DEV_ORDER[b.status]
-        )
+        (a, b) => DEV_ORDER[a.status] - DEV_ORDER[b.status]
+      )
       : filtered;
 
   const groupedByProject =
     role === "Project Manager"
       ? sorted.reduce((acc, t) => {
-          acc[t.projectName] = acc[t.projectName] || [];
-          acc[t.projectName].push(t);
-          return acc;
-        }, {})
+        acc[t.projectName] = acc[t.projectName] || [];
+        acc[t.projectName].push(t);
+        return acc;
+      }, {})
       : null;
 
   return (
@@ -64,9 +84,9 @@ export default function TaskOverviewList({
                 }}
               />
               <div style={{ flex: 1 }}>
-                <div style={styles.task}>{task.taskName}</div>
+                <div style={styles.task}>{task.title || task.taskName}</div>
                 <div style={styles.meta}>
-                  {task.projectName} • {task.status}
+                  {task.projectName} • {getStatusLabel(task.status)}
                 </div>
               </div>
               <span
@@ -76,7 +96,7 @@ export default function TaskOverviewList({
                   color: color.text,
                 }}
               >
-                {task.status}
+                {getStatusLabel(task.status)}
               </span>
             </div>
           );
@@ -95,8 +115,8 @@ export default function TaskOverviewList({
                     style={{ ...styles.dot, background: color.text }}
                   />
                   <div style={{ flex: 1 }}>
-                    <div style={styles.task}>{task.taskName}</div>
-                    <div style={styles.meta}>{task.status}</div>
+                    <div style={styles.task}>{task.title || task.taskName}</div>
+                    <div style={styles.meta}>{getStatusLabel(task.status)}</div>
                   </div>
                 </div>
               );

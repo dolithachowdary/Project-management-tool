@@ -1,87 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Card from "../components/Card";
 import { useNavigate } from "react-router-dom";
 import AddSprint from "../components/AddSprint";
+import { getSprints } from "../api/sprints";
 
-const Sprints = ({ role = "Project Manager" }) => {
+const Sprints = () => {
   const navigate = useNavigate();
   const [openAddSprint, setOpenAddSprint] = useState(false);
+  const [sprints, setSprints] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const role = localStorage.getItem("role") || "Project Manager";
 
-  /* ---------------- MEMBERS ---------------- */
+  useEffect(() => {
+    loadSprints();
+  }, []);
 
-  const allMembers = [
-    { id: 1, name: "Deepak Chandra", color: "#f6c1cc" },
-    { id: 2, name: "Harsha Anand", color: "#dfe6d8" },
-    { id: 3, name: "Nikhil Kumar", color: "#d8edf6" },
-    { id: 4, name: "Varun Chaitanya", color: "#e0e7ff" },
-  ];
+  const loadSprints = async () => {
+    try {
+      setLoading(true);
+      const res = await getSprints();
+      const data = res.data?.data || res.data || [];
+      setSprints(data);
+    } catch (err) {
+      console.error("Failed to load sprints:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  /* ---------------- ACTIVE SPRINTS ---------------- */
+  // Progress calculation logic
+  const processSprint = (s) => {
+    const total = s.totalTasks || 0;
+    const completed = s.completedTasks || 0;
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  const activeSprints = [
-    {
-      id: 1,
-      title: "Website Revamp – Sprint 4",
-      progress: 70,
-      startDate: "Dec 01, 2025",
-      endDate: "Dec 15, 2025",
-      members: [allMembers[0], allMembers[1]],
-      availableMembers: allMembers,
-      timeLeft: "5 Days Left",
-      color: "#d47b4a",
-    },
-    {
-      id: 2,
-      title: "Mobile App UI – Sprint 2",
-      progress: 45,
-      startDate: "Dec 05, 2025",
-      endDate: "Dec 20, 2025",
-      members: [allMembers[2]],
-      availableMembers: allMembers,
-      timeLeft: "10 Days Left",
-      color: "#cddc39",
-    },
-    {
-      id: 3,
-      title: "Security Upgrade – Sprint 1",
-      progress: 60,
-      startDate: "Dec 08, 2025",
-      endDate: "Dec 25, 2025",
-      members: [allMembers[1], allMembers[3]],
-      availableMembers: allMembers,
-      timeLeft: "12 Days Left",
-      color: "#1e88e5",
-    },
-  ];
+    // Status logic
+    const isCompleted = s.status === "completed" || progress === 100;
 
-  /* ---------------- COMPLETED SPRINTS ---------------- */
+    // Time left logic (simplified)
+    const today = new Date();
+    const end = new Date(s.end_date);
+    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    const timeLeft = isCompleted ? "Completed" : (diff > 0 ? `${diff} Days Left` : "Overdue");
 
-  const completedSprints = [
-    {
-      id: 101,
-      title: "Website Revamp – Sprint 3",
-      progress: 100,
-      startDate: "Nov 15, 2025",
-      endDate: "Nov 30, 2025",
-      members: [allMembers[0], allMembers[1]],
-      availableMembers: allMembers,
-      timeLeft: "Completed",
-      color: "#2e7d32",
-    },
-    {
-      id: 102,
-      title: "Mobile App UI – Sprint 1",
-      progress: 100,
-      startDate: "Nov 01, 2025",
-      endDate: "Nov 14, 2025",
-      members: [allMembers[2]],
-      availableMembers: allMembers,
-      timeLeft: "Completed",
-      color: "#2e7d32",
-    },
-  ];
+    return {
+      ...s,
+      title: `${s.project?.name || "Project"} – ${s.name}`,
+      progress,
+      startDate: new Date(s.start_date).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+      endDate: new Date(s.end_date).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+      timeLeft,
+      color: isCompleted ? "#2e7d32" : (s.color || "#1e88e5"),
+      members: s.members || [], // Assuming backend returns members
+    };
+  };
+
+  const processedSprints = sprints.map(processSprint);
+  const activeSprints = processedSprints.filter(s => s.status !== "completed" && s.progress < 100);
+  const completedSprints = processedSprints.filter(s => s.status === "completed" || s.progress === 100);
 
   return (
     <div style={styles.pageContainer}>
@@ -91,63 +69,73 @@ const Sprints = ({ role = "Project Manager" }) => {
         <Header role={role} />
 
         <div style={styles.pageInner}>
-
-          {/* ACTIVE SPRINTS */}
-          <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Active Sprints</h3>
-
-            <div style={styles.cardGrid}>
-              {activeSprints.map((sprint) => (
-                <div
-                  key={sprint.id}
-                  style={styles.cardWrapper}
-                  onClick={() => navigate(`/sprints/${sprint.id}`)}
-                >
-                  <Card {...sprint} />
+          {loading ? (
+            <div style={{ padding: 20 }}>Loading...</div>
+          ) : (
+            <>
+              {/* ACTIVE SPRINTS */}
+              <section style={styles.section}>
+                <h3 style={styles.sectionTitle}>Active Sprints</h3>
+                <div style={styles.cardGrid}>
+                  {activeSprints.length > 0 ? (
+                    activeSprints.map((sprint) => (
+                      <div
+                        key={sprint.id || sprint._id}
+                        style={styles.cardWrapper}
+                        onClick={() => navigate(`/sprints/${sprint.id || sprint._id}`)}
+                      >
+                        <Card {...sprint} />
+                      </div>
+                    ))
+                  ) : (
+                    <div style={styles.noData}>No active sprints found</div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </section>
+              </section>
 
-          {/* COMPLETED SPRINTS */}
-          <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Completed Sprints</h3>
-
-            <div style={styles.cardGrid}>
-              {completedSprints.map((sprint) => (
-                <div
-                  key={sprint.id}
-                  style={styles.cardWrapper}
-                  onClick={() => navigate(`/sprints/${sprint.id}`)}
-                >
-                  <Card {...sprint} />
+              {/* COMPLETED SPRINTS */}
+              <section style={styles.section}>
+                <h3 style={styles.sectionTitle}>Completed Sprints</h3>
+                <div style={styles.cardGrid}>
+                  {completedSprints.length > 0 ? (
+                    completedSprints.map((sprint) => (
+                      <div
+                        key={sprint.id || sprint._id}
+                        style={styles.cardWrapper}
+                        onClick={() => navigate(`/sprints/${sprint.id || sprint._id}`)}
+                      >
+                        <Card {...sprint} />
+                      </div>
+                    ))
+                  ) : (
+                    <div style={styles.noData}>No completed sprints found</div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </section>
+              </section>
+            </>
+          )}
         </div>
 
         {/* ADD SPRINT BUTTON */}
-        <button
-          style={styles.addSprintBtn}
-          onClick={() => setOpenAddSprint(true)}
-        >
-          + Add Sprint
-        </button>
+        {["Project Manager","admin"].includes(role) && (
+          <button
+            style={styles.addSprintBtn}
+            onClick={() => setOpenAddSprint(true)}
+          >
+            + Add Sprint
+          </button>
+        )}
 
         {/* ADD SPRINT MODAL */}
         <AddSprint
           isOpen={openAddSprint}
           onClose={() => setOpenAddSprint(false)}
+          onSprintAdded={loadSprints}
         />
       </div>
     </div>
   );
 };
-
-export default Sprints;
-
-/* ---------------- STYLES ---------------- */
 
 const styles = {
   pageContainer: {
@@ -155,52 +143,63 @@ const styles = {
     height: "100vh",
     background: "#f9f9f9",
   },
-
   mainContent: {
     flex: 1,
     overflowY: "auto",
   },
-
   pageInner: {
-    padding: 20,
+    padding: 24,
   },
-
   section: {
-    marginBottom: 20,
+    marginBottom: 32,
   },
-
   sectionTitle: {
-    fontSize: "1.2rem",
-    fontWeight: 600,
-    marginBottom: 15,
-    marginTop: 3,
+    fontSize: "18px",
+    fontWeight: 700,
+    color: "#1e293b",
+    marginBottom: "20px",
   },
-
   cardGrid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 20,
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+    gap: "24px",
   },
-
   cardWrapper: {
-    flex: "1 1 300px",
-    minWidth: 280,
-    maxWidth: 340,
     cursor: "pointer",
+    transition: "transform 0.2s ease",
+    ":hover": {
+      transform: "translateY(-4px)"
+    }
   },
-
   addSprintBtn: {
     position: "fixed",
-    bottom: 24,
-    right: 24,
-    backgroundColor: "#c71b1b",
+    bottom: 32,
+    right: 32,
+    backgroundColor: "#c62828",
     color: "#ffffff",
     border: "none",
-    borderRadius: 999,
-    padding: "12px 18px",
-    fontSize: 14,
-    fontWeight: 500,
+    borderRadius: "12px",
+    padding: "14px 24px",
+    fontSize: "15px",
+    fontWeight: "600",
     cursor: "pointer",
     zIndex: 999,
+    boxShadow: "0 10px 15px -3px rgba(198, 40, 40, 0.3)",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
+  noData: {
+    padding: "40px",
+    textAlign: "center",
+    color: "#94a3b8",
+    background: "#fff",
+    borderRadius: "16px",
+    border: "1px dashed #e2e8f0",
+    gridColumn: "1 / -1",
+    fontSize: "15px",
+  }
 };
+
+export default Sprints;
+

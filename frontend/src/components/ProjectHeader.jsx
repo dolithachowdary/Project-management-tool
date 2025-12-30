@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, ClockFading, ClipboardCheck,Box } from "lucide-react";
+import { Calendar, ClockFading, ClipboardCheck, Box } from "lucide-react";
 const ProjectHeader = ({
   title,
   startDate,
@@ -10,6 +10,8 @@ const ProjectHeader = ({
   sprintSummary,
   modulesSummary,
   tasksSummary,
+  currentSprintName = "Sprint 1",
+  sprintProgress = 0
 }) => {
   if (!title) return null;
 
@@ -33,27 +35,41 @@ const ProjectHeader = ({
               }}
             />
           </div>
-          <span style={styles.percent}>{progress}%</span>
+          <span style={styles.percent}>{Math.round(progress)}%</span>
         </div>
 
         <div style={styles.bottomRow}>
           <div style={styles.members}>
-            {members.map((m, i) => (
-              <div
-                key={i}
-                style={{
-                  ...styles.avatar,
-                  background: m.color,
-                  left: i * 16,
-                  zIndex: members.length - i,
-                }}
-              >
-                {m.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+            {members.slice(0, 5).map((m, i) => {
+              const userName = m.full_name || m.name || "Unknown User";
+              const initials = userName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase();
+
+              return (
+                <div
+                  key={i}
+                  title={userName}
+                  style={{
+                    ...styles.avatar,
+                    background: m.color || "#C62828",
+                    left: i * 16,
+                    zIndex: members.length - i,
+                    backgroundImage: m.avatar_url ? `url(${m.avatar_url})` : "none",
+                    backgroundSize: "cover"
+                  }}
+                >
+                  {!m.avatar_url && initials}
+                </div>
+              );
+            })}
+            {members.length > 5 && (
+              <div style={{ ...styles.avatar, left: 5 * 16, zIndex: 0, background: "#eee", color: "#666" }}>
+                +{members.length - 5}
               </div>
-            ))}
+            )}
           </div>
 
           <span style={styles.timeLeft}>{timeLeft}</span>
@@ -72,11 +88,11 @@ const ProjectHeader = ({
             </div>
 
             <div style={styles.sprintContent}>
-              <div style={styles.sprintHeader}>Sprint 5</div>
-              <div style={styles.sprintDates}>{sprintSummary}</div>
+              <div style={styles.sprintHeader}>{currentSprintName}</div>
+              <div style={styles.sprintDates}>{sprintSummary || "No active sprint"}</div>
 
               <div style={styles.sprintBar}>
-                <div style={{ ...styles.sprintFill, width: "60%" }} />
+                <div style={{ ...styles.sprintFill, width: `${sprintProgress}%` }} />
               </div>
             </div>
           </div>

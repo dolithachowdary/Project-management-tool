@@ -1,31 +1,38 @@
 import React, { useState } from "react";
+import { Edit2, Users, UserPlus, Info } from "lucide-react";
 
 const RED = "#C62828";
 
-export default function TaskListView({ 
-  tasks, 
-  onStatusChange, 
-  canEdit, 
-  currentUser, 
-  userData, 
-  formatShortDate, 
-  formatFullDate 
+export default function TaskListView({
+  tasks,
+  onStatusChange,
+  onEdit,
+  canEdit,
+  currentUser,
+  userData,
+  formatShortDate,
+  formatFullDate
 }) {
-  const [hoveredRow, setHoveredRow] = useState(null); // Restored hoveredRow
+  const [hoveredRow, setHoveredRow] = useState(null);
   const [hoveredAvatar, setHoveredAvatar] = useState({ id: null, type: null });
   const [hoveredDate, setHoveredDate] = useState({ id: null, field: null });
 
   const getStatusColor = (status) => {
     switch (status) {
       case "To Do":
+      case "todo":
         return { bg: "#E3F2FD", text: "#1565C0", border: "#BBDEFB" };
       case "In Progress":
+      case "in_progress":
         return { bg: "#FFF8E1", text: "#856404", border: "#FFECB3" };
       case "Review":
+      case "review":
         return { bg: "#E8EAF6", text: "#2E3A59", border: "#C5CAE9" };
       case "Done":
+      case "done":
         return { bg: "#E8F5E9", text: "#2E7D32", border: "#C8E6C9" };
       case "Blocked":
+      case "blocked":
         return { bg: "#FCE4EC", text: "#8B1E3F", border: "#F8BBD0" };
       default:
         return { bg: "#F3F4F6", text: "#374151", border: "#E5E7EB" };
@@ -45,7 +52,13 @@ export default function TaskListView({
     }
   };
 
-  const statusesForSelect = ["To Do", "In Progress", "Review", "Done", "Blocked"];
+  const statusesForSelect = [
+    { label: "To Do", value: "To Do" },
+    { label: "In Progress", value: "In Progress" },
+    { label: "Review", value: "Review" },
+    { label: "Done", value: "Done" },
+    { label: "Blocked", value: "Blocked" }
+  ];
 
   const styles = {
     tableContainer: {
@@ -54,10 +67,10 @@ export default function TaskListView({
       boxShadow: "0 4px 14px rgba(15,23,42,0.05)",
       padding: "12px 14px",
     },
-    table: { 
-      width: "100%", 
-      borderCollapse: "separate", 
-      borderSpacing: "0 10px" // This creates spacing between rows
+    table: {
+      width: "100%",
+      borderCollapse: "separate",
+      borderSpacing: "0 10px"
     },
     th: {
       textAlign: "left",
@@ -81,8 +94,8 @@ export default function TaskListView({
       fontSize: 14,
       verticalAlign: "middle",
     },
-    userAvatars: { 
-      display: "flex", 
+    userAvatars: {
+      display: "flex",
       alignItems: "center",
       position: "relative",
     },
@@ -105,10 +118,6 @@ export default function TaskListView({
       transition: "transform 0.2s",
       boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
       marginLeft: -8,
-      ":hover": {
-        transform: "scale(1.1)",
-        zIndex: 10,
-      }
     },
     plusAvatar: {
       width: 36,
@@ -132,9 +141,6 @@ export default function TaskListView({
       minWidth: 130,
       outline: "none",
       transition: "all 0.2s",
-      ":focus": {
-        boxShadow: "0 0 0 2px rgba(198, 40, 40, 0.1)",
-      }
     },
     priorityBadge: {
       padding: "6px 12px",
@@ -154,14 +160,6 @@ export default function TaskListView({
       fontSize: 13,
       fontWeight: 500,
       transition: "all 0.2s",
-      ":hover:not(:disabled)": {
-        backgroundColor: "#F9FAFB",
-        borderColor: "#D1D5DB",
-      },
-      ":disabled": {
-        opacity: 0.4,
-        cursor: "not-allowed",
-      }
     },
     emptyState: {
       padding: "60px 20px",
@@ -171,8 +169,6 @@ export default function TaskListView({
       backgroundColor: "#F9FAFB",
       borderRadius: 8,
     },
-    
-    // Tooltip styles
     tooltip: {
       position: "absolute",
       bottom: "100%",
@@ -199,8 +195,6 @@ export default function TaskListView({
       borderRight: "6px solid transparent",
       borderTop: "6px solid #1F2937",
     },
-    
-    // Date cell with tooltip
     dateCell: {
       position: "relative",
       cursor: "pointer",
@@ -253,10 +247,20 @@ export default function TaskListView({
           tasks.map((task) => {
             const statusColors = getStatusColor(task.status);
             const priorityColors = getPriorityColor(task.priority);
-            const createdByUser = userData[task.createdBy] || { name: task.createdBy, role: "User", color: "#E6E6E6" };
-            const assignedToUser = userData[task.assignedTo] || { name: task.assignedTo, role: "User", color: "#E6E6E6" };
-            const isHovered = hoveredRow === task.id; // Check if this row is hovered
-            
+
+            // Fixed user lookup with fallback to names in task object
+            const createdByUser = userData[task.created_by || task.createdBy] || {
+              name: task.created_by_name || task.createdBy || task.created_by,
+              role: "User",
+              color: "#E6E6E6"
+            };
+            const assignedToUser = userData[task.assignee_id || task.assignedTo] || {
+              name: task.assignee_name || task.assignedTo || task.assignee_id,
+              role: "User",
+              color: "#E6E6E6"
+            };
+            const isHovered = hoveredRow === task.id;
+
             return React.createElement("tr", {
               key: task.id,
               style: {
@@ -264,90 +268,90 @@ export default function TaskListView({
                 boxShadow: isHovered ? "0 6px 18px rgba(15,23,42,0.08)" : "0 4px 8px rgba(15,23,42,0.03)",
                 transform: isHovered ? "translateY(-4px)" : "translateY(0)",
               },
-              onMouseEnter: () => setHoveredRow(task.id), // Set hovered row
+              onMouseEnter: () => setHoveredRow(task.id),
               onMouseLeave: () => {
                 setHoveredRow(null);
                 setHoveredAvatar({ id: null, type: null });
                 setHoveredDate({ id: null, field: null });
               }
             },
-              React.createElement("td", { style: styles.td }, task.taskCode),
-              React.createElement("td", { style: { ...styles.td, fontWeight: 600 } }, task.taskName),
-              React.createElement("td", { style: styles.td }, task.moduleName),
-              React.createElement("td", { style: styles.td }, task.projectName),
-              
-              // Assigned To with tooltip
+              React.createElement("td", { style: styles.td }, task.task_code || task.taskCode),
+              React.createElement("td", { style: { ...styles.td, fontWeight: 600 } }, task.title || task.taskName),
+              React.createElement("td", { style: styles.td }, task.module_name || task.moduleName),
+              React.createElement("td", { style: styles.td }, task.project_name || task.projectName),
+
+              // Assigned To
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.avatarContainer },
                   React.createElement("div", {
                     style: {
                       ...styles.avatar,
-                      backgroundColor: assignedToUser.color || "#E6E6E6",
+                      backgroundColor: assignedToUser.color || "#888",
+                      backgroundImage: assignedToUser.avatar_url ? `url(${assignedToUser.avatar_url})` : "none",
+                      backgroundSize: "cover"
                     },
                     onMouseEnter: () => setHoveredAvatar({ id: task.id, type: 'assigned' }),
                     onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                  }, assignedToUser.name.charAt(0)),
+                  }, !assignedToUser.avatar_url && (assignedToUser.name || "?").charAt(0)),
                   hoveredAvatar.id === task.id && hoveredAvatar.type === 'assigned' &&
-                    React.createElement("div", { style: styles.tooltip },
-                      `${assignedToUser.name} (${assignedToUser.role})`,
-                      React.createElement("div", { style: styles.tooltipArrow })
-                    )
+                  React.createElement("div", { style: styles.tooltip },
+                    `${assignedToUser.name || "Unassigned"} (${assignedToUser.role})`,
+                    React.createElement("div", { style: styles.tooltipArrow })
+                  )
                 )
               ),
-              
+
               // Collaborators
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.userAvatars },
-                  task.collaborators.slice(0, 3).map((collab, i) => {
+                  (task.collaborators || []).slice(0, 3).map((collab, i) => {
                     const collabUser = userData[collab] || { name: collab, role: "User", color: "#E6E6E6" };
-                    return React.createElement("div", { 
-                      key: i, 
-                      style: { 
-                        ...styles.avatarContainer,
-                        zIndex: 10 - i
-                      }
-                    },
+                    return React.createElement("div", { key: i, style: { ...styles.avatarContainer, zIndex: 10 - i } },
                       React.createElement("div", {
                         style: {
                           ...styles.avatar,
-                          backgroundColor: collabUser.color || "#E6E6E6",
+                          backgroundColor: collabUser.color || "#666",
                           marginLeft: i === 0 ? 0 : -8,
+                          backgroundImage: collabUser.avatar_url ? `url(${collabUser.avatar_url})` : "none",
+                          backgroundSize: "cover"
                         },
                         onMouseEnter: () => setHoveredAvatar({ id: task.id, type: `collab-${i}` }),
                         onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                      }, collabUser.name.charAt(0)),
+                      }, !collabUser.avatar_url && (collabUser.name || "?").charAt(0)),
                       hoveredAvatar.id === task.id && hoveredAvatar.type === `collab-${i}` &&
-                        React.createElement("div", { style: styles.tooltip },
-                          `${collabUser.name} (${collabUser.role})`,
-                          React.createElement("div", { style: styles.tooltipArrow })
-                        )
+                      React.createElement("div", { style: styles.tooltip },
+                        `${collabUser.name} (${collabUser.role})`,
+                        React.createElement("div", { style: styles.tooltipArrow })
+                      )
                     );
                   }),
-                  task.collaborators.length > 3 && 
-                    React.createElement("div", { style: styles.plusAvatar }, "+" + (task.collaborators.length - 3))
+                  (task.collaborators || []).length > 3 &&
+                  React.createElement("div", { style: styles.plusAvatar }, "+" + (task.collaborators.length - 3))
                 )
               ),
-              
-              // Created By with tooltip
+
+              // Created By
               React.createElement("td", { style: styles.td },
                 React.createElement("div", { style: styles.avatarContainer },
                   React.createElement("div", {
                     style: {
                       ...styles.avatar,
-                      backgroundColor: createdByUser.color || "#E6E6E6",
+                      backgroundColor: createdByUser.color || "#555",
                       marginLeft: 0,
+                      backgroundImage: createdByUser.avatar_url ? `url(${createdByUser.avatar_url})` : "none",
+                      backgroundSize: "cover"
                     },
                     onMouseEnter: () => setHoveredAvatar({ id: task.id, type: 'creator' }),
                     onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                  }, createdByUser.name.charAt(0)),
+                  }, !createdByUser.avatar_url && (createdByUser.name || "?").charAt(0)),
                   hoveredAvatar.id === task.id && hoveredAvatar.type === 'creator' &&
-                    React.createElement("div", { style: styles.tooltip },
-                      `${createdByUser.name} (${createdByUser.role})`,
-                      React.createElement("div", { style: styles.tooltipArrow })
-                    )
+                  React.createElement("div", { style: styles.tooltip },
+                    `${createdByUser.name || "Unknown"} (${createdByUser.role})`,
+                    React.createElement("div", { style: styles.tooltipArrow })
+                  )
                 )
               ),
-              
+
               React.createElement("td", { style: styles.td },
                 React.createElement("span", {
                   style: {
@@ -358,7 +362,7 @@ export default function TaskListView({
                   }
                 }, task.priority)
               ),
-              
+
               React.createElement("td", { style: styles.td },
                 React.createElement("select", {
                   value: task.status,
@@ -371,53 +375,53 @@ export default function TaskListView({
                   }
                 },
                   statusesForSelect.map((s) =>
-                    React.createElement("option", { key: s, value: s }, s)
+                    React.createElement("option", { key: s.value, value: s.value }, s.label)
                   )
                 )
               ),
-              
-              // Start Date with tooltip
-              React.createElement("td", { 
-                style: styles.td 
-              },
-                React.createElement("div", { 
+
+              React.createElement("td", { style: styles.td },
+                React.createElement("div", {
                   style: styles.dateCell,
                   onMouseEnter: () => setHoveredDate({ id: task.id, field: 'start' }),
                   onMouseLeave: () => setHoveredDate({ id: null, field: null })
                 },
-                  formatShortDate(task.startDate),
+                  formatShortDate(task.start_date || task.startDate),
                   hoveredDate.id === task.id && hoveredDate.field === 'start' &&
-                    React.createElement("div", { style: styles.dateTooltip },
-                      formatFullDate(task.startDate)
-                    )
+                  React.createElement("div", { style: styles.dateTooltip },
+                    formatFullDate(task.start_date || task.startDate)
+                  )
                 )
               ),
-              
-              // End Date with tooltip
-              React.createElement("td", { 
-                style: styles.td 
-              },
-                React.createElement("div", { 
+
+              React.createElement("td", { style: styles.td },
+                React.createElement("div", {
                   style: styles.dateCell,
                   onMouseEnter: () => setHoveredDate({ id: task.id, field: 'end' }),
                   onMouseLeave: () => setHoveredDate({ id: null, field: null })
                 },
-                  formatShortDate(task.endDate),
+                  formatShortDate(task.end_date || task.endDate),
                   hoveredDate.id === task.id && hoveredDate.field === 'end' &&
-                    React.createElement("div", { style: styles.dateTooltip },
-                      formatFullDate(task.endDate)
-                    )
+                  React.createElement("div", { style: styles.dateTooltip },
+                    formatFullDate(task.end_date || task.endDate)
+                  )
                 )
               ),
-              
+
               React.createElement("td", { style: styles.td },
-                React.createElement("button", {
-                  style: {
-                    ...styles.editBtn,
-                    opacity: canEdit(task) ? 1 : 0.4
-                  },
-                  disabled: !canEdit(task)
-                }, "Edit")
+                React.createElement("div", { style: { display: "flex", gap: 8 } },
+                  React.createElement("button", {
+                    style: { ...styles.editBtn, padding: "6px 10px", opacity: canEdit(task) ? 1 : 0.4 },
+                    disabled: !canEdit(task),
+                    onClick: () => onEdit && onEdit(task),
+                    title: "Edit Task"
+                  }, React.createElement(Edit2, { size: 16 })),
+                  React.createElement("button", {
+                    style: { ...styles.editBtn, padding: "6px 10px" },
+                    onClick: () => onEdit && onEdit({ ...task, _addCollaborators: true }),
+                    title: "Add Collaborators"
+                  }, React.createElement(UserPlus, { size: 16 }))
+                )
               )
             );
           })

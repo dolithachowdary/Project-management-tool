@@ -6,7 +6,7 @@ export const getProjects = () =>
   api.get("/projects");
 
 export const getProjectById = (id) =>
-  api.get(`/projects/${id}`); 
+  api.get(`/projects/${id}`);
 
 export const getProjectSummary = (id) =>
   api.get(`/projects/${id}/summary`);
@@ -22,3 +22,6 @@ export const updateProject = (id, data) =>
 
 export const deleteProject = (id) =>
   api.delete(`/projects/${id}`);
+
+export const getProjectMembers = (id) =>
+  api.get(`/projects/${id}/members`);

@@ -8,24 +8,16 @@ import { FaPlus, FaSearch } from "react-icons/fa";
 import gridIcon from "../assets/icons/grid.svg";
 import dashboardIcon from "../assets/icons/dashboard.svg";
 
-const RED = "#C62828";
+import { getTasks, createTask, updateTask } from "../api/tasks";
+import { getProjects } from "../api/projects";
+import { getAssignableUsers } from "../api/users";
 
-const role = localStorage.getItem("role") || "PROJECT_MANAGER";
+const role = localStorage.getItem("role") || "Project Manager";
 const currentUser = localStorage.getItem("userName") || "A";
+const currentUserId = localStorage.getItem("userId");
 
-// Mock user data with roles
-const userData = {
-  "A": { name: "Alice", role: "Project Manager", color: "#E3F2FD" },
-  "B": { name: "Bob", role: "Developer", color: "#FFF8E1" },
-  "C": { name: "Charlie", role: "Designer", color: "#E8EAF6" },
-  "D": { name: "David", role: "QA", color: "#E8F5E9" },
-  "E": { name: "Eve", role: "Developer", color: "#FCE4EC" },
-  "PM John": { name: "John", role: "Project Manager", color: "#FFE5E5" },
-  "PM Alice": { name: "Alice", role: "Project Manager", color: "#E3F2FD" },
-  "Current User": { name: "You", role: role, color: "#F3F4F6" }
-};
+// Remove mock userData and moduleList
 
-const moduleList = ["UI Module", "Backend Module", "Security Module", "Database Module", "API Module", "Mobile Module", "Web Module"];
 
 export default function Tasks() {
   const [viewMode, setViewMode] = useState("grid");
@@ -35,69 +27,58 @@ export default function Tasks() {
   const [selectedProject, setSelectedProject] = useState("All");
   const [selectedPerson, setSelectedPerson] = useState("All");
   const [showAddTask, setShowAddTask] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
-  const [tasks, setTasks] = useState([
-    {
-      id: "1",
-      taskCode: "TASK-001",
-      taskName: "Design Dashboard Layout",
-      moduleName: "UI Module",
-      projectName: "Analytics Dashboard",
-      assignedTo: "A",
-      collaborators: ["B", "C", "D"],
-      createdBy: "PM John",
-      status: "Done",
-      startDate: "2025-11-10",
-      endDate: "2025-11-14",
-      priority: "High"
-    },
-    {
-      id: "2",
-      taskCode: "TASK-002",
-      taskName: "API Integration",
-      moduleName: "Backend Module",
-      projectName: "Automation Suite",
-      assignedTo: "B",
-      collaborators: ["C"],
-      createdBy: "PM John",
-      status: "Blocked",
-      startDate: "2025-11-08",
-      endDate: "2025-11-12",
-      priority: "Medium"
-    },
-    {
-      id: "3",
-      taskCode: "TASK-003",
-      taskName: "User Authentication Setup",
-      moduleName: "Security Module",
-      projectName: "Enterprise Portal",
-      assignedTo: "A",
-      collaborators: ["D"],
-      createdBy: "PM Alice",
-      status: "In Progress",
-      startDate: "2025-11-05",
-      endDate: "2025-11-10",
-      priority: "High"
-    },
-    {
-      id: "4",
-      taskCode: "TASK-004",
-      taskName: "Database Optimization",
-      moduleName: "Backend Module",
-      projectName: "Analytics Dashboard",
-      assignedTo: "C",
-      collaborators: [],
-      createdBy: "PM John",
-      status: "To Do",
-      startDate: "2025-11-12",
-      endDate: "2025-11-20",
-      priority: "Low"
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [userData, setUserData] = useState({});
 
-  const statuses = ["All", "To Do", "In Progress", "Review", "Done", "Blocked"];
-  const projectList = ["All", "Analytics Dashboard", "Automation Suite", "Enterprise Portal"];
-  const peopleList = ["All", "A", "B", "C", "D"];
+  // Data Fetching
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [tasksRes, projectsRes, usersRes] = await Promise.all([
+          getTasks(),
+          getProjects(),
+          getAssignableUsers().catch(() => ({ data: [] }))
+        ]);
+
+        const tasksData = tasksRes.data?.data || tasksRes.data || [];
+        const projectsData = projectsRes.data?.data || projectsRes.data || [];
+        const usersData = usersRes.data?.data || usersRes.data || [];
+
+        setTasks(tasksData);
+        setProjects(projectsData);
+
+        // Map users by id
+        const userMap = {};
+        usersData.forEach(u => {
+          userMap[u.id || u._id] = {
+            name: u.full_name || u.name,
+            role: u.role,
+            color: u.color || "#C62828",
+            avatar_url: u.avatar_url
+          };
+        });
+        setUserData(userMap);
+      } catch (err) {
+        console.error("Failed to fetch data", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const statuses = [
+    { label: "All", value: "All" },
+    { label: "To Do", value: "To Do" },
+    { label: "In Progress", value: "In Progress" },
+    { label: "Review", value: "Review" },
+    { label: "Done", value: "Done" },
+    { label: "Blocked", value: "Blocked" }
+  ];
+
+  const projectList = ["All", ...projects.map(p => p.name)];
+  const peopleList = ["All", ...Array.from(new Set(tasks.map(t => t.assignee_name || t.assignedTo || "Unassigned")))];
 
   // Format date to DD-MM-YY
   const formatShortDate = (dateString) => {
@@ -113,63 +94,129 @@ export default function Tasks() {
   const formatFullDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
 
-  const filteredTasks = tasks.filter((t) => {
+  // Robust getter for project/module/sprint names
+  const getProjectName = (task) => task.projectName || projects.find(p => (p._id || p.id) === task.project_id)?.name || "";
+  const getModuleName = (task) => task.moduleName || task.module?.name || "";
+  const getSprintName = (task) => task.sprintName || task.sprint?.name || "";
+
+  const filteredTasks = tasks.map(t => ({
+    ...t,
+    taskName: t.title || t.taskName || "", // Backward compatibility
+    projectName: getProjectName(t),
+    moduleName: getModuleName(t),
+    sprintName: getSprintName(t)
+  })).filter((t) => {
     const q = searchQuery.toLowerCase();
+    const pName = t.projectName.toLowerCase();
+    const mName = t.moduleName.toLowerCase();
+    const sName = t.sprintName.toLowerCase();
+    const tName = t.taskName.toLowerCase();
+    const tCode = t.taskCode?.toLowerCase() || "";
+
     return (
       (!q ||
-        t.taskName.toLowerCase().includes(q) ||
-        t.projectName.toLowerCase().includes(q) ||
-        t.moduleName.toLowerCase().includes(q) ||
-        t.taskCode.toLowerCase().includes(q)) &&
+        tName.includes(q) ||
+        pName.includes(q) ||
+        mName.includes(q) ||
+        sName.includes(q) ||
+        tCode.includes(q)) &&
       (selectedStatus === "All" || t.status === selectedStatus) &&
       (selectedProject === "All" || t.projectName === selectedProject) &&
-      (selectedPerson === "All" || t.assignedTo === selectedPerson) &&
+      (selectedPerson === "All" || (t.assignee_name || t.assignedTo) === selectedPerson) &&
       (!selectedDate ||
         t.startDate === selectedDate ||
-        t.endDate === selectedDate)
+        t.start_date === selectedDate ||
+        t.endDate === selectedDate ||
+        t.end_date === selectedDate)
     );
   });
 
-  const handleSaveTask = (newTask) => {
-    const task = {
-      id: Date.now().toString(),
-      taskCode: `TASK-${String(tasks.length + 1).padStart(3, '0')}`,
-      ...newTask,
-      collaborators: [],
-      createdBy: "Current User",
-    };
-    setTasks([task, ...tasks]);
+  const handleSaveTask = async (taskData) => {
+    try {
+      let res;
+      if (editingTask) {
+        // Update existing
+        res = await updateTask(editingTask.id, taskData);
+        const updated = res.data?.data || res.data;
+        setTasks(prev => prev.map(t => t.id === editingTask.id ? updated : t));
+      } else {
+        // Create new
+        res = await createTask(taskData);
+        const created = res.data?.data || res.data;
+        setTasks([created, ...tasks]);
+      }
+      setShowAddTask(false);
+      setEditingTask(null);
+    } catch (err) {
+      console.error("Failed to save task", err);
+      alert("Failed to save task");
+    }
+  };
+
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setShowAddTask(true);
+  };
+
+  const handleCancelSave = () => {
     setShowAddTask(false);
+    setEditingTask(null);
   };
 
-  const handleStatusChange = (id, newStatus) => {
+  const handleStatusChange = async (id, newStatus) => {
+    // Find the task we're updating to send full data if needed by PUT
+    const taskToUpdate = tasks.find(t => t.id === id);
+    if (!taskToUpdate) return;
+
+    // Optimistic Update
+    const previousTasks = [...tasks];
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
+
+    try {
+      // Send the whole task object with the updated status
+      const res = await updateTask(id, {
+        ...taskToUpdate,
+        status: newStatus,
+        // Ensure we use snake_case for fields during update
+        title: taskToUpdate.title || taskToUpdate.taskName,
+        start_date: taskToUpdate.start_date || taskToUpdate.startDate || null,
+        end_date: taskToUpdate.end_date || taskToUpdate.endDate || null,
+        project_id: taskToUpdate.project_id || (taskToUpdate.project?.id || taskToUpdate.project?._id),
+        created_by: taskToUpdate.created_by || taskToUpdate.createdBy || null
+      });
+
+      const updatedTask = res.data?.data || res.data;
+      setTasks(prev => prev.map(t => (t.id === id || t._id === id) ? updatedTask : t));
+    } catch (err) {
+      console.error("Failed to update status", err);
+      // Revert on failure
+      setTasks(previousTasks);
+      alert("Failed to update task status. Please try again.");
+    }
   };
 
-  const getCount = (status) => {
-    if (status === "All") return tasks.length;
-    return tasks.filter((t) => t.status === status).length;
+  const getCount = (statusValue) => {
+    if (statusValue === "All") return tasks.length;
+    return tasks.filter((t) => t.status === statusValue).length;
   };
 
   const canEdit = (task) => {
-    return role === "ADMIN" ||
-           role === "PROJECT_MANAGER" ||
-           (role === "DEVELOPER" && task.assignedTo === currentUser);
+    return role === "Project Manager" || role === "admin" || (task.created_by && task.created_by === currentUserId);
   };
 
   const styles = {
     pageContainer: { display: "flex", backgroundColor: "#FBFAFC", minHeight: "100vh" },
     mainContent: { flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" },
     pageInner: { padding: "20px 10px" },
-    
+
     // Remove pageTitle since it's in Header
 
     searchFilterContainer: {
@@ -185,16 +232,16 @@ export default function Tasks() {
       flexWrap: "nowrap",
       overflowX: "auto",
     },
-    searchBox: { 
-      position: "relative", 
+    searchBox: {
+      position: "relative",
       flex: "0 0 300px",
       minWidth: 280,
     },
-    searchIcon: { 
-      position: "absolute", 
-      left: 14, 
-      top: "50%", 
-      transform: "translateY(-50%)", 
+    searchIcon: {
+      position: "absolute",
+      left: 14,
+      top: "50%",
+      transform: "translateY(-50%)",
       color: "#B91C1C",
       fontSize: 14,
     },
@@ -207,7 +254,7 @@ export default function Tasks() {
       outline: "none",
       backgroundColor: "#fff",
     },
-    toolbarControl: { 
+    toolbarControl: {
       flex: "0 0 auto",
       minWidth: 140,
     },
@@ -229,7 +276,7 @@ export default function Tasks() {
       outline: "none",
       background: "#fff",
     },
-    toggleWrapper: { 
+    toggleWrapper: {
       flex: "0 0 auto",
       marginLeft: 0,
     },
@@ -277,7 +324,7 @@ export default function Tasks() {
       transition: "filter 0.3s ease",
     },
     addTaskBtn: {
-      background: RED,
+      background: "#C62828", // Assuming RED is #C62828
       color: "#fff",
       border: "none",
       padding: "12px 20px",
@@ -389,7 +436,7 @@ export default function Tasks() {
               value: selectedProject,
               onChange: (e) => setSelectedProject(e.target.value)
             },
-              projectList.map((p) => 
+              projectList.map((p) =>
                 React.createElement("option", { key: p, value: p }, p)
               )
             )
@@ -401,7 +448,7 @@ export default function Tasks() {
               value: selectedPerson,
               onChange: (e) => setSelectedPerson(e.target.value)
             },
-              peopleList.map((p) => 
+              peopleList.map((p) =>
                 React.createElement("option", { key: p, value: p }, p)
               )
             )
@@ -424,7 +471,7 @@ export default function Tasks() {
                   alt: "Grid",
                   style: {
                     ...styles.toggleIcon,
-                    filter: viewMode === "grid" 
+                    filter: viewMode === "grid"
                       ? "invert(20%) sepia(90%) saturate(5000%) hue-rotate(350deg)"
                       : "invert(40%) brightness(0.5)",
                   }
@@ -439,7 +486,7 @@ export default function Tasks() {
                   alt: "Board",
                   style: {
                     ...styles.toggleIcon,
-                    filter: viewMode === "board" 
+                    filter: viewMode === "board"
                       ? "invert(20%) sepia(90%) saturate(5000%) hue-rotate(350deg)"
                       : "invert(40%) brightness(0.5)",
                   }
@@ -461,17 +508,17 @@ export default function Tasks() {
 
         viewMode === "grid" && React.createElement("div", { style: styles.statusFilterContainer },
           statuses.map((status) => {
-            const isActive = selectedStatus === status;
+            const isActive = selectedStatus === status.value;
             return React.createElement("button", {
-              key: status,
+              key: status.value,
               style: {
                 ...styles.statusChip,
                 ...(isActive ? styles.activeChip : {})
               },
-              onClick: () => setSelectedStatus(status)
+              onClick: () => setSelectedStatus(status.value)
             },
-              React.createElement("span", null, status),
-              React.createElement("span", { style: styles.chipCount }, getCount(status))
+              React.createElement("span", null, status.label),
+              React.createElement("span", { style: styles.chipCount }, getCount(status.value))
             );
           }),
           selectedDate && React.createElement("button", {
@@ -482,33 +529,37 @@ export default function Tasks() {
 
         showAddTask && React.createElement(TaskForm, {
           onSave: handleSaveTask,
-          onCancel: () => setShowAddTask(false),
-          projectList: projectList.filter(p => p !== "All"),
-          peopleList: peopleList.filter(p => p !== "All"),
-          statusList: statuses.filter(s => s !== "All"),
-          moduleList: moduleList,
-          userData: userData
+          onCancel: handleCancelSave,
+          projects: projects,
+          projectList: projectList,
+          peopleList: peopleList,
+          statusList: statuses.filter(s => s.value !== "All"),
+          userData: userData,
+          initialData: editingTask,
+          currentUserId: currentUserId
         }),
 
-        viewMode === "grid" 
+        viewMode === "grid"
           ? React.createElement(TaskListView, {
-              tasks: filteredTasks,
-              onStatusChange: handleStatusChange,
-              canEdit: canEdit,
-              currentUser: currentUser,
-              userData: userData,
-              formatShortDate: formatShortDate,
-              formatFullDate: formatFullDate
-            })
+            tasks: filteredTasks,
+            onStatusChange: handleStatusChange,
+            onEdit: handleEditTask,
+            canEdit: canEdit,
+            currentUser: currentUser,
+            userData: userData,
+            formatShortDate: formatShortDate,
+            formatFullDate: formatFullDate
+          })
           : React.createElement(TaskBoardView, {
-              tasks: filteredTasks,
-              onStatusChange: handleStatusChange,
-              canEdit: canEdit,
-              currentUser: currentUser,
-              userData: userData,
-              formatShortDate: formatShortDate,
-              formatFullDate: formatFullDate
-            })
+            tasks: filteredTasks,
+            onStatusChange: handleStatusChange,
+            onEdit: handleEditTask,
+            canEdit: canEdit,
+            currentUser: currentUser,
+            userData: userData,
+            formatShortDate: formatShortDate,
+            formatFullDate: formatFullDate
+          })
       )
     )
   );

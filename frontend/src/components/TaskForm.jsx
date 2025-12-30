@@ -1,32 +1,117 @@
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
+import { getModules } from "../api/modules";
+import { getProjectMembers } from "../api/projects";
+import { getSprints } from "../api/sprints";
 
 const RED = "#C62828";
 
-export default function TaskForm({ onSave, onCancel, projectList, peopleList, statusList, moduleList, userData }) {
+export default function TaskForm({ onSave, onCancel, projects = [], initialData, currentUserId }) {
+  const [modules, setModules] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [sprints, setSprints] = useState([]);
+  const [isEdit, setIsEdit] = useState(false);
+
   const [formData, setFormData] = useState({
-    taskName: "",
-    moduleName: moduleList[0] || "",
-    projectName: projectList[0] || "",
-    assignedTo: peopleList[0] || "",
+    title: "",
+    description: "",
+    module_id: "",
+    project_id: "",
+    sprint_id: "",
+    assignee_id: "",
     status: "To Do",
-    startDate: "",
-    endDate: "",
-    priority: "Medium"
+    start_date: "",
+    end_date: "",
+    priority: "Medium",
+    est_hours: "",
+    created_by: currentUserId || localStorage.getItem("userId") || "",
+    collaborators: []
   });
+
+  React.useEffect(() => {
+    if (initialData) {
+      setIsEdit(true);
+      setFormData({
+        title: initialData.title || initialData.taskName || "",
+        description: initialData.description || "",
+        module_id: initialData.module_id || initialData.module?._id || "",
+        project_id: initialData.project_id || initialData.project?._id || initialData.project?.[0]?.id || "",
+        sprint_id: initialData.sprint_id || initialData.sprint?._id || "",
+        assignee_id: initialData.assignee_id || initialData.assignedTo?._id || initialData.assignedTo || "",
+        status: initialData.status || "To Do",
+        start_date: initialData.start_date ? initialData.start_date.split('T')[0] : (initialData.startDate ? initialData.startDate.split('T')[0] : ""),
+        end_date: initialData.end_date ? initialData.end_date.split('T')[0] : (initialData.endDate ? initialData.endDate.split('T')[0] : ""),
+        priority: initialData.priority || "Medium",
+        est_hours: initialData.est_hours || "",
+        created_by: initialData.created_by || currentUserId || localStorage.getItem("userId") || "",
+        collaborators: initialData.collaborators || []
+      });
+      const pid = initialData.project_id || initialData.project?._id;
+      if (pid) {
+        fetchProjectDetails(pid);
+      }
+    }
+  }, [initialData]);
+
+  const fetchProjectDetails = async (pid) => {
+    try {
+      const [mods, mems, sprnts] = await Promise.all([
+        getModules(pid),
+        getProjectMembers(pid),
+        getSprints(pid)
+      ]);
+      setModules(mods.data?.data || mods.data || []);
+      setMembers(mems.data?.data || mems.data || []);
+      setSprints(sprnts.data?.data || sprnts.data || []);
+    } catch (err) {
+      console.error("Failed to load project details", err);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.taskName.trim()) {
-      alert("Please enter task name");
+    if (!formData.title.trim()) {
+      alert("Please enter title");
       return;
     }
-    onSave(formData);
+    // Sanitize payload: convert empty strings to null for optional/date fields
+    const payload = {
+      ...formData,
+      est_hours: formData.est_hours ? parseFloat(formData.est_hours) : null,
+      start_date: formData.start_date || null,
+      end_date: formData.end_date || null,
+      created_by: formData.created_by || null
+    };
+    onSave(payload);
+  };
+
+  const onProjectChange = async (e) => {
+    const pid = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      project_id: pid,
+      module_id: "",
+      sprint_id: "",
+      assignee_id: ""
+    }));
+
+    if (!pid) {
+      setModules([]);
+      setMembers([]);
+      setSprints([]);
+      return;
+    }
+    fetchProjectDetails(pid);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCollaboratorChange = (e) => {
+    const selectedOptions = [...e.target.selectedOptions].map(o => o.value);
+    setFormData(prev => ({ ...prev, collaborators: selectedOptions }));
   };
 
   const styles = {
@@ -63,10 +148,7 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      transition: "background-color 0.2s",
-      ":hover": {
-        backgroundColor: "#F3F4F6"
-      }
+      transition: "background-color 0.2s"
     },
     formGrid: {
       display: "grid",
@@ -97,12 +179,19 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
       fontSize: "14px",
       outline: "none",
       backgroundColor: "#fff",
+      boxSizing: "border-box"
+    },
+    textarea: {
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "8px",
+      border: "1px solid #E6E9EE",
+      fontSize: "14px",
+      outline: "none",
+      backgroundColor: "#fff",
       boxSizing: "border-box",
-      transition: "border-color 0.2s",
-      ":focus": {
-        borderColor: RED,
-        boxShadow: `0 0 0 3px rgba(198, 40, 40, 0.1)`
-      }
+      minHeight: "80px",
+      resize: "vertical"
     },
     select: {
       width: "100%",
@@ -112,12 +201,7 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
       fontSize: "14px",
       outline: "none",
       backgroundColor: "#fff",
-      boxSizing: "border-box",
-      transition: "border-color 0.2s",
-      ":focus": {
-        borderColor: RED,
-        boxShadow: `0 0 0 3px rgba(198, 40, 40, 0.1)`
-      }
+      boxSizing: "border-box"
     },
     buttonGroup: {
       display: "flex",
@@ -134,15 +218,7 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
       cursor: "pointer",
       fontWeight: "600",
       fontSize: "14px",
-      flex: 1,
-      transition: "background-color 0.2s, transform 0.1s",
-      ":hover": {
-        backgroundColor: "#B71C1C",
-        transform: "translateY(-1px)"
-      },
-      ":active": {
-        transform: "translateY(0)"
-      }
+      flex: 1
     },
     cancelButton: {
       background: "#fff",
@@ -153,18 +229,21 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
       cursor: "pointer",
       fontWeight: "600",
       fontSize: "14px",
-      flex: 1,
-      transition: "background-color 0.2s, border-color 0.2s",
-      ":hover": {
-        backgroundColor: "#F9FAFB",
-        borderColor: "#D1D5DB"
-      }
+      flex: 1
     }
   };
 
+  const statusOptions = [
+    { label: "To Do", value: "To Do" },
+    { label: "In Progress", value: "In Progress" },
+    { label: "Review", value: "Review" },
+    { label: "Done", value: "Done" },
+    { label: "Blocked", value: "Blocked" }
+  ];
+
   return React.createElement("div", { style: styles.formContainer },
     React.createElement("div", { style: styles.formHeader },
-      React.createElement("h3", { style: styles.formTitle }, "Add New Task"),
+      React.createElement("h3", { style: styles.formTitle }, isEdit ? "Edit Task" : "Add New Task"),
       React.createElement("button", {
         style: styles.closeButton,
         onClick: onCancel,
@@ -176,50 +255,83 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
 
     React.createElement("form", { onSubmit: handleSubmit },
       React.createElement("div", { style: styles.formGrid },
-        // Task Name (Full width)
         React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },
           React.createElement("label", { style: styles.label },
-            "Task Name",
+            "Title",
             React.createElement("span", { style: styles.required }, " *")
           ),
           React.createElement("input", {
             type: "text",
-            name: "taskName",
-            value: formData.taskName,
+            name: "title",
+            value: formData.title,
             onChange: handleChange,
-            placeholder: "Enter task name",
+            placeholder: "Enter task title",
             style: styles.input,
             required: true,
             autoFocus: true
           })
         ),
 
-        // Module Name (Dropdown)
-        React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Module"),
-          React.createElement("select", {
-            name: "moduleName",
-            value: formData.moduleName,
+        React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },
+          React.createElement("label", { style: styles.label }, "Description"),
+          React.createElement("textarea", {
+            name: "description",
+            value: formData.description,
             onChange: handleChange,
-            style: styles.select
-          },
-            moduleList.map(module => 
-              React.createElement("option", { key: module, value: module }, module)
-            )
-          )
+            placeholder: "Enter task description",
+            style: styles.textarea
+          })
         ),
 
         // Project
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Project"),
+          React.createElement("label", { style: styles.label }, "Project", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("select", {
-            name: "projectName",
-            value: formData.projectName,
-            onChange: handleChange,
-            style: styles.select
+            name: "project_id",
+            value: formData.project_id,
+            onChange: onProjectChange,
+            style: styles.select,
+            required: true
           },
-            projectList.map(project => 
-              React.createElement("option", { key: project, value: project }, project)
+            React.createElement("option", { value: "" }, "Select Project"),
+            projects.map(project =>
+              React.createElement("option", { key: project._id || project.id, value: project._id || project.id }, project.name)
+            )
+          )
+        ),
+
+        // Sprint
+        React.createElement("div", { style: styles.formGroup },
+          React.createElement("label", { style: styles.label }, "Sprint", React.createElement("span", { style: styles.required }, " *")),
+          React.createElement("select", {
+            name: "sprint_id",
+            value: formData.sprint_id,
+            onChange: handleChange,
+            style: styles.select,
+            disabled: !formData.project_id,
+            required: true
+          },
+            React.createElement("option", { value: "" }, "Select Sprint"),
+            sprints.map(s =>
+              React.createElement("option", { key: s.id || s._id, value: s.id || s._id }, s.name)
+            )
+          )
+        ),
+
+        // Module
+        React.createElement("div", { style: styles.formGroup },
+          React.createElement("label", { style: styles.label }, "Module", React.createElement("span", { style: styles.required }, " *")),
+          React.createElement("select", {
+            name: "module_id",
+            value: formData.module_id,
+            onChange: handleChange,
+            style: styles.select,
+            disabled: !formData.project_id,
+            required: true
+          },
+            React.createElement("option", { value: "" }, "Select Module"),
+            modules.map(module =>
+              React.createElement("option", { key: module.id || module._id, value: module.id || module._id }, module.name)
             )
           )
         ),
@@ -228,17 +340,18 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
         React.createElement("div", { style: styles.formGroup },
           React.createElement("label", { style: styles.label }, "Assigned To"),
           React.createElement("select", {
-            name: "assignedTo",
-            value: formData.assignedTo,
+            name: "assignee_id",
+            value: formData.assignee_id,
             onChange: handleChange,
-            style: styles.select
+            style: styles.select,
+            disabled: !formData.project_id
           },
-            peopleList.map(person => {
-              const user = userData[person] || { name: person, role: "User" };
-              return React.createElement("option", { key: person, value: person }, 
-                `${person} - ${user.name} (${user.role})`
-              );
-            })
+            React.createElement("option", { value: "" }, "Select Member"),
+            members.map(person => (
+              React.createElement("option", { key: person.id || person._id, value: person.id || person._id },
+                person.full_name || person.name || person.email
+              )
+            ))
           )
         ),
 
@@ -251,8 +364,8 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
             onChange: handleChange,
             style: styles.select
           },
-            statusList.map(status => 
-              React.createElement("option", { key: status, value: status }, status)
+            statusOptions.map(opt =>
+              React.createElement("option", { key: opt.value, value: opt.value }, opt.label)
             )
           )
         ),
@@ -266,47 +379,71 @@ export default function TaskForm({ onSave, onCancel, projectList, peopleList, st
             onChange: handleChange,
             style: styles.select
           },
-            ["High", "Medium", "Low"].map(priority => 
+            ["High", "Medium", "Low"].map(priority =>
               React.createElement("option", { key: priority, value: priority }, priority)
             )
           )
         ),
 
-        // Start Date
+        // Estimated Hours
+        React.createElement("div", { style: styles.formGroup },
+          React.createElement("label", { style: styles.label }, "Est. Hours"),
+          React.createElement("input", {
+            type: "number",
+            step: "0.25",
+            name: "est_hours",
+            value: formData.est_hours,
+            onChange: handleChange,
+            placeholder: "0.00",
+            style: styles.input
+          })
+        ),
+
+        // Dates
         React.createElement("div", { style: styles.formGroup },
           React.createElement("label", { style: styles.label }, "Start Date"),
           React.createElement("input", {
             type: "date",
-            name: "startDate",
-            value: formData.startDate,
+            name: "start_date",
+            value: formData.start_date,
             onChange: handleChange,
             style: styles.input
           })
         ),
-
-        // End Date
         React.createElement("div", { style: styles.formGroup },
           React.createElement("label", { style: styles.label }, "End Date"),
           React.createElement("input", {
             type: "date",
-            name: "endDate",
-            value: formData.endDate,
+            name: "end_date",
+            value: formData.end_date,
             onChange: handleChange,
             style: styles.input
           })
         ),
 
-        // Buttons
+        // Collaborators (Multi-select) - EDIT MODE ONLY
+        isEdit && React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },
+          React.createElement("label", { style: styles.label }, "Collaborators"),
+          React.createElement("select", {
+            name: "collaborators",
+            multiple: true,
+            value: formData.collaborators,
+            onChange: handleCollaboratorChange,
+            style: { ...styles.select, height: "80px" }
+          },
+            members
+              .filter(u => (u.id || u._id) !== formData.assignee_id)
+              .map(u => (
+                React.createElement("option", { key: u.id || u._id, value: u.id || u._id },
+                  u.full_name || u.name
+                )
+              ))
+          )
+        ),
+
         React.createElement("div", { style: styles.buttonGroup },
-          React.createElement("button", {
-            type: "submit",
-            style: styles.saveButton
-          }, "Save Task"),
-          React.createElement("button", {
-            type: "button",
-            style: styles.cancelButton,
-            onClick: onCancel
-          }, "Cancel")
+          React.createElement("button", { type: "submit", style: styles.saveButton }, "Save Task"),
+          React.createElement("button", { type: "button", style: styles.cancelButton, onClick: onCancel }, "Cancel")
         )
       )
     )
