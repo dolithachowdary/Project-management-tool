@@ -36,7 +36,7 @@ function Dashboard() {
         : <DevDashboard />;
     }
 
-    if (activeTab === "Calendar" && role === "Developer") {
+    if (activeTab === "Calendar" && role !== "Project Manager") {
       return <DevCalendar />;
     }
 
@@ -68,7 +68,7 @@ function Dashboard() {
           </button>
 
           {/* ✅ Calendar ONLY for Developer */}
-          {role === "Developer" && (
+          {role !== "Project Manager" && (
             <button
               style={activeTab === "Calendar" ? styles.activeTab : styles.tab}
               onClick={() => setActiveTab("Calendar")}
