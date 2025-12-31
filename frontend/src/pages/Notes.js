@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { getNotes, createNote as createNoteApi, updateNote as updateNoteApi, deleteNote as deleteNoteApi } from "../api/notes";
@@ -34,6 +34,7 @@ export default function Notes() {
   // New Note Widget State
   const [newNoteColor, setNewNoteColor] = useState(COLORS[0]);
   const [isWidgetMenuOpen, setIsWidgetMenuOpen] = useState(false);
+  const [setNewNoteContent] = useState("");
 
   // Inline Editing State
   const [editingId, setEditingId] = useState(null); // ID of note being edited
@@ -43,39 +44,28 @@ export default function Notes() {
   // Menu State
   const [openCardMenuId, setOpenCardMenuId] = useState(null);
 
-  const widgetEditorRef = useRef(null);
-  const inlineEditorRef = useRef(null);
 
   /* -------- FETCH NOTES -------- */
   useEffect(() => {
     fetchNotes();
   }, []);
 
-  const fetchNotes = useCallback(async () => {
+  const fetchNotes = async () => {
     try {
-      const savedUser = JSON.parse(localStorage.getItem("userData"));
-      const token = savedUser?.accessToken;
-      if (!token) return;
-
-      const res = await fetch("http://localhost:5000/api/notes", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const formatted = data.map(n => ({
-          id: n.id,
-          html: n.content_html,
-          color: COLORS.find(c => c.id === n.color_id) || COLORS[0],
-          updatedAt: new Date(n.updated_at).toLocaleDateString("en-US", {
-            month: "short", day: "numeric", year: "numeric"
-          })
-        }));
-        setNotes(formatted);
-      }
+      const data = await getNotes();
+      const formatted = data.map(n => ({
+        id: n.id,
+        html: n.content_html,
+        color: COLORS.find(c => c.id === n.color_id) || COLORS[0],
+        updatedAt: new Date(n.updated_at).toLocaleDateString("en-US", {
+          month: "short", day: "numeric", year: "numeric"
+        })
+      }));
+      setNotes(formatted);
     } catch (err) {
       console.error("Failed to fetch notes:", err);
     }
-  }, []);
+  };
 
   /* -------- TEXT FORMATTING -------- */
   const format = (cmd, isInline = false) => {
@@ -98,78 +88,44 @@ export default function Notes() {
     if (!content) return;
 
     try {
-      const savedUser = JSON.parse(localStorage.getItem("userData"));
-      const token = savedUser?.accessToken;
-      if (!token) return;
-
-      console.log("Sending Note:", { content, color: newNoteColor.id });
-
-      const res = await fetch("http://localhost:5000/api/notes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content_html: content,
-          color_id: newNoteColor.id
-        })
+      await createNoteApi({
+        content_html: content,
+        color_id: newNoteColor.id
       });
 
-      if (res.ok) {
-        // Refresh notes or locally append
-        // Let's refetch to get exact server
-        fetchNotes();
+      fetchNotes();
+      el.innerHTML = "";
+      setNewNoteContent("");
+      setNewNoteColor(COLORS[0]);
 
-        // Reset widget
-        el.innerHTML = "";
-        setNewNoteColor(COLORS[0]);
-      } else {
-        const errData = await res.json();
-        console.error("Server Error:", errData);
-        alert("Failed to create note: " + (errData.error || "Unknown error"));
-      }
     } catch (err) {
-      console.error("Network/Client Error:", err);
-      alert("Network error: " + err.message);
+      console.error("Create Note Error:", err);
+      alert("Failed to create note");
     }
   };
 
   /* -------- UPDATE EXISTING NOTE -------- */
-  const updateNote = useCallback(async (id) => {
+  const updateNote = async (id) => {
     const el = document.getElementById(`inline-editor-${id}`);
     if (!el) return;
     const content = el.innerHTML.trim();
     // if (!content) return; // Allow empty? 
 
     try {
-      const savedUser = JSON.parse(localStorage.getItem("userData"));
-      const token = savedUser?.accessToken;
-      if (!token) return;
-
-      const res = await fetch(`http://localhost:5000/api/notes/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content_html: content,
-          color_id: editColor?.id // or current note color
-        })
+      await updateNoteApi(id, {
+        content_html: content,
+        color_id: editColor?.id
       });
-
-      if (res.ok) {
-        fetchNotes(); // Sync with server
-      }
+      fetchNotes();
     } catch (err) {
       console.error(err);
+      alert("Failed to save changes");
     }
 
     setEditingId(null);
     setEditContent("");
     setEditColor(null);
-  }, [editColor, fetchNotes]);
+  };
 
   /* -------- ACTIONS -------- */
   const deleteNote = async (id) => {
@@ -178,17 +134,11 @@ export default function Notes() {
     if (editingId === id) setEditingId(null);
 
     try {
-      const savedUser = JSON.parse(localStorage.getItem("userData"));
-      const token = savedUser?.accessToken;
-      if (!token) return;
-
-      await fetch(`http://localhost:5000/api/notes/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await deleteNoteApi(id);
     } catch (err) {
       console.error("Failed to delete", err);
       fetchNotes(); // Revert on failure
+      alert("Failed to delete note");
     }
   };
 
@@ -254,7 +204,7 @@ export default function Notes() {
 
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [editingId, openCardMenuId, isWidgetMenuOpen, updateNote]);
+  }, [editingId, openCardMenuId, isWidgetMenuOpen, notes, editColor]);
   // Added dependencies to ensure updateNote has access to latest state scope if needed (though updateNote uses refs mostly)
 
   /* ================= RENDER ================= */
@@ -455,6 +405,7 @@ export default function Notes() {
             suppressContentEditableWarning
             style={styles.editorInput}
             placeholder="Type anything to remember..."
+            onInput={(e) => setNewNoteContent(e.currentTarget.innerHTML)}
           />
 
           {/* Toolbar */}
