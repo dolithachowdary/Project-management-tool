@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import {
@@ -35,6 +35,7 @@ export default function Notes() {
   // Widget
   const [newNoteColor, setNewNoteColor] = useState(COLORS[0]);
   const [isWidgetMenuOpen, setIsWidgetMenuOpen] = useState(false);
+  const [setNewNoteContent] = useState("");
 
   // Editing
   const [editingId, setEditingId] = useState(null);
@@ -43,23 +44,28 @@ export default function Notes() {
   // Menus
   const [openCardMenuId, setOpenCardMenuId] = useState(null);
 
-  /* ================= FETCH NOTES ================= */
 
-  const fetchNotes = useCallback(async () => {
-    const data = await getNotes();
-    setNotes(
-      data.map(n => ({
+  /* -------- FETCH NOTES -------- */
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  const fetchNotes = async () => {
+    try {
+      const data = await getNotes();
+      const formatted = data.map(n => ({
         id: n.id,
         html: n.content_html,
         color: COLORS.find(c => c.id === n.color_id) || COLORS[0],
         updatedAt: new Date(n.updated_at).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric"
+          month: "short", day: "numeric", year: "numeric"
         })
-      }))
-    );
-  }, []);
+      }));
+      setNotes(formatted);
+    } catch (err) {
+      console.error("Failed to fetch notes:", err);
+    }
+  };
 
   useEffect(() => {
     fetchNotes();
@@ -84,33 +90,64 @@ export default function Notes() {
     const el = document.getElementById("new-note-editor");
     if (!el || !el.innerHTML.trim()) return;
 
-    await createNoteApi({
-      content_html: el.innerHTML,
-      color_id: newNoteColor.id
-    });
+    try {
+      await createNoteApi({
+        content_html: content,
+        color_id: newNoteColor.id
+      });
 
-    el.innerHTML = "";
-    setNewNoteColor(COLORS[0]);
-    fetchNotes();
+      fetchNotes();
+      el.innerHTML = "";
+      setNewNoteContent("");
+      setNewNoteColor(COLORS[0]);
+
+    } catch (err) {
+      console.error("Create Note Error:", err);
+      alert("Failed to create note");
+    }
   };
 
-  /* ================= UPDATE ================= */
-
-  const updateNote = useCallback(async (id) => {
+  /* -------- UPDATE EXISTING NOTE -------- */
+  const updateNote = async (id) => {
     const el = document.getElementById(`inline-editor-${id}`);
     if (!el) return;
+    const content = el.innerHTML.trim();
+    // if (!content) return; // Allow empty? 
 
-    await updateNoteApi(id, {
-      content_html: el.innerHTML,
-      color_id: editColor?.id
-    });
+    try {
+      await updateNoteApi(id, {
+        content_html: content,
+        color_id: editColor?.id
+      });
+      fetchNotes();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save changes");
+    }
 
     setEditingId(null);
     setEditColor(null);
-    fetchNotes();
-  }, [editColor, fetchNotes]);
+  };
 
-  /* ================= HELPERS ================= */
+  /* -------- ACTIONS -------- */
+  const deleteNote = async (id) => {
+    // Optimistic remove
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+    if (editingId === id) setEditingId(null);
+
+    try {
+      await deleteNoteApi(id);
+    } catch (err) {
+      console.error("Failed to delete", err);
+      fetchNotes(); // Revert on failure
+      alert("Failed to delete note");
+    }
+  };
+
+  const copyNote = (html) => {
+    const text = html.replace(/<[^>]*>/g, "");
+    navigator.clipboard.writeText(text);
+  };
 
   const startEditing = (note) => {
     setEditingId(note.id);
@@ -148,9 +185,11 @@ export default function Notes() {
         }
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [editingId, updateNote]);
+
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [editingId, openCardMenuId, isWidgetMenuOpen, notes, editColor]);
+  // Added dependencies to ensure updateNote has access to latest state scope if needed (though updateNote uses refs mostly)
 
   /* ================= RENDER ================= */
 
@@ -234,6 +273,8 @@ export default function Notes() {
             contentEditable
             suppressContentEditableWarning
             style={styles.editorInput}
+            placeholder="Type anything to remember..."
+            onInput={(e) => setNewNoteContent(e.currentTarget.innerHTML)}
           />
 
           <div style={styles.editorToolbar}>
