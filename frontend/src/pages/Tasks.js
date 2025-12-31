@@ -115,13 +115,17 @@ export default function Tasks() {
   const getModuleName = (task) => task.moduleName || task.module?.name || "";
   const getSprintName = (task) => task.sprintName || task.sprint?.name || "";
 
-  const filteredTasks = tasks.map(t => ({
+  // Prepare tasks with names
+  const tasksWithNames = tasks.map(t => ({
     ...t,
-    taskName: t.title || t.taskName || "", // Backward compatibility
+    taskName: t.title || t.taskName || "",
     projectName: getProjectName(t),
     moduleName: getModuleName(t),
     sprintName: getSprintName(t)
-  })).filter((t) => {
+  }));
+
+  // Base filtered tasks (before status filter)
+  const baseFilteredTasks = tasksWithNames.filter((t) => {
     const q = searchQuery.toLowerCase();
     const pName = t.projectName.toLowerCase();
     const mName = t.moduleName.toLowerCase();
@@ -136,7 +140,6 @@ export default function Tasks() {
         mName.includes(q) ||
         sName.includes(q) ||
         tCode.includes(q)) &&
-      (selectedStatus === "All" || formatStatus(t.status) === selectedStatus) &&
       (selectedProject === "All" || t.projectName === selectedProject) &&
       (selectedPerson === "All" || (t.assignee_name || t.assignedTo) === selectedPerson) &&
       (!selectedDate ||
@@ -146,6 +149,16 @@ export default function Tasks() {
         t.end_date === selectedDate)
     );
   });
+
+  // Final filtered tasks (including status filter)
+  const filteredTasks = baseFilteredTasks.filter((t) =>
+    selectedStatus === "All" || formatStatus(t.status) === selectedStatus
+  );
+
+  const getCount = (statusValue) => {
+    if (statusValue === "All") return baseFilteredTasks.length;
+    return baseFilteredTasks.filter((t) => formatStatus(t.status) === statusValue).length;
+  };
 
   const handleSaveTask = async (taskData) => {
     try {
@@ -221,10 +234,7 @@ export default function Tasks() {
     }
   };
 
-  const getCount = (statusValue) => {
-    if (statusValue === "All") return tasks.length;
-    return tasks.filter((t) => t.status === statusValue).length;
-  };
+
 
   const canEdit = (task) => {
     return role === "Project Manager" || role === "admin" || (task.created_by && task.created_by === currentUserId);
@@ -298,64 +308,49 @@ export default function Tasks() {
       flex: "0 0 auto",
       marginLeft: 0,
     },
-    iconToggle: {
-      position: "relative",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      borderRadius: 999,
-      background: "#F9FAFB",
-      border: "1px solid #E5E7EB",
-      padding: "4px 6px",
-      width: 80,
-      height: 42,
-      overflow: "hidden",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
-    },
-    toggleHighlight: {
-      position: "absolute",
-      top: 3,
-      left: 3,
-      width: "calc(50% - 6px)",
-      height: "calc(100% - 6px)",
-      borderRadius: "50%",
-      background: "#FEE8E8",
-      boxShadow: "0 4px 10px rgba(198,40,40,0.12)",
-      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-      zIndex: 1,
-    },
-    iconButton: {
-      width: 34,
-      height: 34,
-      borderRadius: "50%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      transition: "all 0.25s ease",
-      zIndex: 2,
-      position: "relative",
-    },
-    toggleIcon: {
-      width: 18,
-      height: 18,
-      transition: "filter 0.3s ease",
-    },
     addTaskBtn: {
-      background: "#C62828", // Assuming RED is #C62828
+      background: "#b91c1c",
       color: "#fff",
       border: "none",
-      padding: "12px 20px",
-      borderRadius: 10,
+      padding: "12px 24px",
+      borderRadius: 12,
       cursor: "pointer",
       fontWeight: 700,
       display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
-      boxShadow: "0 6px 16px rgba(198,40,40,0.18)",
+      boxShadow: "0 8px 20px -6px rgba(185,28,28,0.4)",
       fontSize: 14,
       whiteSpace: "nowrap",
-      minWidth: 120,
+      transition: "all 0.2s ease",
+    },
+    toggleWrapper: { flex: "0 0 auto" },
+    iconToggle: {
+      display: "flex",
+      background: "#f1f5f9",
+      padding: 4,
+      borderRadius: 14,
+      gap: 4,
+      border: "1px solid #e2e8f0",
+    },
+    iconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      transition: "all 0.2s ease",
+    },
+    activeToggle: {
+      background: "#fee2e2",
+      boxShadow: "0 2px 8px rgba(220, 38, 38, 0.08)",
+    },
+    toggleIcon: {
+      width: 18,
+      height: 18,
+      transition: "filter 0.3s ease",
     },
 
     statusFilterContainer: {
@@ -372,38 +367,35 @@ export default function Tasks() {
     statusChip: {
       display: "flex",
       alignItems: "center",
-      gap: 8,
+      gap: 10,
       borderRadius: 999,
-      background: "#F9FAFB",
-      color: "#374151",
+      background: "#f8fafc",
+      color: "#475569",
       border: "none",
       cursor: "pointer",
-      fontSize: 13,
-      fontWeight: 600,
-      padding: "8px 16px",
-      transition: "all 0.25s ease",
-      boxShadow: "none",
+      fontSize: 14,
+      fontWeight: 700,
+      padding: "10px 20px",
+      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
       whiteSpace: "nowrap",
     },
     activeChip: {
-      background: "#FFE5E5",
-      color: "#C62828",
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 10px rgba(198,40,40,0.10)",
+      background: "#fee2e2",
+      color: "#dc2626",
+      boxShadow: "0 4px 12px rgba(220, 38, 38, 0.08)",
     },
     chipCount: {
       background: "#fff",
-      color: "#C62828",
+      color: "#dc2626",
       borderRadius: 999,
-      minWidth: 20,
-      height: 20,
+      minWidth: 24,
+      height: 24,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       fontSize: 12,
-      fontWeight: 700,
-      padding: "2px 6px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+      fontWeight: 800,
+      boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
     },
     clearDateBtn: {
       background: "#fff",
@@ -477,12 +469,9 @@ export default function Tasks() {
             React.createElement("div", { style: styles.iconToggle },
               React.createElement("div", {
                 style: {
-                  ...styles.toggleHighlight,
-                  transform: viewMode === "grid" ? "translateX(0%)" : "translateX(100%)",
-                }
-              }),
-              React.createElement("div", {
-                style: styles.iconButton,
+                  ...styles.iconButton,
+                  ...(viewMode === "grid" ? styles.activeToggle : {})
+                },
                 onClick: () => setViewMode("grid")
               },
                 React.createElement("img", {
@@ -497,7 +486,10 @@ export default function Tasks() {
                 })
               ),
               React.createElement("div", {
-                style: styles.iconButton,
+                style: {
+                  ...styles.iconButton,
+                  ...(viewMode === "board" ? styles.activeToggle : {})
+                },
                 onClick: () => setViewMode("board")
               },
                 React.createElement("img", {

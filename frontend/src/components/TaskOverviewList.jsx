@@ -38,27 +38,32 @@ const DEV_ORDER = {
 };
 
 export default function TaskOverviewList({
-  tasks,
+  tasks = [],
   role,
+  currentUserId,
   currentUser = "A",
 }) {
   const filtered =
     role === "Developer"
-      ? tasks.filter((t) => t.assignedTo.includes(currentUser))
+      ? tasks.filter((t) => {
+        const assignedId = t.assignee_id || t.assigned_to_id || t.assignedTo;
+        // Check if assigned to current user ID or Name
+        if (Array.isArray(assignedId)) return assignedId.includes(currentUserId) || assignedId.includes(currentUser);
+        if (typeof assignedId === 'object' && assignedId !== null) return assignedId.id === currentUserId || assignedId.name === currentUser;
+        return assignedId === currentUserId || assignedId === currentUser;
+      })
       : tasks;
 
-  const sorted =
-    role === "Developer"
-      ? [...filtered].sort(
-        (a, b) => DEV_ORDER[a.status] - DEV_ORDER[b.status]
-      )
-      : filtered;
+  const sorted = [...filtered].sort(
+    (a, b) => (DEV_ORDER[a.status] || 99) - (DEV_ORDER[b.status] || 99)
+  );
 
   const groupedByProject =
-    role === "Project Manager"
+    role === "Project Manager" || role === "admin"
       ? sorted.reduce((acc, t) => {
-        acc[t.projectName] = acc[t.projectName] || [];
-        acc[t.projectName].push(t);
+        const pName = t.project_name || t.projectName || "General";
+        acc[pName] = acc[pName] || [];
+        acc[pName].push(t);
         return acc;
       }, {})
       : null;
@@ -69,60 +74,64 @@ export default function TaskOverviewList({
         {role === "Developer" ? "Today’s Tasks" : "Team Tasks"}
       </h3>
 
-      {/* DEV VIEW */}
-      {role === "Developer" &&
-        sorted.map((task) => {
-          const color = STATUS_COLORS[task.status];
-          const done = task.status === "Done";
+      <div style={styles.scrollArea}>
+        {sorted.length === 0 && <div style={styles.empty}>No tasks found.</div>}
 
-          return (
-            <div key={task.id} style={styles.row}>
-              <span
-                style={{
-                  ...styles.dot,
-                  background: done ? "#22c55e" : color.text,
-                }}
-              />
-              <div style={{ flex: 1 }}>
-                <div style={styles.task}>{task.title || task.taskName}</div>
-                <div style={styles.meta}>
-                  {task.projectName} • {getStatusLabel(task.status)}
-                </div>
-              </div>
-              <span
-                style={{
-                  ...styles.pill,
-                  background: color.bg,
-                  color: color.text,
-                }}
-              >
-                {getStatusLabel(task.status)}
-              </span>
-            </div>
-          );
-        })}
+        {/* DEV VIEW */}
+        {role === "Developer" &&
+          sorted.map((task) => {
+            const color = STATUS_COLORS[task.status] || STATUS_COLORS["To Do"];
+            const done = task.status === "Done" || task.status === "done";
 
-      {/* PM VIEW */}
-      {role === "Project Manager" &&
-        Object.keys(groupedByProject).map((project) => (
-          <div key={project} style={{ marginBottom: 14 }}>
-            <div style={styles.project}>{project}</div>
-            {groupedByProject[project].map((task) => {
-              const color = STATUS_COLORS[task.status];
-              return (
-                <div key={task.id} style={styles.row}>
-                  <span
-                    style={{ ...styles.dot, background: color.text }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={styles.task}>{task.title || task.taskName}</div>
-                    <div style={styles.meta}>{getStatusLabel(task.status)}</div>
+            return (
+              <div key={task.id} style={styles.row}>
+                <span
+                  style={{
+                    ...styles.dot,
+                    background: done ? "#10b981" : color.text,
+                  }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={styles.task}>{task.title || task.taskName}</div>
+                  <div style={styles.meta}>
+                    {task.project_name || task.projectName} • {getStatusLabel(task.status)}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        ))}
+                <span
+                  style={{
+                    ...styles.pill,
+                    background: color.bg,
+                    color: color.text,
+                  }}
+                >
+                  {getStatusLabel(task.status)}
+                </span>
+              </div>
+            );
+          })}
+
+        {/* PM VIEW */}
+        {(role === "Project Manager" || role === "admin") && groupedByProject &&
+          Object.keys(groupedByProject).map((project) => (
+            <div key={project} style={{ marginBottom: 14 }}>
+              <div style={styles.project}>{project}</div>
+              {groupedByProject[project].map((task) => {
+                const color = STATUS_COLORS[task.status] || STATUS_COLORS["To Do"];
+                return (
+                  <div key={task.id} style={styles.row}>
+                    <span
+                      style={{ ...styles.dot, background: color.text }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={styles.task}>{task.title || task.taskName}</div>
+                      <div style={styles.meta}>{getStatusLabel(task.status)}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+      </div>
     </div>
   );
 }
@@ -130,32 +139,52 @@ export default function TaskOverviewList({
 const styles = {
   card: {
     background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #e5e5e5",
-    padding: 16,
+    borderRadius: 16,
+    border: "1px solid #f1f5f9",
+    padding: 20,
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    maxHeight: 500,
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
   },
-  title: { marginBottom: 12, fontWeight: 600 },
+  title: { marginBottom: 16, fontWeight: 700, fontSize: 16, color: "#1e293b" },
+  scrollArea: {
+    flex: 1,
+    overflowY: "auto",
+    paddingRight: 4,
+  },
   row: {
     display: "flex",
     alignItems: "center",
-    gap: 10,
-    padding: "10px",
-    borderRadius: 8,
-    background: "#f9fafb",
+    gap: 12,
+    padding: "12px",
+    borderRadius: 12,
+    background: "#f8fafc",
     marginBottom: 8,
+    transition: "background 0.2s",
   },
-  dot: { width: 10, height: 10, borderRadius: "50%" },
-  task: { fontWeight: 600 },
-  meta: { fontSize: 12, color: "#6b7280" },
+  dot: { width: 8, height: 8, borderRadius: "50%", flexShrink: 0 },
+  task: { fontWeight: 600, fontSize: 13, color: "#334155" },
+  meta: { fontSize: 11, color: "#64748b", marginTop: 2 },
   pill: {
-    fontSize: 12,
+    fontSize: 10,
     padding: "4px 10px",
     borderRadius: 999,
-    fontWeight: 600,
+    fontWeight: 700,
+    textTransform: "uppercase",
   },
   project: {
     fontWeight: 700,
-    color: "#C62828",
-    marginBottom: 6,
+    color: "#6366f1",
+    fontSize: 12,
+    marginBottom: 8,
+    paddingLeft: 4,
   },
+  empty: {
+    padding: 20,
+    textAlign: "center",
+    color: "#94a3b8",
+    fontSize: 14,
+  }
 };

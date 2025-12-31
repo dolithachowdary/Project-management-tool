@@ -1,90 +1,93 @@
 import React from "react";
+import { Calendar, Clock } from "lucide-react";
 
-export default function Upcoming() {
-  const items = [
-    {
-      id: 1,
-      color: "#d32f2f",
-      time: "2:00 PM",
-      title: "Submit Initial Wireframes",
-      desc: "Deadline for VanHome Realty High-Fidelity Wireframes.",
-      project: "Project 1 (Red)"
-    },
-    {
-      id: 2,
-      color: "#1976d2",
-      time: "4:30 PM",
-      title: "Finalize Icon Set",
-      desc: "Complete all custom icons for HealthPlus UI Redesign.",
-      project: "Project 2 (Blue)"
-    },
-    {
-      id: 3,
-      color: "#f9a825",
-      time: "5:30 PM",
-      title: "Design System Review",
-      desc: "Review and approve new components for Elegant Framework.",
-      project: "Project 3 (Yellow)"
-    }
-  ];
+export default function Upcoming({ tasks = [] }) {
+  // Sort by date and take top 5
+  const upcomingTasks = tasks
+    .filter(t => t.end_date || t.endDate)
+    .sort((a, b) => new Date(a.end_date || a.endDate) - new Date(b.end_date || b.endDate))
+    .slice(0, 5)
+    .map(t => ({
+      id: t.id || t._id,
+      title: t.title || t.taskName,
+      date: new Date(t.end_date || t.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      time: t.end_time || "End of day",
+      project: t.project_name || t.projectName || "General",
+      color: t.priority === "High" ? "#ef4444" : t.priority === "Low" ? "#10b981" : "#f59e0b"
+    }));
 
   return (
     <div style={styles.card}>
       <div style={styles.headerRow}>
         <span style={styles.title}>Upcoming Deadlines</span>
-        <button style={styles.seeAll}>See all</button>
       </div>
 
-      {items.map((item, idx) => (
-        <div key={item.id} style={styles.rowWrap}>
-          <div style={styles.leftCol}>
-            <div style={{ ...styles.dotWrap, borderColor: item.color }}>
-              <div style={{ ...styles.dot, background: item.color }}></div>
-            </div>
-            {idx !== items.length - 1 && <div style={styles.line}></div>}
-          </div>
+      <div style={styles.list}>
+        {upcomingTasks.length === 0 ? (
+          <div style={styles.empty}>No upcoming deadlines</div>
+        ) : (
+          upcomingTasks.map((item, idx) => (
+            <div key={item.id} style={styles.rowWrap}>
+              <div style={styles.leftCol}>
+                <div style={{ ...styles.dotWrap, borderColor: item.color }}>
+                  <div style={{ ...styles.dot, background: item.color }}></div>
+                </div>
+                {idx !== upcomingTasks.length - 1 && <div style={styles.line}></div>}
+              </div>
 
-          <div style={styles.rightCol}>
-            <div style={styles.itemTitle}>{item.title}</div>
-            <div style={styles.time}>{item.time}</div>
-            <div style={styles.desc}>{item.desc}</div>
-            <div style={styles.project}>{item.project}</div>
-          </div>
-        </div>
-      ))}
+              <div style={styles.rightCol}>
+                <div style={styles.itemTitle}>{item.title}</div>
+                <div style={styles.meta}>
+                  <div style={styles.timeRow}>
+                    <Calendar size={12} /> {item.date}
+                  </div>
+                  <div style={styles.timeRow}>
+                    <Clock size={12} /> {item.time}
+                  </div>
+                </div>
+                <div style={styles.projectBadge}>{item.project}</div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
   card: {
-    border: "1px solid #e5e5e5",
-    borderRadius: 12,
-    padding: 16,
-    background: "#fff"
+    border: "1px solid #f1f5f9",
+    borderRadius: 16,
+    padding: 20,
+    background: "#fff",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
   },
-  headerRow: { display: "flex", justifyContent: "space-between" },
-  title: { fontWeight: 600, fontSize: 15 },
-  seeAll: {
-    fontSize: 13,
-    border: "1px solid #ccc",
-    borderRadius: 6,
-    padding: "2px 8px",
-    background: "#fafafa",
-    cursor: "pointer"
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 20,
+    borderBottom: "1px solid #f8fafc",
+    paddingBottom: 12,
   },
-  rowWrap: { display: "flex", marginTop: 16, position: "relative" },
-
-  /* Left timeline column */
-  leftCol: { width: 30, position: "relative" },
+  title: { fontWeight: 700, fontSize: 16, color: "#1e293b" },
+  list: {
+    maxHeight: 400,
+    overflowY: "auto",
+    paddingRight: 4,
+  },
+  rowWrap: { display: "flex", position: "relative", marginBottom: 20 },
+  leftCol: { width: 30, position: "relative", display: "flex", flexDirection: "column", alignItems: "center" },
   dotWrap: {
-    width: 26,
-    height: 26,
+    width: 20,
+    height: 20,
     borderRadius: "50%",
     border: "2px solid",
     display: "flex",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    background: "#fff",
+    zIndex: 2,
   },
   dot: {
     width: 8,
@@ -92,18 +95,29 @@ const styles = {
     borderRadius: "50%"
   },
   line: {
-    position: "absolute",
-    top: 28,
-    left: 13,
     width: 2,
-    height: "50px",
-    background: "#ddd"
+    flex: 1,
+    background: "#f1f5f9",
+    marginTop: 4,
+    marginBottom: -24,
   },
-
-  /* Right content */
-  rightCol: { flex: 1, marginLeft: 8 },
-  itemTitle: { fontSize: 14, fontWeight: 600 },
-  time: { marginTop: 2, fontSize: 13, color: "#444" },
-  desc: { marginTop: 4, fontSize: 13, color: "#666" },
-  project: { marginTop: 4, fontSize: 12, fontWeight: 500 }
+  rightCol: { flex: 1, marginLeft: 12 },
+  itemTitle: { fontSize: 13, fontWeight: 600, color: "#334155", marginBottom: 6 },
+  meta: { display: "flex", gap: 12, marginBottom: 8 },
+  timeRow: { display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#64748b" },
+  projectBadge: {
+    display: "inline-block",
+    fontSize: 10,
+    fontWeight: 600,
+    color: "#6366f1",
+    background: "#eef2ff",
+    padding: "2px 8px",
+    borderRadius: 4,
+  },
+  empty: {
+    padding: "40px 0",
+    textAlign: "center",
+    color: "#94a3b8",
+    fontSize: 14,
+  }
 };

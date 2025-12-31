@@ -1,30 +1,30 @@
 import React from "react";
 
-const Stats = () => {
-  const stats = [
+const Stats = ({ data }) => {
+  const stats = data || [
     {
       title: "Completed tasks",
-      value: 127,
-      percent: "67.18%",
+      value: 0,
+      percent: "0%",
       trend: "up",
       color: "#2e7d32",
-      graph: [10, 14, 13, 18, 17, 22, 25],
+      graph: [0, 0, 0, 0, 0, 0, 0],
     },
     {
       title: "Incompleted tasks",
-      value: 62,
-      percent: "54.29%",
+      value: 0,
+      percent: "0%",
       trend: "down",
       color: "#c62828",
-      graph: [25, 22, 24, 21, 23, 20, 18],
+      graph: [0, 0, 0, 0, 0, 0, 0],
     },
     {
       title: "Overdue tasks",
-      value: 20,
-      percent: "14.11%",
+      value: 0,
+      percent: "0%",
       trend: "up",
       color: "#777",
-      graph: [5, 6, 7, 6, 8, 9, 10],
+      graph: [0, 0, 0, 0, 0, 0, 0],
     },
   ];
 
@@ -40,7 +40,7 @@ const Stats = () => {
 
           {/* RIGHT */}
           <div style={styles.right}>
-            <Sparkline data={s.graph} color={s.color} />
+            <Sparkline data={s.graph || [0, 0, 0, 0, 0, 0, 0]} color={s.color} />
 
             <div style={{ ...styles.percent, color: s.color }}>
               {s.percent} {s.trend === "up" ? "▲" : "▼"}
@@ -57,12 +57,14 @@ export default Stats;
 /* ---------------- SPARKLINE WITH GRADIENT ---------------- */
 
 const Sparkline = ({ data, color }) => {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
+  if (!data || data.length === 0) return null;
+
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
 
   const points = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * 80;
-    const y = 30 - ((d - min) / (max - min)) * 24;
+    const x = (i / (data.length - 1 || 1)) * 80;
+    const y = 30 - ((d - min) / (max - min || 1)) * 24;
     return { x, y };
   });
 
@@ -112,10 +114,11 @@ const styles = {
     display: "flex",
     gap: 12,
     marginBottom: 20,
+    flexWrap: "wrap"
   },
 
   card: {
-    flex: 1,
+    flex: "1 1 240px",
     background: "#ffffff",
     borderRadius: 12,
     padding: "16px 18px",
@@ -123,6 +126,7 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
   },
 
   title: {
