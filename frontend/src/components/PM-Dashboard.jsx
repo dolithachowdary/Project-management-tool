@@ -45,7 +45,7 @@ export default function PMDashboard() {
         setWeeklyStats(weeklyData);
 
         // Map Projects
-        const mappedProjects = projectsData.slice(0, 6).map(p => ({
+        const mappedProjects = projectsData.map(p => ({
           id: p.id || p._id,
           title: p.name,
           progress: p.progress || calculateProgress(p, tasksData),
@@ -57,23 +57,29 @@ export default function PMDashboard() {
             color: m.color || "#e0e7ff"
           })),
           timeLeft: p.status || "Active",
-          color: getRandomColor(p.id)
+          color: p.color || getRandomColor(p.id)
         }));
 
         // Map Sprints
-        const mappedSprints = sprintsData.slice(0, 6).map(s => ({
-          id: s.id,
-          title: s.name,
-          progress: s.progress || 0,
-          startDate: formatDate(s.start_date),
-          endDate: formatDate(s.end_date),
-          members: [],
-          timeLeft: s.status || "Active",
-          color: getRandomColor(s.id)
-        }));
+        const mappedSprints = sprintsData.map(s => {
+          const total = Number(s.total_tasks) || 0;
+          const completed = Number(s.completed_tasks) || 0;
+          const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-        setActiveProjects(mappedProjects);
-        setActiveSprints(mappedSprints);
+          return {
+            id: s.id,
+            title: `${s.project_name || 'Project'} - ${s.name}`,
+            progress: progress,
+            startDate: formatDate(s.start_date),
+            endDate: formatDate(s.end_date),
+            members: [],
+            timeLeft: s.status || "Active",
+            color: s.project_color || getRandomColor(s.id)
+          };
+        });
+
+        setActiveProjects(mappedProjects.slice(0, 3));
+        setActiveSprints(mappedSprints.slice(0, 3));
 
         // Calculate Stats
         const completedCount = tasksData.filter(t => (t.status || "").toLowerCase() === "done").length;
@@ -93,11 +99,11 @@ export default function PMDashboard() {
             graph: [5, 8, 12, 10, 15, completedCount],
           },
           {
-            title: "Open tasks",
+            title: "Incompleted tasks",
             value: totalCount - completedCount,
             percent: totalCount > 0 ? `${Math.round(((totalCount - completedCount) / totalCount) * 100)}%` : "0%",
             trend: "down",
-            color: "#3b82f6",
+            color: "#ef4444",
             graph: [20, 18, 15, 17, 14, totalCount - completedCount],
           },
           {
@@ -105,7 +111,7 @@ export default function PMDashboard() {
             value: overdueCount,
             percent: totalCount > 0 ? `${Math.round((overdueCount / totalCount) * 100)}%` : "0%",
             trend: overdueCount > 5 ? "up" : "down",
-            color: "#ef4444",
+            color: "#64748b",
             graph: [2, 4, 3, 5, 2, overdueCount],
           },
         ]);
@@ -149,8 +155,8 @@ export default function PMDashboard() {
 
           <div style={styles.topRow}>
             <div style={styles.graphWrapper}>
-              <h3 style={styles.sectionTitle}>Weekly Task Performance</h3>
-              <div style={{ flex: 1 }}>
+              <h3 style={styles.sectionTitle}>Weekly task report</h3>
+              <div style={{ flex: 1, minHeight: 0 }}>
                 <WeeklyTaskGraph data={weeklyStats} />
               </div>
             </div>
@@ -226,7 +232,7 @@ const styles = {
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    gap: 24,
+    gap: 16, // Decreased from 24
   },
   right: {
     width: 320,
@@ -239,15 +245,15 @@ const styles = {
   },
   topRow: {
     display: "grid",
-    gridTemplateColumns: "1.8fr 1.2fr",
-    gap: 20,
-    minHeight: 400,
+    gridTemplateColumns: "1.5fr 1.5fr", // Adjusted from 1.8fr 1.2fr
+    gap: 16, // Decreased from 20
+    height: 400, // Fixed height
   },
   graphWrapper: {
     background: "#fff",
     borderRadius: 16,
     border: "1px solid #f1f5f9",
-    padding: 24,
+    padding: "20px 24px",
     display: "flex",
     flexDirection: "column",
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
@@ -282,11 +288,19 @@ const styles = {
     cursor: "pointer",
   },
   cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    display: "flex",
     gap: 20,
+    overflowX: "auto",
+    paddingBottom: 10,
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+    "&::-webkit-scrollbar": {
+      display: "none"
+    }
   },
   cardWrapper: {
+    flex: "0 0 340px",
+    height: 161,
     cursor: "pointer",
     transition: "transform 0.2s",
     "&:hover": {

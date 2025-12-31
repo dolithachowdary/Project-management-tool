@@ -48,12 +48,12 @@ const Sprints = () => {
 
     return {
       ...s,
-      title: `${s.project?.name || "Project"} – ${s.name}`,
+      title: `${s.project_name || s.project?.name || "Project"} – ${s.name}`,
       progress,
       startDate: new Date(s.start_date).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
       endDate: new Date(s.end_date).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
       timeLeft,
-      color: isCompleted ? "#2e7d32" : (s.color || "#1e88e5"),
+      color: isCompleted ? "#2e7d32" : (s.project_color || s.color || "#1e88e5"),
       members: s.members || [], // Assuming backend returns members
     };
   };

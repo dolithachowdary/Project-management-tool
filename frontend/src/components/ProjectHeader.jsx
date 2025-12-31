@@ -1,5 +1,7 @@
 import React from "react";
-import { Calendar, ClockFading, ClipboardCheck, Box } from "lucide-react";
+import { Calendar, Clock3, Box, ClipboardList } from "lucide-react";
+import { AvatarGroup } from "./Avatar";
+
 const ProjectHeader = ({
   title,
   startDate,
@@ -11,113 +13,84 @@ const ProjectHeader = ({
   modulesSummary,
   tasksSummary,
   currentSprintName = "Sprint 1",
-  sprintProgress = 0
+  sprintProgress = 0,
+  daysLeft = "2 Days Left",
+  color = "#4F7DFF"
 }) => {
   if (!title) return null;
 
   return (
-    <div style={styles.container}>
-      {/* LEFT SECTION */}
-      <div style={styles.left}>
-        <h2 style={styles.title}>{title}</h2>
+    <div style={styles.outerContainer}>
+      <div style={styles.container}>
+        {/* LEFT AREA: PROJECT INFO */}
+        <div style={styles.left}>
+          {/* PRD BUTTON - ALWAYS RED, TOP RIGHT OF THIS SECTION */}
+          <button style={styles.prdBtn}>View PRD</button>
 
-        <div style={styles.dates}>
-          <Calendar size={14} style={{ marginRight: 6 }} />
-          {startDate} – {endDate}
-        </div>
-
-        <div style={styles.progressRow}>
-          <div style={styles.progressTrack}>
-            <div
-              style={{
-                ...styles.progressFill,
-                width: `${progress}%`,
-              }}
-            />
+          <div style={styles.titleRow}>
+            <h2 style={styles.title}>{title}</h2>
           </div>
-          <span style={styles.percent}>{Math.round(progress)}%</span>
+
+          <div style={styles.dates}>
+            <Calendar size={14} color="#64748b" />
+            <span>{startDate} – {endDate}</span>
+          </div>
+
+          <div style={styles.progressSection}>
+            <div style={styles.progressRow}>
+              <div style={styles.progressTrack}>
+                <div style={{ ...styles.progressFill, width: `${progress}%`, background: color }} />
+              </div>
+              <span style={styles.percentText}>{Math.round(progress)}%</span>
+            </div>
+
+            <div style={styles.metaRow}>
+              <AvatarGroup members={members} size={28} />
+              <div style={{ ...styles.daysBadge, color: color, background: `${color}15` }}>{timeLeft || daysLeft}</div>
+            </div>
+          </div>
         </div>
 
-        <div style={styles.bottomRow}>
-          <div style={styles.members}>
-            {members.slice(0, 5).map((m, i) => {
-              const userName = m.full_name || m.name || "Unknown User";
-              const initials = userName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase();
-
-              return (
-                <div
-                  key={i}
-                  title={userName}
-                  style={{
-                    ...styles.avatar,
-                    background: m.color || "#C62828",
-                    left: i * 16,
-                    zIndex: members.length - i,
-                    backgroundImage: m.avatar_url ? `url(${m.avatar_url})` : "none",
-                    backgroundSize: "cover"
-                  }}
-                >
-                  {!m.avatar_url && initials}
+        {/* RIGHT AREA: MINI STAT CARDS */}
+        <div style={styles.rightStats}>
+          {/* SPRINT CARD */}
+          <div style={{ ...styles.statCard, background: "#f0f7ff" }}>
+            <div style={styles.cardInfo}>
+              <div style={{ ...styles.iconBox, background: "#fff" }}>
+                <Clock3 size={16} color="#3b82f6" />
+              </div>
+              <div style={styles.cardText}>
+                <div style={styles.cardLabel}>{currentSprintName}</div>
+                <div style={styles.cardProgressTrack}>
+                  <div style={{ ...styles.cardProgressFill, width: `${sprintProgress}%`, background: "#3b82f6" }} />
                 </div>
-              );
-            })}
-            {members.length > 5 && (
-              <div style={{ ...styles.avatar, left: 5 * 16, zIndex: 0, background: "#eee", color: "#666" }}>
-                +{members.length - 5}
-              </div>
-            )}
-          </div>
-
-          <span style={styles.timeLeft}>{timeLeft}</span>
-        </div>
-      </div>
-
-      {/* RIGHT SECTION */}
-      <div style={styles.right}>
-        <button style={styles.prdBtn}>View PRD</button>
-
-        <div style={styles.rightCards}>
-          {/* SPRINT */}
-          <div style={styles.sprintCard}>
-            <div style={styles.iconWrapBlue}>
-              <ClockFading size={16} />
-            </div>
-
-            <div style={styles.sprintContent}>
-              <div style={styles.sprintHeader}>{currentSprintName}</div>
-              <div style={styles.sprintDates}>{sprintSummary || "No active sprint"}</div>
-
-              <div style={styles.sprintBar}>
-                <div style={{ ...styles.sprintFill, width: `${sprintProgress}%` }} />
               </div>
             </div>
           </div>
 
-          {/* MODULES */}
-          <div style={styles.statCardPurple}>
-            <div style={styles.iconWrapPurple}>
-              <Box size={16} />
-            </div>
-
-            <div>
-              <div style={styles.cardTitle}>Modules</div>
-              <div style={styles.cardSub}>{modulesSummary}</div>
+          {/* MODULES CARD */}
+          <div style={{ ...styles.statCard, background: "#f5f3ff" }}>
+            <div style={styles.cardInfo}>
+              <div style={{ ...styles.iconBox, background: "#fff" }}>
+                <Box size={16} color="#8b5cf6" />
+              </div>
+              <div style={styles.cardText}>
+                <div style={styles.cardLabel}>Modules</div>
+                <div style={styles.cardVal}>{modulesSummary || "0 active"}</div>
+              </div>
             </div>
           </div>
 
-          {/* TASKS */}
-          <div style={styles.statCardOrange}>
-            <div style={styles.iconWrapOrange}>
-              <ClipboardCheck size={16} />
-            </div>
-
-            <div>
-              <div style={styles.cardTitle}>Tasks</div>
-              <div style={styles.cardSub}>{tasksSummary}</div>
+          {/* TASKS CARD */}
+          <div style={{ ...styles.statCard, background: "#fff7ed" }}>
+            <div style={styles.cardInfo}>
+              <div style={{ ...styles.iconBox, background: "#fff" }}>
+                <ClipboardList size={16} color="#f97316" />
+              </div>
+              <div style={styles.cardText}>
+                <div style={styles.cardLabel}>Tasks</div>
+                <div style={styles.cardVal}>{tasksSummary || "0 active"}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -126,181 +99,155 @@ const ProjectHeader = ({
   );
 };
 
-export default ProjectHeader;
-
 const styles = {
+  outerContainer: {
+    marginBottom: 32,
+  },
   container: {
-    display: "flex",
-    alignItems: "center",
     background: "#fff",
-    borderRadius: 16,
-    padding: "18px 26px",
-    gap: 32,
-    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+    borderRadius: 24,
+    padding: "36px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+    border: "1px solid #f1f5f9",
+    display: "flex",
+    gap: 40,
+    alignItems: "stretch", // Changed from flex-end
   },
-
-  /* LEFT */
   left: {
-    flex: 1,
-    minWidth: 420,
+    flex: "1 1 350px",
+    maxWidth: 450,
+    position: "relative", // Needed for absolute PRD button
   },
-
+  titleRow: {
+    marginBottom: 8,
+  },
   title: {
-    fontSize: 22,
-    fontWeight: 600,
-    marginTop: 3,
-    marginBottom: 6,
+    fontSize: 24,
+    fontWeight: 800,
+    color: "#1e293b",
+    margin: 0,
   },
-
-  dates: {
+  prdBtn: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    background: "#C62828", // ALWAYS RED
+    color: "#fff",
+    border: "none",
+    borderRadius: 14,
+    padding: "10px 22px",
     fontSize: 13,
-    color: "#666",
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(198, 40, 40, 0.25)",
+    transition: "all 0.2s",
+  },
+  dates: {
     display: "flex",
     alignItems: "center",
-    gap: 6,
-    marginBottom: 10,
+    gap: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#64748b",
+    marginBottom: 24,
   },
-
+  progressSection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  },
   progressRow: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
-    marginBottom: 14,
+    gap: 16,
   },
-
   progressTrack: {
-    width: "100%",
-    height: 6,
-    background: "#eee",
+    flex: 1,
+    height: 10,
+    background: "#f1f5f9",
     borderRadius: 10,
     overflow: "hidden",
   },
-
   progressFill: {
     height: "100%",
-    background: "#ff7043",
+    borderRadius: 10,
+    transition: "width 0.4s ease",
   },
-
-  percent: {
-    fontSize: 12,
-    color: "#666",
-    minWidth: 32,
+  percentText: {
+    fontSize: 14,
+    fontWeight: 800,
+    color: "#94a3b8",
+    minWidth: 40,
   },
-
-  bottomRow: {
+  metaRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
   },
-
-  members: {
-    position: "relative",
-    height: 28,
+  daysBadge: {
+    padding: "8px 16px",
+    borderRadius: 14,
+    fontSize: 12,
+    fontWeight: 800,
   },
-
-  avatar: {
-    position: "absolute",
-    width: 28,
-    height: 28,
-    borderRadius: "50%",
-    fontSize: 11,
-    fontWeight: 600,
+  rightStats: {
+    flex: "1",
+    display: "flex",
+    gap: 20,
+    justifyContent: "flex-start",
+  },
+  statCard: {
+    flex: "1",
+    minWidth: 180,
+    maxWidth: 240,
+    borderRadius: 24,
+    padding: "24px",
+    display: "flex",
+    alignItems: "center",
+    transition: "transform 0.2s ease",
+  },
+  cardInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    width: "100%",
+  },
+  iconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    border: "2px solid #fff",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
   },
-
-  timeLeft: {
-    background: "#ffe0b2",
-    color: "#e65100",
-    padding: "4px 12px",
-    borderRadius: 20,
-    fontSize: 12,
-    fontWeight: 500,
+  cardText: {
+    width: "100%",
   },
-
-  /* RIGHT */
-  right: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    gap: 12,
+  cardLabel: {
+    fontSize: 15,
+    fontWeight: 800,
+    color: "#1e293b",
+    marginBottom: 4,
   },
-
-  prdBtn: {
-    background: "#c62828",
-    color: "#fff",
-    border: "none",
-    borderRadius: 20,
-    padding: "6px 16px",
+  cardVal: {
     fontSize: 13,
-    cursor: "pointer",
-  },
-
-  rightCards: {
-    display: "flex",
-    gap: 16,
-    alignItems: "stretch",
-  },
-
-  /* SPRINT CARD */
-  sprintCard: {
-    width: 240,
-    background: "#eef4ff",
-    borderRadius: 14,
-    padding: 14,
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-  },
-
-  sprintHeader: {
-    fontSize: 14,
+    color: "#64748b",
     fontWeight: 600,
-  },
-
-  sprintDates: {
-    fontSize: 12,
-    color: "#555",
-  },
-
-  sprintBar: {
-    height: 6,
-    background: "#dbe6ff",
-    borderRadius: 10,
-    overflow: "hidden",
     marginTop: 4,
   },
-
-  sprintFill: {
+  cardProgressTrack: {
+    width: "100%",
+    height: 8,
+    background: "rgba(255,255,255,0.5)",
+    borderRadius: 10,
+    overflow: "hidden",
+    marginTop: 8,
+  },
+  cardProgressFill: {
     height: "100%",
-    background: "#3b6df6",
-  },
-
-  /* MODULES CARD */
-  statCardPurple: {
-    width: 180,
-    background: "#f3ecff",
-    borderRadius: 14,
-    padding: 14,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    gap: 6,
-    fontSize: 13,
-  },
-
-  /* TASKS CARD */
-  statCardOrange: {
-    width: 180,
-    background: "#fff2e5",
-    borderRadius: 14,
-    padding: 14,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    gap: 6,
-    fontSize: 13,
+    borderRadius: 10,
   },
 };
+
+export default ProjectHeader;

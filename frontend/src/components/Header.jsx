@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import avatar from "../assets/icons/avatar.png";
 import { Search, Bell } from "lucide-react";
+import Avatar from "./Avatar";
 
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [userData, setUserData] = useState({ name: "", role: "" });
+  const [userData, setUserData] = useState({ name: "", role: "", id: "" });
   const dropdownRef = useRef(null);
   const location = useLocation();
 
@@ -16,6 +16,7 @@ const Header = () => {
       setUserData({
         name: storedUser.name || "",
         role: storedUser.role || "",
+        id: storedUser.id || "",
       });
     }
   }, []);
@@ -44,27 +45,24 @@ const Header = () => {
     <header style={styles.header}>
       <div style={styles.left}>
         <h2 style={styles.title}>{getPageTitle()}</h2>
-        
-
       </div>
 
       <div style={styles.right}>
         <div style={styles.searchWrapper}>
           <Search size={16} style={styles.searchIcon} />
           <input
-            type="text"
+            type="search"
             placeholder="Search..."
             style={styles.searchBox}
           />
         </div>
+
         <div ref={dropdownRef} style={styles.bellWrapper}>
           <Bell
-            size={24}
+            size={20}
             style={styles.bellIcon}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           />
-
-          {/* Notification count */}
           <span style={styles.notificationBadge}>2</span>
 
           {isDropdownOpen && (
@@ -74,9 +72,8 @@ const Header = () => {
           )}
         </div>
 
-
         <div style={styles.profileContainer}>
-          <img src={avatar} alt="Profile" style={styles.profileImg} />
+          <Avatar name={userData.name} id={userData.id} size={36} />
           <div>
             <p style={styles.profileName}>{userData.name || "User"}</p>
             <p style={styles.profileRole}>{userData.role || "Role"}</p>
@@ -97,123 +94,108 @@ const styles = {
     alignItems: "center",
     padding: "12px 24px",
     backgroundColor: "#fff",
-    borderBottom: "1px solid #ddd",
-    flexShrink: 0,          // 🔒 NEVER SCROLL
+    borderBottom: "1px solid #f1f5f9",
+    flexShrink: 0,
   },
-
   left: {
     display: "flex",
     alignItems: "center",
     gap: "15px",
   },
-
   title: {
     fontSize: "20px",
     fontWeight: "bold",
     textTransform: "capitalize",
+    color: "#1e293b",
   },
-
   searchBox: {
     width: "250px",
-    padding: "6px 10px 6px 32px", // space for icon
-    border: "1px solid #ccc",
-    borderRadius: "6px",
+    padding: "8px 10px 8px 36px",
+    border: "1px solid #f1f5f9",
+    borderRadius: "8px",
     fontSize: "14px",
+    background: "#f8fafc",
+    outline: "none",
   },
-
   searchWrapper: {
     position: "relative",
-    //marginRight: "210px",   // ⬅ moves search slightly right
-    
   },
-
   searchIcon: {
     position: "absolute",
-    left: "10px",
+    left: "12px",
     top: "50%",
     transform: "translateY(-50%)",
-    color: "#888",
+    color: "#94a3b8",
   },
-
-
   right: {
     display: "flex",
     alignItems: "center",
-    gap: "20px",
+    gap: "24px",
   },
-
   profileContainer: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "12px",
   },
-
-  profileImg: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "50%",
-    border: "1.5px solid #eee",
-  },
-
   profileName: {
-    fontSize: "13px",
-    fontWeight: "bold",
+    fontSize: "14px",
+    fontWeight: "700",
+    color: "#1e293b",
     margin: 0,
   },
-
   profileRole: {
     fontSize: "12px",
-    color: "#555",
+    color: "#64748b",
     margin: 0,
   },
-
   dropdown: {
     position: "absolute",
-    top: "28px",
+    top: "100%",
     right: 0,
+    marginTop: "8px",
     background: "#fff",
     borderRadius: "8px",
-    padding: "10px 15px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    padding: "12px 16px",
+    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+    border: "1px solid #f1f5f9",
+    minWidth: "160px",
   },
-
   dropdownText: {
     margin: 0,
     fontSize: "14px",
-    color: "#555",
+    color: "#64748b",
   },
   bellWrapper: {
     position: "relative",
     width: "36px",
     height: "36px",
-    borderRadius: "50%",
-    backgroundColor: "#f5f6fa",
+    borderRadius: "10px",
+    backgroundColor: "#f8fafc",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
+    border: "1px solid #f1f5f9",
   },
-
   bellIcon: {
-    color: "#888",
+    color: "#64748b",
   },
-
   notificationBadge: {
     position: "absolute",
-    top: "2px",
-    right: "2px",
-    backgroundColor: "#C62828",
+    top: "-4px",
+    right: "-4px",
+    backgroundColor: "#ef4444",
     color: "#fff",
     borderRadius: "50%",
-    width: "15px",
-    height: "15px",
-    fontSize: "11px",
+    width: "16px",
+    height: "16px",
+    fontSize: "10px",
     fontWeight: "bold",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    border: "2px solid #fff",
   },
-
 };
 
 export default Header;

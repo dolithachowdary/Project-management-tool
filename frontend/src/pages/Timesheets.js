@@ -1,178 +1,208 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import WeeklyTimesheet from "../components/WeeklyTimesheet";
-
-/* ---------------- MOCK DATA (BACKEND READY) ---------------- */
-
-const projects = [
-  {
-    id: 1,
-    name: "TourO Web Development",
-    duration: "Jan 10, 2024 – July 30, 2024",
-    color: "#e57373",
-  },
-  {
-    id: 2,
-    name: "Dashboard Portal",
-    duration: "Feb 12, 2024 – Aug 12, 2024",
-    color: "#f9a825",
-  },
-  {
-    id: 3,
-    name: "Designing",
-    duration: "Mar 20, 2023 – Aug 20, 2024",
-    color: "#26a69a",
-  },
-];
-
-const weeks = ["Week 7", "Week 6", "Week 5", "Week 4", "Week 3"];
-
-/* ---------------- COMPONENT ---------------- */
+import PMTimeline from "../components/Pm-Timeline";
+import { getProjects } from "../api/projects";
+import Loader from "../components/Loader";
 
 export default function Timesheets() {
-  const [activeWeek, setActiveWeek] = useState({
-    projectId: 1,
-    week: "Week 7",
-  });
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeProjectId, setActiveProjectId] = useState(null);
+  const role = localStorage.getItem("role") || "Project Manager";
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const res = await getProjects();
+      const data = res.data?.data || res.data || [];
+      setProjects(data);
+      if (data.length > 0) setActiveProjectId(data[0].id);
+    } catch (err) {
+      console.error("Failed to load projects:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const activeProject = projects.find(p => p.id === activeProjectId);
 
   return (
     <div style={styles.page}>
       <Sidebar />
 
       <div style={styles.main}>
-        <Header role="Project Manager" />
+        <Header role={role} />
 
-        {/* SPLIT VIEW */}
         <div style={styles.splitLayout}>
-
-          {/* LEFT PANEL */}
+          {/* LEFT PANEL: PROJECT LIST */}
           <div style={styles.leftPane}>
-            <h2 style={styles.pageTitle}>Timesheets</h2>
+            <div style={styles.headerRow}>
+              <h2 style={styles.pageTitle}>Timesheets</h2>
+            </div>
 
-            {projects.map(project => (
-              <div key={project.id} style={styles.projectBlock}>
-                <h3>{project.name}</h3>
-                <p style={styles.duration}>{project.duration}</p>
-
-                <div style={styles.weekRow}>
-                  <span style={styles.arrow}>‹</span>
-
-                  {weeks.map(week => {
-                    const isActive =
-                      activeWeek.projectId === project.id &&
-                      activeWeek.week === week;
-
-                    return (
-                      <button
-                        key={week}
-                        style={{
-                          ...styles.weekPill,
-                          background: isActive
-                            ? project.color
-                            : "#e0e0e0",
-                          color: isActive ? "#fff" : "#333",
-                        }}
-                        onClick={() =>
-                          setActiveWeek({
-                            projectId: project.id,
-                            week,
-                          })
-                        }
-                      >
-                        {week}
-                      </button>
-                    );
-                  })}
-
-                  <span style={styles.arrow}>›</span>
-                </div>
+            {loading ? <Loader /> : (
+              <div style={styles.projectList}>
+                {projects.map(p => (
+                  <div
+                    key={p.id}
+                    onClick={() => setActiveProjectId(p.id)}
+                    style={{
+                      ...styles.projectCard,
+                      borderLeft: `4px solid ${p.color || "#4F7DFF"}`,
+                      background: activeProjectId === p.id ? "#fff" : "transparent",
+                      boxShadow: activeProjectId === p.id ? "0 4px 12px rgba(0,0,0,0.05)" : "none",
+                    }}
+                  >
+                    <h3 style={styles.projName}>{p.name}</h3>
+                    <p style={styles.projCode}>{p.project_code || "PRJ-001"}</p>
+                    <div style={styles.projMeta}>
+                      <span>{p.total_tasks || 0} Tasks</span>
+                      <span style={{ color: p.color || "#4F7DFF", fontWeight: 700 }}>
+                        {p.status?.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
 
-          {/* RIGHT PANEL */}
+          {/* RIGHT PANEL: TIMELINE */}
           <div style={styles.rightPane}>
-            <WeeklyTimesheet
-              data={{
-                projectId: activeWeek.projectId,
-                week: activeWeek.week,
-                entries: null, // backend data later
-              }}
-            />
+            {activeProject ? (
+              <div style={styles.timelineWrapper}>
+                <div style={styles.timelineHeader}>
+                  <div style={styles.titleInfo}>
+                    <h2 style={styles.timelineTitle}>{activeProject.name} Timeline</h2>
+                    <p style={styles.timelineSub}>10:00 AM — 06:00 PM Work Schedule</p>
+                  </div>
+                  <div style={{ ...styles.statusDot, background: activeProject.color }} />
+                </div>
+                <PMTimeline projectId={activeProjectId} />
+              </div>
+            ) : (
+              <div style={styles.empty}>Select a project to view its timeline</div>
+            )}
           </div>
-
         </div>
       </div>
     </div>
   );
 }
 
-/* ---------------- STYLES ---------------- */
-
 const styles = {
   page: {
     display: "flex",
     height: "100vh",
-    background: "#fafafa",
+    background: "#f8fafc",
   },
-
   main: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+  },
+  splitLayout: {
+    display: "grid",
+    gridTemplateColumns: "350px 1fr",
+    gap: 0,
     flex: 1,
     overflow: "hidden",
   },
-
-  splitLayout: {
-    display: "grid",
-    gridTemplateColumns: "420px 1fr",
-    gap: 30,
-    padding: 30,
-    height: "calc(100vh - 70px)",
-  },
-
   leftPane: {
+    background: "#f1f5f9",
+    borderRight: "1px solid #e2e8f0",
+    padding: "24px",
     overflowY: "auto",
-    paddingRight: 10,
   },
-
   rightPane: {
-    overflow: "auto",
-    background: "#f5f5f5",
-    padding: 10,
+    padding: "32px",
+    overflowY: "auto",
+    background: "#fff",
   },
-
   pageTitle: {
-    fontSize: "1.6rem",
-    marginBottom: 20,
+    fontSize: 22,
+    fontWeight: 800,
+    color: "#1e293b",
+    margin: 0,
+    marginBottom: 24,
   },
-
-  projectBlock: {
-    marginBottom: 28,
+  projectList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
   },
-
-  duration: {
-    color: "#777",
-    marginBottom: 10,
+  projectCard: {
+    padding: "16px",
+    borderRadius: "12px",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    "&:hover": {
+      background: "#fff",
+    }
   },
-
-  weekRow: {
+  projName: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#1e293b",
+    margin: 0,
+    marginBottom: 4,
+  },
+  projCode: {
+    fontSize: 12,
+    color: "#64748b",
+    margin: 0,
+    marginBottom: 8,
+  },
+  projMeta: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontSize: 11,
+    fontWeight: 600,
+    color: "#94a3b8",
+  },
+  timelineWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 24,
+  },
+  timelineHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 16,
+    borderBottom: "1px solid #f1f5f9",
+  },
+  timelineTitle: {
+    fontSize: 20,
+    fontWeight: 800,
+    color: "#1e293b",
+    margin: 0,
+  },
+  timelineSub: {
+    fontSize: 13,
+    color: "#64748b",
+    margin: 0,
+    marginTop: 4,
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: "50%",
+    boxShadow: "0 0 0 4px rgba(0,0,0,0.03)",
+  },
+  empty: {
+    height: "100%",
     display: "flex",
     alignItems: "center",
-    gap: 10,
-  },
-
-  weekPill: {
-    border: "none",
-    borderRadius: 20,
-    padding: "8px 16px",
-    cursor: "pointer",
-    fontSize: 14,
-    whiteSpace: "nowrap",
-  },
-
-  arrow: {
-    fontSize: 22,
-    cursor: "pointer",
-    color: "#aaa",
-  },
+    justifyContent: "center",
+    color: "#94a3b8",
+    fontSize: 16,
+  }
 };

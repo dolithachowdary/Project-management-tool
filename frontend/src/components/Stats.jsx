@@ -118,27 +118,28 @@ const styles = {
   },
 
   card: {
-    flex: "1 1 240px",
+    flex: "1 1 200px",
     background: "#ffffff",
-    borderRadius: 12,
-    padding: "16px 18px",
-    border: "1px solid #e5e5e5",
+    borderRadius: 16,
+    padding: "20px 24px",
+    border: "1px solid #f1f5f9",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)",
   },
 
   title: {
-    fontSize: 13,
-    color: "#777",
-    marginBottom: 6,
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#94a3b8",
+    marginBottom: 8,
   },
 
   value: {
-    fontSize: 28,
-    fontWeight: 600,
-    color: "#111",
+    fontSize: 32,
+    fontWeight: 700,
+    color: "#1e293b",
   },
 
   right: {

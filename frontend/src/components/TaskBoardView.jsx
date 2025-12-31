@@ -1,318 +1,271 @@
-import React, { useState } from "react";
+import React from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import Avatar from "./Avatar";
-
-
-const RED = "#C62828";
+import Avatar, { AvatarGroup } from "./Avatar";
+import { formatStatus, toApiStatus } from "../utils/helpers";
 
 export default function TaskBoardView({
   tasks,
   onStatusChange,
   onEdit,
   canEdit,
-  currentUser,
-  userData,
   formatShortDate,
-  formatFullDate
 }) {
-  const [hoveredCard, setHoveredCard] = useState(null);
-  const [hoveredAvatar, setHoveredAvatar] = useState({ id: null, type: null });
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "To Do":
+  const getStatusStyles = (status) => {
+    switch (status?.toLowerCase()) {
+      case "to do":
       case "todo":
-        return { bg: "#E3F2FD", text: "#1565C0", border: "#BBDEFB" };
-      case "In Progress":
+        return {
+          accent: "#3b82f6",
+          bg: "#eff6ff",
+          title: "#2563eb",
+          meta: "#60a5fa",
+          border: "#dbeafe"
+        };
+      case "in progress":
       case "in_progress":
-        return { bg: "#FFF8E1", text: "#856404", border: "#FFECB3" };
-      case "Review":
+        return {
+          accent: "#ca8a04",
+          bg: "#fefce8",
+          title: "#a16207",
+          meta: "#eab308",
+          border: "#fef9c3"
+        };
       case "review":
-        return { bg: "#E8EAF6", text: "#2E3A59", border: "#C5CAE9" };
-      case "Done":
+        return {
+          accent: "#7c3aed",
+          bg: "#f5f3ff",
+          title: "#6d28d9",
+          meta: "#a78bfa",
+          border: "#ede9fe"
+        };
       case "done":
-        return { bg: "#E8F5E9", text: "#2E7D32", border: "#C8E6C9" };
-      case "Blocked":
+        return {
+          accent: "#16a34a",
+          bg: "#f0fdf4",
+          title: "#15803d",
+          meta: "#4ade80",
+          border: "#dcfce7"
+        };
       case "blocked":
-        return { bg: "#FCE4EC", text: "#8B1E3F", border: "#F8BBD0" };
+        return {
+          accent: "#dc2626",
+          bg: "#fef2f2",
+          title: "#b91c1c",
+          meta: "#f87171",
+          border: "#fee2e2"
+        };
       default:
-        return { bg: "#F3F4F6", text: "#374151", border: "#E5E7EB" };
+        return {
+          accent: "#64748b",
+          bg: "#f8fafc",
+          title: "#475569",
+          meta: "#94a3b8",
+          border: "#f1f5f9"
+        };
     }
   };
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
     if (!destination) return;
-
-    const sourceStatus = source.droppableId;
-    const destStatus = destination.droppableId;
-
-    if (sourceStatus === destStatus) return;
-
-    const movedTaskId = result.draggableId;
-    onStatusChange(movedTaskId, destStatus);
+    if (source.droppableId === destination.droppableId) return;
+    onStatusChange(result.draggableId, destination.droppableId);
   };
 
-  const boardColumns = {
-    "To Do": tasks.filter((t) => t.status === "To Do" || t.status === "todo"),
-    "In Progress": tasks.filter((t) => t.status === "In Progress" || t.status === "in_progress"),
-    "Review": tasks.filter((t) => t.status === "Review" || t.status === "review"),
-    "Done": tasks.filter((t) => t.status === "Done" || t.status === "done"),
-    "Blocked": tasks.filter((t) => t.status === "Blocked" || t.status === "blocked"),
-  };
+  const columns = [
+    { label: "To Do", value: "todo" },
+    { label: "In Progress", value: "in_progress" },
+    { label: "Review", value: "review" },
+    { label: "Done", value: "done" }
+  ];
 
   const styles = {
     board: {
       display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      flexWrap: "nowrap",
-      gap: 12,
-      marginTop: 8,
-      width: "100%",
+      gap: 24,
       overflowX: "auto",
-      paddingBottom: 6,
-      minHeight: "calc(100vh - 300px)",
+      paddingBottom: 24,
+      alignItems: "flex-start",
+      minHeight: "calc(100vh - 250px)"
     },
     column: {
-      flex: "1 0 280px",
-      backgroundColor: "#fff",
-      borderRadius: 10,
-      padding: 12,
-      boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
-      height: "fit-content",
-      maxHeight: "calc(100vh - 220px)",
-      overflowY: "auto",
+      minWidth: 320,
+      width: 320,
+      background: "#fff",
+      borderRadius: 24,
+      padding: 20,
+      border: "1px solid #f1f5f9",
+      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)"
     },
-    columnTitle: {
-      fontSize: 15,
-      fontWeight: 700,
-      color: RED,
-      marginBottom: 12,
-      whiteSpace: "nowrap",
-      paddingBottom: 8,
-      borderBottom: "2px solid #F3F4F6",
+    colHeader: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 20,
+      padding: "0 4px"
     },
-    taskCard: {
-      borderRadius: 8,
-      padding: 12,
-      marginBottom: 12,
-      boxShadow: "0 3px 8px rgba(15,23,42,0.03)",
-      cursor: "grab",
+    colTitle: {
+      fontSize: 18,
+      fontWeight: 800,
+      color: "#B91C1C",
+      margin: 0
+    },
+    colCount: {
+      background: "#f1f5f9",
+      color: "#64748b",
+      padding: "2px 10px",
+      borderRadius: "10px",
+      fontSize: 13,
+      fontWeight: 800
+    },
+    card: {
+      borderRadius: 20,
+      padding: "24px",
+      marginBottom: 20,
       border: "1px solid",
+      cursor: "grab",
+      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
       position: "relative",
-      backgroundColor: "#fff",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.02)"
     },
     taskName: {
-      fontWeight: 700,
-      fontSize: 14,
-      marginBottom: 6,
-      lineHeight: 1.25,
+      fontSize: 15,
+      fontWeight: 800,
+      marginBottom: 8,
+      lineHeight: 1.4
     },
     taskMeta: {
       fontSize: 12,
-      marginBottom: 8,
-      opacity: 0.8,
+      fontWeight: 600,
+      marginBottom: 16,
+      opacity: 0.8
     },
-    dateInfo: {
+    dateRow: {
       fontSize: 11,
-      marginTop: 4,
-      color: "#666",
+      fontWeight: 600,
+      color: "#64748b",
+      marginBottom: 16,
+      display: "flex",
+      flexDirection: "column",
+      gap: 4
     },
-    taskFooter: {
+    footer: {
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "center",
-      fontSize: 12,
-      marginTop: 12,
-      paddingTop: 12,
-      borderTop: "1px solid rgba(0,0,0,0.05)",
+      alignItems: "flex-end",
+      marginTop: 4
     },
-    taskCode: {
-      color: "#666",
-      fontWeight: 500,
-      fontSize: 11,
-    },
-    avatar: {
-      width: 26,
-      height: 26,
+    taskSerial: {
       fontSize: 10,
-      fontWeight: 600,
-      border: "2px solid #fff",
-      borderRadius: "50%",
-      alignItems: "center",
-      justifyContent: "center",
-      display: "flex",
-      cursor: "pointer",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+      fontWeight: 700,
+      color: "#94a3b8",
+      textTransform: "uppercase",
+      letterSpacing: "0.5px"
     },
-    tooltip: {
-      position: "absolute",
-      bottom: "100%",
-      left: "50%",
-      transform: "translateX(-50%)",
-      backgroundColor: "#1F2937",
-      color: "#fff",
-      padding: "8px 12px",
-      borderRadius: 6,
-      fontSize: 11,
+    empty: {
+      padding: "40px 20px",
+      textAlign: "center",
+      color: "#cbd5e1",
+      fontSize: 13,
       fontWeight: 500,
-      whiteSpace: "nowrap",
-      zIndex: 1000,
-      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      marginBottom: "8px",
-      pointerEvents: "none",
-    },
-    tooltipArrow: {
-      position: "absolute",
-      top: "100%",
-      left: "50%",
-      transform: "translateX(-50%)",
-      borderLeft: "6px solid transparent",
-      borderRight: "6px solid transparent",
-      borderTop: "6px solid #1F2937",
-    },
+      border: "2px dashed #f1f5f9",
+      borderRadius: 16
+    }
   };
 
-  return React.createElement(DragDropContext, { onDragEnd: onDragEnd },
-    React.createElement("div", { style: styles.board },
-      Object.keys(boardColumns).map((colId) =>
-        React.createElement(Droppable, { key: colId, droppableId: colId },
-          (provided) => React.createElement("div", {
-            ref: provided.innerRef,
-            ...provided.droppableProps,
-            style: styles.column
-          },
-            React.createElement("h3", { style: styles.columnTitle },
-              colId,
-              React.createElement("span", {
-                style: {
-                  marginLeft: 8,
-                  fontSize: 11,
-                  color: "#666",
-                  fontWeight: "normal",
-                  backgroundColor: "#F3F4F6",
-                  padding: "2px 6px",
-                  borderRadius: 10,
-                }
-              }, boardColumns[colId].length)
-            ),
-            React.createElement("div", { style: { minHeight: 40 } },
-              boardColumns[colId].map((task, index) => {
-                const colors = getStatusColor(task.status);
-                const isHovered = hoveredCard === (task.id || task._id);
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div style={styles.board}>
+        {columns.map((col) => {
+          const colTasks = tasks.filter(t => toApiStatus(formatStatus(t.status)) === col.value);
+          const colStyle = getStatusStyles(col.value);
 
-                // Fixed user lookup with fallbacks
-                const assignedToId = task.assignee_id?.id || task.assignee_id?._id || task.assignee_id || task.assignedTo;
-                const assignedToUser = userData[assignedToId] || {
-                  name: task.assignee_name || task.assignee_id?.full_name || task.assignee_id?.name || task.assignedTo?.full_name || task.assignedTo?.name || (typeof assignedToId === 'string' ? assignedToId : "Unassigned"),
-                  role: "User",
-                  color: "#E6E6E6",
-                  avatar_url: task.assignee_id?.avatar_url || task.assignedTo?.avatar_url
-                };
-                const createdById = task.created_by?.id || task.created_by?._id || task.created_by || task.createdBy;
-                const createdByUser = userData[createdById] || {
-                  name: task.created_by_name || task.created_by?.full_name || task.created_by?.name || (typeof createdById === 'string' ? createdById : "Unknown"),
-                  role: "User",
-                  color: "#E6E6E6",
-                  avatar_url: task.created_by?.avatar_url
-                };
+          return (
+            <div key={col.value} style={styles.column}>
+              <div style={styles.colHeader}>
+                <h3 style={styles.colTitle}>{col.label}</h3>
+                <span style={styles.colCount}>{colTasks.length}</span>
+              </div>
 
-                return React.createElement(Draggable, {
-                  key: task.id || task._id,
-                  draggableId: String(task.id || task._id),
-                  index: index
-                },
-                  (provided, snapshot) => React.createElement("div", {
-                    ref: provided.innerRef,
-                    ...provided.draggableProps,
-                    ...provided.dragHandleProps,
-                    style: {
-                      ...styles.taskCard,
-                      backgroundColor: colors.bg,
-                      color: colors.text,
-                      borderColor: colors.border,
-                      boxShadow: snapshot.isDragging
-                        ? "0 10px 25px rgba(15,23,42,0.15)"
-                        : isHovered
-                          ? "0 8px 20px rgba(15,23,42,0.08)"
-                          : "0 3px 8px rgba(15,23,42,0.03)",
-                      transform: snapshot.isDragging
-                        ? "scale(1.03)"
-                        : isHovered
-                          ? "translateY(-4px)"
-                          : "translateY(0)",
-                      transition: "all 0.2s ease",
-                      cursor: canEdit(task) ? "pointer" : "default",
-                      ...provided.draggableProps.style,
-                    },
-                    onClick: () => canEdit(task) && onEdit && onEdit(task),
-                    onMouseEnter: () => setHoveredCard(task.id || task._id),
-                    onMouseLeave: () => {
-                      setHoveredCard(null);
-                      setHoveredAvatar({ id: null, type: null });
-                    }
-                  },
-                    React.createElement("h4", { style: styles.taskName }, task.title || task.taskName),
-                    React.createElement("p", { style: styles.taskMeta },
-                      (task.module_name || task.moduleName || "No Module") + " • " + (task.project_name || task.projectName || "No Project")
-                    ),
+              <Droppable droppableId={col.value}>
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    style={{ minHeight: 100 }}
+                  >
+                    {colTasks.length === 0 ? (
+                      <div style={styles.empty}>No tasks in this column</div>
+                    ) : (
+                      colTasks.map((t, idx) => {
+                        const sStyle = getStatusStyles(t.status);
 
-                    React.createElement("div", { style: styles.dateInfo },
-                      "S: " + formatShortDate(task.start_date || task.startDate) + " | E: " + formatShortDate(task.end_date || task.endDate)
-                    ),
+                        // Extract serial for bottom right
+                        const displaySerial = t.task_serial
+                          ? `TASK ${String(t.task_serial).padStart(3, "0")}`
+                          : (t.task_code?.split('/').pop() || t.taskCode?.split('-').pop() || "TASK 000");
 
-                    React.createElement("div", { style: styles.taskFooter },
-                      React.createElement("div", { style: { display: "flex", gap: 6 } },
-                        // Creator
-                        React.createElement("div", { style: { position: "relative" } },
-                          React.createElement("div", {
-                            onMouseEnter: () => setHoveredAvatar({ id: task.id || task._id, type: "creator" }),
-                            onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                          },
-                            React.createElement(Avatar, {
-                              name: createdByUser.name || "?",
-                              size: 26,
-                              style: { backgroundImage: createdByUser.avatar_url ? `url(${createdByUser.avatar_url})` : "none" }
-                            })
-                          ),
-                          hoveredAvatar.id === (task.id || task._id) && hoveredAvatar.type === "creator" &&
-                          React.createElement("div", { style: styles.tooltip },
-                            `By: ${createdByUser.name}`,
-                            React.createElement("div", { style: styles.tooltipArrow })
-                          )
-                        ),
-                        // Assignee
-                        React.createElement("div", { style: { position: "relative" } },
-                          React.createElement("div", {
-                            onMouseEnter: () => setHoveredAvatar({ id: task.id || task._id, type: "assigned" }),
-                            onMouseLeave: () => setHoveredAvatar({ id: null, type: null })
-                          },
-                            React.createElement(Avatar, {
-                              name: assignedToUser.name || "?",
-                              size: 26,
-                              style: { backgroundImage: assignedToUser.avatar_url ? `url(${assignedToUser.avatar_url})` : "none" }
-                            })
-                          ),
-                          hoveredAvatar.id === (task.id || task._id) && hoveredAvatar.type === "assigned" &&
-                          React.createElement("div", { style: styles.tooltip },
-                            `To: ${assignedToUser.name}`,
-                            React.createElement("div", { style: styles.tooltipArrow })
-                          )
-                        )
-                      ),
-                      React.createElement("span", { style: styles.taskCode }, task.task_code || task.taskCode)
-                    )
-                  )
-                );
-              }),
-              boardColumns[colId].length === 0 &&
-              React.createElement("div", { style: styles.emptyColumn }, "No tasks"),
-              provided.placeholder
-            )
-          )
-        )
-      )
-    )
+                        return (
+                          <Draggable key={t.id} draggableId={String(t.id)} index={idx}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                style={{
+                                  ...styles.card,
+                                  ...provided.draggableProps.style,
+                                  background: sStyle.bg,
+                                  borderColor: sStyle.border,
+                                  boxShadow: snapshot.isDragging
+                                    ? "0 20px 25px -5px rgba(0,0,0,0.1)"
+                                    : "none",
+                                  transform: snapshot.isDragging
+                                    ? provided.draggableProps.style?.transform + " rotate(2deg)"
+                                    : provided.draggableProps.style?.transform
+                                }}
+                                onClick={() => canEdit(t) && onEdit && onEdit(t)}
+                              >
+                                <div style={{ ...styles.taskName, color: sStyle.title }}>
+                                  {t.title || t.taskName}
+                                </div>
+                                <div style={{ ...styles.taskMeta, color: sStyle.title }}>
+                                  {t.module_name || "General"} • {t.project_name || "Project"}
+                                </div>
+
+                                <div style={styles.dateRow}>
+                                  <div>Start: {formatShortDate(t.start_date || t.start_datetime)}</div>
+                                  <div>End: {formatShortDate(t.end_date || t.end_datetime)}</div>
+                                </div>
+
+                                <div style={styles.footer}>
+                                  <AvatarGroup
+                                    members={[
+                                      { id: t.assignee_id, name: t.assignee_name },
+                                      ...(t.collaborators || []).map(c => ({
+                                        id: c.id || c.user_id || c,
+                                        name: c.name || c.full_name
+                                      }))
+                                    ].slice(0, 3)}
+                                    size={24}
+                                  />
+                                  <div style={styles.taskSerial}>{displaySerial}</div>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })
+                    )}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          );
+        })}
+      </div>
+    </DragDropContext>
   );
 }

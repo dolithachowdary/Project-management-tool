@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { getProjectActivity } from "../api/projects";
 import api from "../api/axios";
-import { formatDistanceToNow } from "date-fns";
-import { Edit, CheckCircle, Plus, Trash, FileText, Info } from "lucide-react";
+import { formatDistanceToNow, format } from "date-fns";
+import { Plus, SquarePen, CheckCheck, FileText, Info } from "lucide-react";
+import Avatar from "./Avatar";
 
 const getActionIcon = (action = "") => {
   const a = action.toLowerCase();
-  if (a.includes("create")) return <Plus size={16} color="#10b981" />;
-  if (a.includes("update")) return <Edit size={16} color="#3b82f6" />;
-  if (a.includes("complete")) return <CheckCircle size={16} color="#10b981" />;
-  if (a.includes("delete")) return <Trash size={16} color="#ef4444" />;
-  return <Info size={16} color="#6b7280" />;
+  if (a.includes("create")) return <Plus size={18} color="#000" strokeWidth={2.5} />;
+  if (a.includes("update") || a.includes("edit")) return <SquarePen size={18} color="#000" strokeWidth={2.5} />;
+  if (a.includes("complete") || a.includes("done")) return <CheckCheck size={18} color="#000" strokeWidth={2.5} />;
+  return <Info size={18} color="#000" strokeWidth={2.5} />;
 };
 
 export default function RecentActivity({ projectId }) {
@@ -38,60 +38,66 @@ export default function RecentActivity({ projectId }) {
     load();
   }, [load]);
 
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const grouped = logs.reduce((acc, l) => {
+    const date = format(new Date(l.changed_at || l.created_at || Date.now()), 'yyyy-MM-dd');
+    const label = date === todayStr ? "Today" : format(new Date(date), 'MMMM d, yyyy');
+    if (!acc[label]) acc[label] = [];
+    acc[label].push(l);
+    return acc;
+  }, {});
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <h3 style={styles.title}>Recent Activity</h3>
-        <p style={styles.sub}>{projectId ? "Project specific records" : "Global activity feed"}</p>
       </div>
 
       <div style={styles.scrollArea}>
         {loading ? (
-          <div style={styles.loading}>
-            {[1, 2, 3].map(i => (
-              <div key={i} style={styles.skeletonItem}>
-                <div style={styles.skeletonIcon} />
-                <div style={styles.skeletonTextRow}>
-                  <div style={styles.skeletonLineShort} />
-                  <div style={styles.skeletonLineLong} />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (!Array.isArray(logs) || logs.length === 0) ? (
+          <div style={styles.loading}>Loading...</div>
+        ) : logs.length === 0 ? (
           <div style={styles.empty}>
             <FileText size={40} color="#e2e8f0" />
             <p>No activity recorded yet</p>
           </div>
         ) : (
-          <div style={styles.feed}>
-            {logs.map((l, i) => (
-              <div key={l.id || l._id || i} style={styles.item}>
-                <div style={styles.iconWrap}>
-                  {getActionIcon(l.action)}
-                </div>
-                <div style={styles.content}>
-                  <div style={styles.itemTitle}>
-                    {l.message ? (
-                      <span dangerouslySetInnerHTML={{ __html: l.message.replace(/#(\w+)/g, '<span style="font-family:monospace; background:#f1f5f9; padding:1px 4px; border-radius:4px; color:#475569; font-size:12px;">#$1</span>') }} />
-                    ) : (
-                      <>
-                        <span style={styles.userName}>{l.user_name || "System"}</span>{" "}
-                        <span style={styles.actionText}>{l.action}</span>{" "}
-                        {l.entity_id && <span style={styles.highlight}>#{l.entity_id}</span>}
-                        {(l.project_name || l.module_name) && (
-                          <span style={styles.context}> in {l.project_name || l.module_name}</span>
+          Object.keys(grouped).map(label => (
+            <div key={label} style={styles.group}>
+              <div style={styles.dateLabel}>{label}</div>
+              <div style={styles.feed}>
+                {grouped[label].map((l, i) => (
+                  <div key={l.id || l._id || i} style={styles.item}>
+                    <div style={styles.iconWrap}>
+                      {getActionIcon(l.action)}
+                    </div>
+
+                    <div style={styles.content}>
+                      <div style={styles.itemTitle}>
+                        {l.message ? (
+                          <span dangerouslySetInnerHTML={{ __html: l.message.replace(/#(\w+)/g, '<span style="font-weight:700;">$1</span>') }} />
+                        ) : (
+                          <>
+                            <span style={styles.actionText}>{l.action === 'created' ? 'Added a new project' : l.action}</span>{" "}
+                          </>
                         )}
-                      </>
-                    )}
+                      </div>
+                      <div style={styles.metaRow}>
+                        <span style={styles.time}>{format(new Date(l.changed_at || l.created_at || Date.now()), 'h:mm a')}</span>
+                        <div style={styles.userNote}>
+                          {l.user_name || "System"} {l.action} this task
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={styles.avatarWrap}>
+                      <Avatar name={l.user_name} id={l.user_id} size={28} />
+                    </div>
                   </div>
-                  <div style={styles.time}>
-                    {formatDistanceToNow(new Date(l.changed_at || l.created_at || Date.now()), { addSuffix: true })}
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         )}
       </div>
     </div>
@@ -106,129 +112,96 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     height: "100%",
-    maxHeight: 500,
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    maxHeight: 400, // Fixed height to match overall dashboard
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
   },
   header: {
-    padding: "20px 20px 12px",
-    borderBottom: "1px solid #f1f5f9",
+    padding: "20px 24px 12px",
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 700,
     color: "#1e293b",
     margin: 0,
   },
-  sub: {
-    fontSize: 12,
-    color: "#64748b",
-    margin: "4px 0 0",
-  },
   scrollArea: {
     flex: 1,
     overflowY: "auto",
-    padding: "0 12px 12px",
+    padding: "0 24px 20px",
+    /* Hide Scrollbar */
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+    "&::-webkit-scrollbar": {
+      display: "none"
+    }
+  },
+  group: {
+    marginBottom: 20,
+  },
+  dateLabel: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#94a3b8",
+    marginBottom: 16,
   },
   feed: {
     display: "flex",
     flexDirection: "column",
-    padding: "8px 0",
+    gap: 20,
   },
   item: {
     display: "flex",
-    gap: 12,
-    padding: "12px 8px",
-    borderRadius: 12,
-    transition: "background 0.2s",
-    "&:hover": {
-      background: "#f8fafc",
-    }
+    gap: 16,
+    alignItems: "flex-start",
   },
   iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    background: "#f1f5f9",
+    width: 24,
+    height: 24,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
+    marginTop: 2,
   },
   content: {
     flex: 1,
     minWidth: 0,
   },
   itemTitle: {
-    fontSize: 13,
-    lineHeight: 1.5,
-    color: "#334155",
-    wordBreak: "break-word",
-  },
-  userName: {
-    fontWeight: 600,
+    fontSize: 15,
+    fontWeight: 700,
     color: "#1e293b",
+    marginBottom: 4,
+    lineHeight: 1.2,
   },
-  actionText: {
-    color: "#64748b",
-  },
-  highlight: {
-    fontFamily: "monospace",
-    background: "#f1f5f9",
-    padding: "1px 4px",
-    borderRadius: 4,
-    color: "#475569",
-    fontSize: 12,
-  },
-  context: {
-    fontWeight: 500,
-    color: "#4f46e5",
-  },
-  time: {
-    fontSize: 11,
-    color: "#94a3b8",
-    marginTop: 2,
-  },
-  empty: {
+  metaRow: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "40px 20px",
+    gap: 4,
+  },
+  time: {
+    fontSize: 12,
+    fontWeight: 600,
     color: "#94a3b8",
-    fontSize: 14,
-    gap: 8,
+  },
+  userNote: {
+    fontSize: 13,
+    color: "#64748b",
+    lineHeight: 1.4,
+  },
+  avatarWrap: {
+    flexShrink: 0,
+    marginTop: 4,
+  },
+  empty: {
+    padding: 40,
+    textAlign: "center",
+    color: "#94a3b8",
   },
   loading: {
-    padding: 12,
-  },
-  skeletonItem: {
-    display: "flex",
-    gap: 12,
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  skeletonIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    background: "#f1f5f9",
-    animation: "pulse 2s infinite ease-in-out",
-  },
-  skeletonTextRow: {
-    flex: 1,
-  },
-  skeletonLineShort: {
-    height: 12,
-    width: "40%",
-    background: "#f1f5f9",
-    borderRadius: 4,
-    marginBottom: 6,
-  },
-  skeletonLineLong: {
-    height: 10,
-    width: "80%",
-    background: "#f1f5f9",
-    borderRadius: 4,
+    padding: 24,
+    color: "#94a3b8",
+    fontSize: 14,
   }
 };
 

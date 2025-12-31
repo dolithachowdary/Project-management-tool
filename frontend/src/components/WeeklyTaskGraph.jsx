@@ -3,26 +3,24 @@ import React, { useState } from "react";
 export default function WeeklyTaskGraph({ data = [] }) {
   const [tooltip, setTooltip] = useState(null);
 
-  // If no data provided, display short message
   if (!data || data.length === 0) {
     return (
       <div style={styles.emptyWrap}>
-        <div style={styles.emptyText}>Loading graph data...</div>
+        <div style={styles.emptyText}>No data available</div>
       </div>
     );
   }
 
-  // Use provided data
   const normalized = data.map(d => ({
     ...d,
-    completed: Math.min(d.completed, d.today),
+    completed: Math.min(Number(d.completed) || 0, Number(d.today) || 0),
+    today: Number(d.today) || 0
   }));
 
-  const maxToday = Math.max(...normalized.map(d => d.today));
+  const maxTotal = Math.max(...normalized.map(d => d.today), 1);
 
   return (
     <div style={styles.wrapper}>
-      {/* TOOLTIP */}
       {tooltip && (
         <div
           style={{
@@ -32,42 +30,37 @@ export default function WeeklyTaskGraph({ data = [] }) {
           }}
         >
           <strong>{tooltip.day}</strong>
-          <div style={{ color: '#64748b' }}>Total Tasks: {tooltip.today}</div>
-          <div style={{ color: '#6366f1' }}>Completed: {tooltip.completed}</div>
+          <div style={{ color: '#64748b' }}>Total: {tooltip.today}</div>
+          <div style={{ color: '#c62828' }}>Done: {tooltip.completed}</div>
         </div>
       )}
 
-      {/*  LEGEND */}
-      <div style={styles.topRow}>
-        <div style={styles.legend}>
-          <div style={styles.legendItem}>
-            <span style={{ ...styles.dot, background: "#f1f5f9" }} />
-            <span style={styles.legendLabel}>Total Tasks</span>
-          </div>
-          <div style={styles.legendItem}>
-            <span style={{ ...styles.dot, background: "#6366f1" }} />
-            <span style={styles.legendLabel}>Completed Tasks</span>
-          </div>
+      <div style={styles.legend}>
+        <div style={styles.legendItem}>
+          <span style={{ ...styles.dot, background: "#ffdad9" }} />
+          <span style={styles.legendLabel}>Total Tasks</span>
+        </div>
+        <div style={styles.legendItem}>
+          <span style={{ ...styles.dot, background: "#f87171" }} />
+          <span style={styles.legendLabel}>Completed Tasks</span>
         </div>
       </div>
 
-      {/* GRAPH */}
       <div style={styles.graphBox}>
-        <svg viewBox="0 0 620 220" width="100%" height="220">
+        <svg viewBox="0 0 600 240" width="100%" height="240" preserveAspectRatio="none">
           {normalized.map((d, i) => {
-            const slot = 620 / normalized.length;
-            const barWidth = 40;
+            const slot = 600 / normalized.length;
+            const barWidth = 44;
             const x = i * slot + (slot - barWidth) / 2;
-
-            const chartHeight = 180;
-            const todayHeight = maxToday > 0 ? (d.today / maxToday) * chartHeight : 0;
-            const completedHeight = d.today > 0 ? (d.completed / d.today) * todayHeight : 0;
-
+            const chartAreaHeight = 180;
             const baseY = 200;
+
+            const totalH = (d.today / maxTotal) * chartAreaHeight;
+            const completedH = (d.completed / maxTotal) * chartAreaHeight;
 
             return (
               <g
-                key={d.day + i}
+                key={i}
                 onMouseMove={e =>
                   setTooltip({
                     ...d,
@@ -77,32 +70,29 @@ export default function WeeklyTaskGraph({ data = [] }) {
                 }
                 onMouseLeave={() => setTooltip(null)}
               >
-                {/* TOTAL TASKS (Background Bar) */}
+                {/* TOTAL (LIGHT RED) */}
                 <rect
                   x={x}
-                  y={baseY - todayHeight}
+                  y={baseY - totalH}
                   width={barWidth}
-                  height={todayHeight || 2} // small line if 0
+                  height={Math.max(totalH, 4)}
                   rx="6"
-                  fill="#f1f5f9"
-                  style={{ transition: 'all 0.3s' }}
+                  fill="#ffdad9"
                 />
 
-                {/* COMPLETED TASKS (Highlight Bar) */}
+                {/* COMPLETED (DARK RED) */}
                 <rect
                   x={x}
-                  y={baseY - completedHeight}
+                  y={baseY - completedH}
                   width={barWidth}
-                  height={completedHeight}
+                  height={completedH}
                   rx="6"
-                  fill="#6366f1"
-                  style={{ transition: 'all 0.5s' }}
+                  fill="#f87171"
                 />
 
-                {/* DAY LABEL */}
                 <text
                   x={x + barWidth / 2}
-                  y={baseY + 18}
+                  y={baseY + 20}
                   textAnchor="middle"
                   style={styles.dayLabel}
                 >
@@ -121,20 +111,18 @@ const styles = {
   wrapper: {
     position: "relative",
     width: "100%",
-  },
-  topRow: {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginBottom: 16,
+    height: "100%",
+    paddingTop: 10,
   },
   legend: {
     display: "flex",
     gap: 16,
+    marginBottom: 20,
   },
   legendItem: {
     display: "flex",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
   },
   legendLabel: {
     fontSize: 12,
@@ -147,10 +135,8 @@ const styles = {
     borderRadius: "50%",
   },
   graphBox: {
-    paddingTop: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    width: "100%",
+    height: 240,
   },
   dayLabel: {
     fontSize: 12,
@@ -161,15 +147,15 @@ const styles = {
     position: "fixed",
     background: "#fff",
     border: "1px solid #f1f5f9",
-    borderRadius: 12,
-    padding: "10px 14px",
+    borderRadius: 8,
+    padding: "8px 12px",
     fontSize: 12,
-    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     pointerEvents: "none",
     zIndex: 9999,
   },
   emptyWrap: {
-    height: 220,
+    height: 240,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -178,6 +164,6 @@ const styles = {
   },
   emptyText: {
     color: "#94a3b8",
-    fontSize: 14,
+    fontSize: 13,
   }
 };

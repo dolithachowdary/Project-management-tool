@@ -84,6 +84,7 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
       name: projectName,
       description,
       status,
+      color, // ✅ Include color
       start_date: startDate || null,
       end_date: endDate || null,
       members: selectedMembers, // ✅ UUID array

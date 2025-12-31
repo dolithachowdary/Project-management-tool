@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Avatar, { AvatarGroup } from "./Avatar";
 
 const Card = ({
   title,
@@ -8,17 +9,9 @@ const Card = ({
   members = [],
   availableMembers = [],
   timeLeft,
-  color = "#d47b4a",
+  color = "#4F7DFF",
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-
-  const getInitials = (name) =>
-    name
-      .split(" ")
-      .map(w => w[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
 
   return (
     <div style={styles.card}>
@@ -26,7 +19,10 @@ const Card = ({
       <h4 style={styles.title}>{title}</h4>
 
       {/* PROGRESS */}
-      <div style={styles.label}>Progress</div>
+      <div style={styles.labelRow}>
+        <span style={styles.label}>Progress</span>
+        <strong style={{ color: "#1e293b" }}>{progress}%</strong>
+      </div>
 
       <div style={styles.progressBar}>
         <div
@@ -38,67 +34,44 @@ const Card = ({
         />
       </div>
 
-      {/* DATE + % */}
+      {/* DATE */}
       <div style={styles.metaRow}>
         <span>{startDate} – {endDate}</span>
-        <strong>{progress}%</strong>
       </div>
 
       {/* FOOTER */}
       <div style={styles.footer}>
-        {/* MEMBERS */}
         <div style={styles.membersWrapper}>
-          {members.map((m, i) => (
-            <div
-              key={m.id}
-              title={m.name}
-              style={{
-                ...styles.avatar,
-                background: m.color,
-                marginLeft: i === 0 ? 0 : -6,
-              }}
-            >
-              {getInitials(m.name)}
-            </div>
-          ))}
+          <AvatarGroup members={members} size={28} max={3} />
 
-          {/* ADD MEMBER */}
           <div
             style={styles.addAvatar}
-            onClick={() => setShowDropdown(!showDropdown)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDropdown(!showDropdown);
+            }}
           >
             +
           </div>
 
-          {/* DROPDOWN */}
           {showDropdown && (
             <div style={styles.dropdown}>
               {availableMembers.map(m => (
                 <div key={m.id} style={styles.dropdownItem}>
-                  <div
-                    style={{
-                      ...styles.smallAvatar,
-                      background: m.color,
-                    }}
-                  >
-                    {getInitials(m.name)}
-                  </div>
-                  {m.name}
+                  <Avatar name={m.name} id={m.id} color={m.color} size={22} />
+                  <span>{m.name}</span>
                 </div>
               ))}
+              {availableMembers.length === 0 && (
+                <div style={styles.dropdownItem}>No available members</div>
+              )}
             </div>
           )}
         </div>
 
-        {/* TIME LEFT */}
-        <button
-          style={{
-            ...styles.badge,
-            background: color,
-          }}
-        >
+        <span style={{ ...styles.badge, background: color }}>
           {timeLeft}
-        </button>
+        </span>
       </div>
     </div>
   );
@@ -106,129 +79,106 @@ const Card = ({
 
 export default Card;
 
-/* ---------------- STYLES ---------------- */
-
 const styles = {
   card: {
     background: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+    borderRadius: 20,
+    padding: 20,
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)",
+    border: "1px solid #f1f5f9",
     position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    height: "100%",
+    boxSizing: "border-box"
   },
-
   title: {
     fontSize: 16,
-    fontWeight: 600,
-    marginBottom: 10,
-    marginTop: 3,
+    fontWeight: 700,
+    color: "#1e293b",
+    margin: 0,
+    marginBottom: 4,
   },
-
-  label: {
-    fontSize: 13,
-    color: "#777",
-    marginBottom: 6,
-  },
-
-  progressBar: {
-    height: 8,
-    background: "#eee",
-    borderRadius: 6,
-    overflow: "hidden",
-    marginBottom: 6,
-  },
-
-  progressFill: {
-    height: "100%",
-  },
-
-  metaRow: {
+  labelRow: {
     display: "flex",
     justifyContent: "space-between",
-    fontSize: 12,
-    color: "#555",
-    marginBottom: 12,
+    alignItems: "center",
+    fontSize: 13,
   },
-
+  label: {
+    color: "#64748b",
+  },
+  progressBar: {
+    height: 8,
+    background: "#f1f5f9",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 10,
+    transition: "width 0.4s ease",
+  },
+  metaRow: {
+    fontSize: 12,
+    color: "#64748b",
+    marginBottom: 8,
+  },
   footer: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: "auto",
   },
-
   membersWrapper: {
+    display: "flex",
+    alignItems: "center",
     position: "relative",
-    display: "flex",
-    alignItems: "center",
   },
-
-  avatar: {
-    width: 28,
-    height: 28,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#333",
-    border: "2px solid #fff",
-  },
-
   addAvatar: {
     width: 28,
     height: 28,
     borderRadius: "50%",
-    background: "#f1f1f1",
+    background: "#f8fafc",
+    border: "1px dashed #cbd5e1",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: 16,
-    fontWeight: 600,
+    fontSize: 18,
+    color: "#64748b",
     marginLeft: 6,
     cursor: "pointer",
   },
-
   dropdown: {
     position: "absolute",
-    top: 36,
+    bottom: 36,
     left: 0,
     background: "#fff",
-    border: "1px solid #e5e5e5",
-    borderRadius: 8,
-    boxShadow: "0 6px 14px rgba(0,0,0,0.08)",
+    borderRadius: 12,
+    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+    border: "1px solid #f1f5f9",
     padding: 8,
-    width: 200,
-    zIndex: 10,
+    width: 180,
+    zIndex: 100,
   },
-
   dropdownItem: {
     display: "flex",
     alignItems: "center",
     gap: 8,
-    padding: "6px 8px",
+    padding: "8px",
     fontSize: 13,
+    borderRadius: 8,
     cursor: "pointer",
-    borderRadius: 6,
+    transition: "background 0.2s",
+    "&:hover": { background: "#f8fafc" },
   },
-
-  smallAvatar: {
-    width: 22,
-    height: 22,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 11,
-    fontWeight: 600,
-  },
-
   badge: {
-    border: "none",
-    color: "#fff",
     padding: "6px 14px",
-    borderRadius: 18,
-    fontSize: 12,
-    fontWeight: 500,
+    borderRadius: 12,
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#fff",
+    textTransform: "capitalize",
   },
 };

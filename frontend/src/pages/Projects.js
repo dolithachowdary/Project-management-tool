@@ -90,7 +90,7 @@ const Projects = () => {
                             color: m.color || "#e0e7ff"
                           }))}
                           timeLeft={p.status === "active" ? "Active" : p.status === "completed" ? "Completed" : "On Hold"}
-                          color="#1e88e5"
+                          color={p.color || "#4F7DFF"}
                         />
                       </div>
                     ))}

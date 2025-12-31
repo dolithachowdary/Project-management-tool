@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { getModules } from "../api/modules";
 import { getTasks } from "../api/tasks";
-import { ChevronRight, ChevronDown, Layers, Clock, CheckCircle2, Circle } from "lucide-react";
+import { ChevronDown, ChevronUp, Box, CircleCheckBig, Circle, CircleMinus } from "lucide-react";
 import Loader from "./Loader";
+import Avatar from "./Avatar";
 
-export default function Modules({ projectId }) {
+export default function Modules({ projectId, projectColor }) {
   const [modules, setModules] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [expandedModule, setExpandedModule] = useState(null);
+  const [expandedModules, setExpandedModules] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -19,8 +20,14 @@ export default function Modules({ projectId }) {
             getModules(projectId),
             getTasks(projectId)
           ]);
-          setModules(mRes.data?.data || mRes.data || []);
+          const mods = mRes.data?.data || mRes.data || [];
+          setModules(mods);
           setTasks(tRes.data?.data || tRes.data || []);
+
+          // Expand first module by default
+          if (mods.length > 0) {
+            setExpandedModules({ [mods[0].id || mods[0]._id]: true });
+          }
         } catch (err) {
           console.error("Error fetching module data:", err);
         } finally {
@@ -32,80 +39,106 @@ export default function Modules({ projectId }) {
   }, [projectId]);
 
   const toggleModule = (id) => {
-    setExpandedModule(expandedModule === id ? null : id);
+    setExpandedModules(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   if (loading) return <Loader fullScreen={false} />;
 
   return (
     <div style={styles.container}>
-      <div style={styles.headerRow}>
-        <h3 style={styles.sectionTitle}>Modules & Tasks</h3>
-        <span style={styles.countBadge}>{modules.length} Modules</span>
-      </div>
+      <h3 style={styles.sectionTitle}>Modules & Tasks</h3>
 
       <div style={styles.moduleList}>
-        {modules.length === 0 ? (
-          <div style={styles.empty}>No modules defined for this project.</div>
-        ) : (
-          modules.map((m) => {
-            const isExpanded = expandedModule === (m.id || m._id);
-            const moduleTasks = tasks.filter(t => t.module_id === (m.id || m._id));
+        {modules.map((m) => {
+          const mid = m.id || m._id;
+          const isExpanded = expandedModules[mid];
+          const moduleTasks = tasks.filter(t => t.module_id === mid);
+          const completedCount = moduleTasks.filter(t => t.status?.toLowerCase() === "done").length;
+          const inProgressCount = moduleTasks.filter(t => t.status?.toLowerCase() === "in_progress").length;
+          const todoCount = moduleTasks.length - completedCount - inProgressCount;
+          const progress = moduleTasks.length > 0 ? (completedCount / moduleTasks.length) * 100 : 0;
 
-            return (
-              <div key={m.id || m._id} style={styles.moduleWrapper}>
-                <div
-                  style={{
-                    ...styles.card,
-                    ...(isExpanded ? styles.expandedCard : {})
-                  }}
-                  onClick={() => toggleModule(m.id || m._id)}
-                >
-                  <div style={styles.cardLeft}>
-                    <div style={styles.iconBox}>
-                      <Layers size={18} color={isExpanded ? "#4f46e5" : "#6366f1"} />
-                    </div>
-                    <div style={styles.info}>
-                      <div style={styles.name}>{m.name}</div>
-                      <div style={styles.subText}>
-                        {moduleTasks.length} Tasks • {m.status || "Active"}
-                      </div>
+          return (
+            <div key={mid} style={styles.card}>
+              <div style={styles.cardHeader} onClick={() => toggleModule(mid)}>
+                <div style={styles.cardLeft}>
+                  <div style={{ ...styles.iconBox, background: `${projectColor}15` || "#eef2ff" }}>
+                    <Box size={20} color={projectColor || "#6366f1"} />
+                  </div>
+                  <div style={styles.headerInfo}>
+                    <div style={styles.moduleName}>{m.name}</div>
+                    <div style={styles.moduleSub}>{m.description || "Module description"}</div>
+
+                    <div style={styles.statusBadges}>
+                      <span style={{ ...styles.badge, background: "#fffbeb", color: "#d97706" }}>
+                        {todoCount} To Do
+                      </span>
+                      <span style={{ ...styles.badge, background: "#eff6ff", color: "#2563eb" }}>
+                        {inProgressCount} In Progress
+                      </span>
+                      <span style={{ ...styles.badge, background: "#f0fdf4", color: "#16a34a" }}>
+                        {completedCount} Completed
+                      </span>
                     </div>
                   </div>
-                  {isExpanded ? <ChevronDown size={18} color="#4f46e5" /> : <ChevronRight size={18} color="#94a3b8" />}
                 </div>
 
-                {isExpanded && (
-                  <div style={styles.tasksContainer}>
-                    {moduleTasks.length === 0 ? (
-                      <div style={styles.noTasks}>No tasks in this module.</div>
-                    ) : (
-                      moduleTasks.map(t => (
-                        <div key={t.id || t._id} style={styles.taskItem}>
-                          <div style={styles.taskTitleRow}>
-                            {t.status === "Done" || t.status === "done" ? (
-                              <CheckCircle2 size={14} color="#10b981" />
-                            ) : (
-                              <Circle size={14} color="#94a3b8" />
-                            )}
-                            <span style={styles.taskTitle}>{t.title || t.taskName}</span>
-                          </div>
-                          <div style={styles.taskMeta}>
-                            <div style={styles.durationBadge}>
-                              <Clock size={12} />
-                              <span>{t.duration || t.computed_duration || "—"}</span>
-                            </div>
-                            <span style={styles.taskStatusBadge}>{t.status}</span>
-                          </div>
-                        </div>
-                      ))
-                    )}
+                <div style={styles.cardRight}>
+                  <div style={styles.progressSection}>
+                    <div style={styles.progressTrack}>
+                      <div style={{ ...styles.progressFill, width: `${progress}%`, background: projectColor || "#3b82f6" }} />
+                    </div>
+                    <span style={styles.progressText}>{Math.round(progress)}%</span>
                   </div>
-                )}
+                  {isExpanded ? <ChevronUp size={20} color="#94a3b8" /> : <ChevronDown size={20} color="#94a3b8" />}
+                </div>
               </div>
-            );
-          })
-        )}
+
+              {isExpanded && (
+                <div style={styles.taskList}>
+                  {moduleTasks.map((t) => (
+                    <div key={t.id || t._id} style={styles.taskItem}>
+                      <div style={styles.taskLeft}>
+                        {t.status?.toLowerCase() === "done" ? (
+                          <CircleCheckBig size={16} color="#16a34a" />
+                        ) : t.status?.toLowerCase() === "in_progress" ? (
+                          <CircleMinus size={16} color="#2563eb" />
+                        ) : (
+                          <Circle size={16} color="#94a3b8" />
+                        )}
+                        <span style={{
+                          ...styles.taskTitle,
+                          textDecoration: t.status?.toLowerCase() === "done" ? "line-through" : "none",
+                          color: t.status?.toLowerCase() === "done" ? "#94a3b8" : "#1e293b"
+                        }}>
+                          {t.title || t.taskName}
+                        </span>
+                      </div>
+
+                      <div style={styles.taskRight}>
+                        <span style={{
+                          ...styles.taskStatus,
+                          color: t.status?.toLowerCase() === "done" ? "#16a34a" :
+                            t.status?.toLowerCase() === "in_progress" ? "#2563eb" : "#94a3b8"
+                        }}>
+                          {(t.status || "To Do").toUpperCase()}
+                        </span>
+                        <Avatar
+                          name={t.assignee_name || t.assignedTo?.full_name || "Unassigned"}
+                          id={t.assignee_id}
+                          size={24}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {moduleTasks.length === 0 && (
+                    <div style={styles.emptyTasks}>No tasks found in this module.</div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -115,148 +148,145 @@ const styles = {
   container: {
     display: "flex",
     flexDirection: "column",
-    gap: "16px"
-  },
-  headerRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    marginBottom: "4px"
+    gap: 20,
   },
   sectionTitle: {
-    fontSize: "18px",
+    fontSize: 20,
     fontWeight: 700,
     color: "#1e293b",
-    margin: 0
-  },
-  countBadge: {
-    background: "#eef2ff",
-    color: "#4f46e5",
-    padding: "2px 10px",
-    borderRadius: "12px",
-    fontSize: "11px",
-    fontWeight: 700,
-    textTransform: "uppercase"
+    margin: 0,
+    marginBottom: 4,
   },
   moduleList: {
     display: "flex",
     flexDirection: "column",
-    gap: "12px"
-  },
-  moduleWrapper: {
-    display: "flex",
-    flexDirection: "column",
-    borderRadius: "12px",
-    overflow: "hidden",
-    border: "1px solid #f1f5f9",
-    background: "#fff",
+    gap: 16,
   },
   card: {
-    padding: "16px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    transition: "all 0.2s ease",
-    cursor: "pointer",
     background: "#fff",
+    borderRadius: 20,
+    border: "1px solid #f1f5f9",
+    overflow: "hidden",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+  },
+  cardHeader: {
+    padding: "20px 24px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    cursor: "pointer",
+    transition: "background 0.2s",
     "&:hover": {
       background: "#f8fafc",
-    }
-  },
-  expandedCard: {
-    background: "#f5f3ff",
-    borderBottom: "1px solid #eef2ff",
+    },
   },
   cardLeft: {
     display: "flex",
-    alignItems: "center",
-    gap: "16px"
+    gap: 16,
+    alignItems: "flex-start",
   },
   iconBox: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "10px",
-    background: "#fff",
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    background: "#eef2ff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+    marginTop: 2,
   },
-  info: {
-    display: "flex",
-    flexDirection: "column"
-  },
-  name: {
-    fontWeight: 600,
-    color: "#1e293b",
-    fontSize: "15px"
-  },
-  subText: {
-    fontSize: "12px",
-    color: "#64748b",
-    marginTop: "2px"
-  },
-  tasksContainer: {
-    background: "#fcfcfd",
-    padding: "8px 16px 16px 52px",
+  headerInfo: {
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: 4,
+  },
+  moduleName: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: "#1e293b",
+  },
+  moduleSub: {
+    fontSize: 13,
+    color: "#64748b",
+    marginBottom: 8,
+  },
+  statusBadges: {
+    display: "flex",
+    gap: 8,
+  },
+  badge: {
+    padding: "4px 10px",
+    borderRadius: 20,
+    fontSize: 11,
+    fontWeight: 600,
+  },
+  cardRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: 24,
+  },
+  progressSection: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    width: 180,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 6,
+    background: "#f1f5f9",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    background: "#3b82f6",
+    borderRadius: 10,
+  },
+  progressText: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#94a3b8",
+    minWidth: 34,
+  },
+  taskList: {
+    padding: "0 24px 20px 80px",
+    display: "flex",
+    flexDirection: "column",
   },
   taskItem: {
     display: "flex",
-    alignItems: "center",
     justifyContent: "space-between",
-    padding: "10px 0",
+    alignItems: "center",
+    padding: "14px 0",
     borderBottom: "1px solid #f1f5f9",
     "&:last-child": {
-      borderBottom: "none"
-    }
+      borderBottom: "none",
+    },
   },
-  taskTitleRow: {
+  taskLeft: {
     display: "flex",
     alignItems: "center",
-    gap: "10px"
+    gap: 12,
   },
   taskTitle: {
-    fontSize: "13px",
-    color: "#334155",
-    fontWeight: 500
+    fontSize: 14,
+    fontWeight: 500,
   },
-  taskMeta: {
+  taskRight: {
     display: "flex",
     alignItems: "center",
-    gap: "12px"
+    gap: 16,
   },
-  durationBadge: {
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-    fontSize: "11px",
-    color: "#64748b",
-    background: "#f1f5f9",
-    padding: "2px 8px",
-    borderRadius: "4px"
+  taskStatus: {
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: "0.5px",
   },
-  taskStatusBadge: {
-    fontSize: "10px",
-    fontWeight: 600,
+  emptyTasks: {
+    padding: "16px 0",
+    fontSize: 13,
     color: "#94a3b8",
-    textTransform: "uppercase"
+    fontStyle: "italic",
   },
-  noTasks: {
-    padding: "12px 0",
-    fontSize: "13px",
-    color: "#94a3b8",
-    fontStyle: "italic"
-  },
-  empty: {
-    padding: "32px",
-    textAlign: "center",
-    color: "#94a3b8",
-    background: "#f8fafc",
-    borderRadius: "12px",
-    border: "1px dashed #e2e8f0",
-    fontSize: "14px"
-  }
 };

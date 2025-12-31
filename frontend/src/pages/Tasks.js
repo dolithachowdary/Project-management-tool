@@ -110,10 +110,11 @@ export default function Tasks() {
     });
   };
 
-  // Robust getter for project/module/sprint names
-  const getProjectName = (task) => task.projectName || projects.find(p => (p._id || p.id) === task.project_id)?.name || "";
-  const getModuleName = (task) => task.moduleName || task.module?.name || "";
-  const getSprintName = (task) => task.sprintName || task.sprint?.name || "";
+  // Robust getter for project/module/sprint names/colors
+  const getProjectName = (task) => task.project_name || task.projectName || projects.find(p => (p._id || p.id) === (task.project_id || task.project?.[0]?.id))?.name || "";
+  const getModuleName = (task) => task.module_name || task.moduleName || task.module?.name || "";
+  const getSprintName = (task) => task.sprint_name || task.sprintName || task.sprint?.name || "";
+  const getProjectColor = (task) => task.project_color || projects.find(p => (p.id === (task.project_id || task.project?.[0]?.id)))?.color || "#4F7DFF";
 
   // Prepare tasks with names
   const tasksWithNames = tasks.map(t => ({
@@ -121,7 +122,8 @@ export default function Tasks() {
     taskName: t.title || t.taskName || "",
     projectName: getProjectName(t),
     moduleName: getModuleName(t),
-    sprintName: getSprintName(t)
+    sprintName: getSprintName(t),
+    project_color: getProjectColor(t)
   }));
 
   // Base filtered tasks (before status filter)

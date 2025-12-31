@@ -1,4 +1,5 @@
 import React from "react";
+import { CircleCheckBig, Circle, CircleMinus, Info } from "lucide-react";
 
 /* SAME COLORS AS Tasks.js */
 const STATUS_COLORS = {
@@ -24,6 +25,13 @@ const STATUS_LABELS = {
 
 const getStatusLabel = (s) => STATUS_LABELS[s] || s;
 
+const getStatusIcon = (status) => {
+  const s = status?.toLowerCase();
+  if (s === "done" || s === "completed") return <CircleCheckBig size={16} color="#10b981" />;
+  if (s === "in_progress" || s === "review") return <CircleMinus size={16} color="#f59e0b" />;
+  return <Circle size={16} color="#94a3b8" />;
+};
+
 const DEV_ORDER = {
   "In Progress": 1,
   "in_progress": 1,
@@ -47,12 +55,11 @@ export default function TaskOverviewList({
     role === "Developer"
       ? tasks.filter((t) => {
         const assignedId = t.assignee_id || t.assigned_to_id || t.assignedTo;
-        // Check if assigned to current user ID or Name
         if (Array.isArray(assignedId)) return assignedId.includes(currentUserId) || assignedId.includes(currentUser);
         if (typeof assignedId === 'object' && assignedId !== null) return assignedId.id === currentUserId || assignedId.name === currentUser;
         return assignedId === currentUserId || assignedId === currentUser;
       })
-      : tasks;
+      : tasks.filter(t => (t.status || "").toLowerCase() !== "done"); // Remove completed team tasks
 
   const sorted = [...filtered].sort(
     (a, b) => (DEV_ORDER[a.status] || 99) - (DEV_ORDER[b.status] || 99)
@@ -75,22 +82,15 @@ export default function TaskOverviewList({
       </h3>
 
       <div style={styles.scrollArea}>
-        {sorted.length === 0 && <div style={styles.empty}>No tasks found.</div>}
+        {sorted.length === 0 && <div style={styles.empty}>No active tasks found.</div>}
 
         {/* DEV VIEW */}
         {role === "Developer" &&
           sorted.map((task) => {
             const color = STATUS_COLORS[task.status] || STATUS_COLORS["To Do"];
-            const done = task.status === "Done" || task.status === "done";
-
             return (
               <div key={task.id} style={styles.row}>
-                <span
-                  style={{
-                    ...styles.dot,
-                    background: done ? "#10b981" : color.text,
-                  }}
-                />
+                {getStatusIcon(task.status)}
                 <div style={{ flex: 1 }}>
                   <div style={styles.task}>{task.title || task.taskName}</div>
                   <div style={styles.meta}>
@@ -116,12 +116,9 @@ export default function TaskOverviewList({
             <div key={project} style={{ marginBottom: 14 }}>
               <div style={styles.project}>{project}</div>
               {groupedByProject[project].map((task) => {
-                const color = STATUS_COLORS[task.status] || STATUS_COLORS["To Do"];
                 return (
                   <div key={task.id} style={styles.row}>
-                    <span
-                      style={{ ...styles.dot, background: color.text }}
-                    />
+                    {getStatusIcon(task.status)}
                     <div style={{ flex: 1 }}>
                       <div style={styles.task}>{task.title || task.taskName}</div>
                       <div style={styles.meta}>{getStatusLabel(task.status)}</div>

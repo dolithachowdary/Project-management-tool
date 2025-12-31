@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 import { getTasks } from "../api/tasks";
 import { getAssignableUsers } from "../api/users";
 import Loader from "./Loader";
+import Avatar from "./Avatar";
 
 export default function PMTimeline() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
 
+  // Time in timeline starts from 10 am to 6 pm
   const hours = [
-    "9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM"
+    "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM"
   ];
 
-  const startHour = 9;
+  const startHour = 10;
   const endHour = 18;
   const totalHours = endHour - startHour;
 
@@ -25,14 +27,16 @@ export default function PMTimeline() {
         ]);
 
         const tasksData = tasksRes.data?.data || tasksRes.data || [];
-        const usersData = usersRes.data?.data || usersRes.data || [];
+        const usersData = resDataToArray(usersRes);
 
         // Group tasks by assignee
         const userMap = {};
         usersData.forEach(u => {
           userMap[u.id || u._id] = {
+            id: u.id || u._id,
             name: u.full_name || u.name,
             role: u.role,
+            avatar: u.avatar_url,
             tasks: []
           };
         });
@@ -40,18 +44,17 @@ export default function PMTimeline() {
         tasksData.forEach(t => {
           const aid = t.assignee_id || t.assigned_to_id || t.assignedTo;
           if (userMap[aid]) {
-            // Deduce a dummy time for visualization since backend might not provide start/end hours
-            // In a real app, tasks would have start_time/end_time
+            // Deduce a dummy time for visualization if not provided
             const date = new Date(t.start_date || t.startDate || new Date());
             const h = date.getHours();
-            const start = h >= startHour && h < endHour ? h : (9 + (Math.random() * 4));
-            const duration = 2 + (Math.random() * 2);
+            const start = h >= startHour && h < endHour ? h : (10 + (Math.random() * 3));
+            const duration = 1.5 + (Math.random() * 2);
 
             userMap[aid].tasks.push({
               title: t.title || t.taskName,
               start: start,
               end: Math.min(start + duration, 18),
-              color: getRandomColor(t.id || t._id)
+              color: t.project_color || "#e0e7ff" // Use project color
             });
           }
         });
@@ -67,10 +70,9 @@ export default function PMTimeline() {
     fetchData();
   }, []);
 
-  const getRandomColor = (id) => {
-    const colors = ["#e0e7ff", "#dcfce7", "#fef9c3", "#ffedd5", "#fce7f3", "#f1f5f9"];
-    const index = (id || "").toString().length;
-    return colors[index % colors.length];
+  const resDataToArray = (res) => {
+    const d = res.data?.data || res.data || [];
+    return Array.isArray(d) ? d : [];
   };
 
   const getPos = (h) => ((h - startHour) / totalHours) * 100;
@@ -92,7 +94,10 @@ export default function PMTimeline() {
         <div style={styles.membersCol}>
           {data.map((m, i) => (
             <div key={i} style={styles.memberRow}>
-              <div style={styles.memberName}>{m.name}</div>
+              <div style={styles.memberInfo}>
+                <Avatar name={m.name} id={m.id} src={m.avatar} size={32} />
+                <div style={styles.memberName}>{m.name}</div>
+              </div>
               <div style={styles.memberMeta}>{m.tasks.length} tasks assigned</div>
             </div>
           ))}
@@ -116,7 +121,7 @@ export default function PMTimeline() {
                     background: task.color,
                     left: `${getPos(task.start)}%`,
                     width: `${getPos(task.end) - getPos(task.start)}%`,
-                    borderLeft: `3px solid #6366f1`
+                    borderLeft: `4px solid ${task.color}` // Or a slightly darker shade
                   }}
                   title={task.title}
                 >
@@ -135,40 +140,41 @@ const styles = {
   container: {
     background: "#fff",
     border: "1px solid #f1f5f9",
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
     overflow: "hidden"
   },
-  header: { display: "flex", marginBottom: 16, borderBottom: "1px solid #f1f5f9", paddingBottom: 12 },
-  memberHeader: { width: 220, fontWeight: 700, fontSize: 14, color: "#1e293b" },
-  hours: { flex: 1, display: "grid", gridTemplateColumns: "repeat(10, 1fr)" },
-  hour: { textAlign: "center", fontSize: 11, fontWeight: 600, color: "#64748b" },
+  header: { display: "flex", marginBottom: 16, borderBottom: "1px solid #f1f5f9", paddingBottom: 16 },
+  memberHeader: { width: 220, fontWeight: 700, fontSize: 14, color: "#1e293b", paddingLeft: 8 },
+  hours: { flex: 1, display: "grid", gridTemplateColumns: "repeat(9, 1fr)" },
+  hour: { textAlign: "center", fontSize: 12, fontWeight: 700, color: "#64748b" },
   body: { display: "flex", position: "relative" },
   membersCol: { width: 220, borderRight: "1px solid #f1f5f9" },
-  memberRow: { height: 80, display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: "1px solid #f8fafc", paddingRight: 16 },
-  memberName: { fontWeight: 600, fontSize: 13, color: "#1e293b" },
-  memberMeta: { fontSize: 11, color: "#94a3b8", marginTop: 2 },
-  timeline: { flex: 1, position: "relative", minHeight: 400 },
-  grid: { position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "repeat(10, 1fr)" },
+  memberRow: { height: 90, display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: "1px solid #f8fafc", paddingRight: 16 },
+  memberInfo: { display: "flex", alignItems: "center", gap: 12 },
+  memberName: { fontWeight: 700, fontSize: 14, color: "#1e293b" },
+  memberMeta: { fontSize: 12, color: "#94a3b8", marginTop: 4, paddingLeft: 44 },
+  timeline: { flex: 1, position: "relative", minHeight: 450 },
+  grid: { position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "repeat(9, 1fr)" },
   gridLine: { borderRight: "1px solid #f8fafc" },
-  timelineRow: { position: "relative", height: 80, borderBottom: "1px solid #f8fafc" },
+  timelineRow: { position: "relative", height: 90, borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "center" },
   task: {
     position: "absolute",
-    top: 20,
-    height: 40,
-    borderRadius: 8,
-    padding: "0 12px",
+    height: 44,
+    borderRadius: 12,
+    padding: "0 16px",
     display: "flex",
     alignItems: "center",
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#334155",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#1e293b",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
     zIndex: 2,
+    opacity: 0.9,
   },
-  empty: { padding: 40, color: "#94a3b8", fontSize: 14 }
+  empty: { padding: 60, textAlign: "center", color: "#94a3b8", width: "100%" }
 };
