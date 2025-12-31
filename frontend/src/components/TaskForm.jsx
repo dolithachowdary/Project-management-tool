@@ -14,13 +14,16 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
   const [sprints, setSprints] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
 
+  const role = localStorage.getItem("role");
+  const isDev = role === "Developer";
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     module_id: "",
     project_id: "",
     sprint_id: "",
-    assignee_id: "",
+    assignee_id: isDev ? (currentUserId || localStorage.getItem("userId")) : "",
     status: "To Do",
     start_date: "",
     end_date: "",
@@ -54,7 +57,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
         module_id: initialData.module_id || initialData.module?._id || "",
         project_id: initialData.project_id || initialData.project?._id || initialData.project?.[0]?.id || "",
         sprint_id: initialData.sprint_id || initialData.sprint?._id || "",
-        assignee_id: initialData.assignee_id || initialData.assignedTo?._id || initialData.assignedTo || "",
+        assignee_id: isDev ? (currentUserId || localStorage.getItem("userId")) : (initialData.assignee_id || initialData.assignedTo?._id || initialData.assignedTo || ""),
         status: formatStatus(initialData.status) || "To Do",
         start_date: initialData.start_date ? initialData.start_date.split('T')[0] : (initialData.startDate ? initialData.startDate.split('T')[0] : ""),
         end_date: initialData.end_date ? initialData.end_date.split('T')[0] : (initialData.endDate ? initialData.endDate.split('T')[0] : ""),
@@ -68,7 +71,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
         fetchProjectDetails(pid);
       }
     }
-  }, [initialData, currentUserId, fetchProjectDetails]);
+  }, [initialData, currentUserId, fetchProjectDetails, isDev]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -346,7 +349,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
             value: formData.assignee_id,
             onChange: handleChange,
             style: styles.select,
-            disabled: !formData.project_id
+            disabled: !formData.project_id || isDev
           },
             React.createElement("option", { value: "" }, "Select Member"),
             members.map(person => (

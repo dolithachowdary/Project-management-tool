@@ -41,8 +41,14 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
   }, [isOpen]);
 
   const loadUsers = async () => {
-    const res = await getAssignableUsers();
-    setUsers(res.data);
+    try {
+      const res = await getAssignableUsers();
+      const data = res.data?.data || res.data || [];
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load assignable users", err);
+      setUsers([]);
+    }
   };
 
   if (!isOpen) return null;

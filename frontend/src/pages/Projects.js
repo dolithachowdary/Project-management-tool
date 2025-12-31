@@ -7,11 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { getProjects } from "../api/projects";
 import Loader from "../components/Loader";
 
-const Projects = ({ role = "Project Manager" }) => {
+const Projects = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [showAddProject, setShowAddProject] = useState(false);
   const [loading, setLoading] = useState(true);
+  const role = localStorage.getItem("role") || "Project Manager";
 
   useEffect(() => {
     loadProjects();
