@@ -9,7 +9,7 @@ const api = axios.create({
 
 // Simple in-memory cache
 const cache = new Map();
-const CACHE_DURATION = 40000; // 40 seconds
+const CACHE_DURATION = 1000; // 1 second (for testing/demo)
 
 api.getWithCache = async (url, config = {}) => {
   const key = `${url}:${JSON.stringify(config.params || {})}`;

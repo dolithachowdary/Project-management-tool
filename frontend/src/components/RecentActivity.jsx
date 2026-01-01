@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getProjectActivity } from "../api/projects";
 import api from "../api/axios";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 import { Plus, SquarePen, CheckCheck, FileText, Info } from "lucide-react";
 import Avatar from "./Avatar";
 
@@ -112,14 +112,15 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     height: "100%",
-    maxHeight: 400, // Fixed height to match overall dashboard
+    maxHeight: "100%",
+    overflow: "hidden", // Added to prevent overlap
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
   },
   header: {
-    padding: "20px 24px 12px",
+    padding: "16px 20px 8px", // Reduced padding
   },
   title: {
-    fontSize: 18,
+    fontSize: 16, // Slightly smaller
     fontWeight: 700,
     color: "#1e293b",
     margin: 0,
@@ -127,7 +128,7 @@ const styles = {
   scrollArea: {
     flex: 1,
     overflowY: "auto",
-    padding: "0 24px 20px",
+    padding: "0 20px 16px",
     /* Hide Scrollbar */
     scrollbarWidth: "none",
     msOverflowStyle: "none",

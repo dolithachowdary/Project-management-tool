@@ -59,28 +59,28 @@ const styles = {
   card: {
     border: "1px solid #f1f5f9",
     borderRadius: 16,
-    padding: 20,
+    padding: 16, // Reduced from 20
     background: "#fff",
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
   },
   headerRow: {
     display: "flex",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 12, // Reduced from 20
     borderBottom: "1px solid #f8fafc",
-    paddingBottom: 12,
+    paddingBottom: 8, // Reduced from 12
   },
-  title: { fontWeight: 700, fontSize: 16, color: "#1e293b" },
+  title: { fontWeight: 700, fontSize: 14, color: "#1e293b" }, // Smaller title
   list: {
     maxHeight: 400,
     overflowY: "auto",
     paddingRight: 4,
   },
-  rowWrap: { display: "flex", position: "relative", marginBottom: 20 },
-  leftCol: { width: 30, position: "relative", display: "flex", flexDirection: "column", alignItems: "center" },
+  rowWrap: { display: "flex", position: "relative", marginBottom: 12 }, // Reduced from 20
+  leftCol: { width: 24, position: "relative", display: "flex", flexDirection: "column", alignItems: "center" },
   dotWrap: {
-    width: 20,
-    height: 20,
+    width: 16, // Smaller dot
+    height: 16,
     borderRadius: "50%",
     border: "2px solid",
     display: "flex",

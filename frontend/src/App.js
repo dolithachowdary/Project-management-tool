@@ -11,6 +11,7 @@ import Timesheets from "./pages/Timesheets";
 import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
 import Notes from "./pages/Notes";
+import SprintDetails from "./pages/SprintDetails";
 import ToastManager from "./components/ToastManager";
 
 function App() {
@@ -33,8 +34,9 @@ function App() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetails />} />
 
-          {/* Other pages */}
+          {/* Sprints */}
           <Route path="/sprints" element={<Sprints />} />
+          <Route path="/sprints/:id" element={<SprintDetails />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/timesheets" element={<Timesheets />} />
           <Route path="/analytics" element={<Analytics />} />

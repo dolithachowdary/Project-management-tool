@@ -1,6 +1,6 @@
 import React from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import Avatar, { AvatarGroup } from "./Avatar";
+import { AvatarGroup } from "./Avatar";
 import { formatStatus, toApiStatus } from "../utils/helpers";
 
 export default function TaskBoardView({
@@ -179,7 +179,6 @@ export default function TaskBoardView({
       <div style={styles.board}>
         {columns.map((col) => {
           const colTasks = tasks.filter(t => toApiStatus(formatStatus(t.status)) === col.value);
-          const colStyle = getStatusStyles(col.value);
 
           return (
             <div key={col.value} style={styles.column}>

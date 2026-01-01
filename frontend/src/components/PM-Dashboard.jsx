@@ -203,9 +203,6 @@ export default function PMDashboard() {
             <MiniCalendar />
           </div>
           <div style={styles.sideItem}>
-            <TaskListComponent tasks={allTasks} role="Project Manager" />
-          </div>
-          <div style={styles.sideItem}>
             <Upcoming tasks={allTasks} />
           </div>
           <div style={styles.sideItem}>
@@ -235,19 +232,19 @@ const styles = {
     gap: 16, // Decreased from 24
   },
   right: {
-    width: 320,
+    width: 340, // Reduced by ~25% from 450
     display: "flex",
     flexDirection: "column",
-    gap: 24,
+    gap: 16,
     position: "sticky",
     top: 20,
     paddingRight: 4,
   },
   topRow: {
     display: "grid",
-    gridTemplateColumns: "1.5fr 1.5fr", // Adjusted from 1.8fr 1.2fr
-    gap: 16, // Decreased from 20
-    height: 400, // Fixed height
+    gridTemplateColumns: "1.8fr 1fr",
+    gap: 16,
+    height: 380, // Standard fixed height
   },
   graphWrapper: {
     background: "#fff",
@@ -257,11 +254,14 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    minHeight: 0,
+    overflow: "hidden", // Added to ensure no leakage
   },
   recentWrapper: {
     display: "flex",
     flexDirection: "column",
     height: "100%",
+    minHeight: 0, // Added to respect parent grid height
   },
   section: {
     display: "flex",
@@ -288,19 +288,12 @@ const styles = {
     cursor: "pointer",
   },
   cardGrid: {
-    display: "flex",
-    gap: 20,
-    overflowX: "auto",
-    paddingBottom: 10,
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
-    "&::-webkit-scrollbar": {
-      display: "none"
-    }
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)", // Exactly 3 cards in one row
+    gap: 16,
+    paddingBottom: 4,
   },
   cardWrapper: {
-    flex: "0 0 340px",
-    height: 161,
     cursor: "pointer",
     transition: "transform 0.2s",
     "&:hover": {

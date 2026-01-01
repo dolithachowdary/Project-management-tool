@@ -1,5 +1,5 @@
 import React from "react";
-import { CircleCheckBig, Circle, CircleMinus, Info } from "lucide-react";
+import { CircleCheckBig, Circle, CircleMinus } from "lucide-react";
 
 /* SAME COLORS AS Tasks.js */
 const STATUS_COLORS = {

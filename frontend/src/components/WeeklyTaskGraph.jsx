@@ -47,13 +47,13 @@ export default function WeeklyTaskGraph({ data = [] }) {
       </div>
 
       <div style={styles.graphBox}>
-        <svg viewBox="0 0 600 240" width="100%" height="240" preserveAspectRatio="none">
+        <svg viewBox="0 0 600 180" width="100%" height="180" preserveAspectRatio="none">
           {normalized.map((d, i) => {
             const slot = 600 / normalized.length;
             const barWidth = 44;
             const x = i * slot + (slot - barWidth) / 2;
-            const chartAreaHeight = 180;
-            const baseY = 200;
+            const chartAreaHeight = 120;
+            const baseY = 140;
 
             const totalH = (d.today / maxTotal) * chartAreaHeight;
             const completedH = (d.completed / maxTotal) * chartAreaHeight;
@@ -136,7 +136,7 @@ const styles = {
   },
   graphBox: {
     width: "100%",
-    height: 240,
+    height: 180,
   },
   dayLabel: {
     fontSize: 12,
@@ -155,7 +155,7 @@ const styles = {
     zIndex: 9999,
   },
   emptyWrap: {
-    height: 240,
+    height: 180,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

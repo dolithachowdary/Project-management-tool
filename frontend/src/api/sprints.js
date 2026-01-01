@@ -14,3 +14,6 @@ export const updateSprint = (id, data) =>
 
 export const deleteSprint = (id) =>
     api.delete(`/sprints/${id}`);
+
+export const getSprintHierarchy = (id) =>
+    api.get(`/sprints/${id}/hierarchy`);

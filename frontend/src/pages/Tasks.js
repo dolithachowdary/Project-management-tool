@@ -326,7 +326,6 @@ export default function Tasks() {
       whiteSpace: "nowrap",
       transition: "all 0.2s ease",
     },
-    toggleWrapper: { flex: "0 0 auto" },
     iconToggle: {
       display: "flex",
       background: "#f1f5f9",
