@@ -13,16 +13,21 @@ const getActionIcon = (action = "") => {
   return <Info size={18} color="#000" strokeWidth={2.5} />;
 };
 
-export default function RecentActivity({ projectId }) {
+export default function RecentActivity({ projectId, sprintId, hideHeader = false }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const load = React.useCallback(async () => {
     try {
       setLoading(true);
-      const res = projectId
-        ? await getProjectActivity(projectId)
-        : await api.get("/change-logs");
+      let res;
+      if (sprintId) {
+        res = await api.get(`/change-logs/sprint/${sprintId}`);
+      } else if (projectId) {
+        res = await getProjectActivity(projectId);
+      } else {
+        res = await api.get("/change-logs");
+      }
 
       const data = res.data?.data || res.data || [];
       setLogs(Array.isArray(data) ? data : []);
@@ -49,11 +54,13 @@ export default function RecentActivity({ projectId }) {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Recent Activity</h3>
-      </div>
+      {!hideHeader && (
+        <div style={styles.header}>
+          <h3 style={styles.title}>Recent Activity</h3>
+        </div>
+      )}
 
-      <div style={styles.scrollArea}>
+      <div style={styles.scrollArea} className="hide-scrollbar">
         {loading ? (
           <div style={styles.loading}>Loading...</div>
         ) : logs.length === 0 ? (
