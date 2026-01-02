@@ -1,8 +1,8 @@
-import React from "react";
-import { Calendar, Clock3, Box, ClipboardList } from "lucide-react";
+import { Calendar, Clock3, Box, ClipboardList, Pencil } from "lucide-react";
 import { AvatarGroup } from "./Avatar";
 
 const ProjectHeader = ({
+  projectId,
   title,
   startDate,
   endDate,
@@ -15,20 +15,42 @@ const ProjectHeader = ({
   currentSprintName = "Sprint 1",
   sprintProgress = 0,
   daysLeft = "2 Days Left",
-  color = "#4F7DFF"
+  color = "#4F7DFF",
+  hasDocument = false,
+  onEdit
 }) => {
   if (!title) return null;
+
+  const roleData = JSON.parse(localStorage.getItem("userData"));
+  const role = roleData?.role || "";
+  const canEdit = ["admin", "Project Manager"].includes(role);
+
+  const handleDownload = () => {
+    if (!projectId) return;
+    const token = JSON.parse(localStorage.getItem("userData"))?.accessToken;
+    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+    window.open(`${baseUrl}/projects/${projectId}/document?token=${token}`, "_blank");
+  };
 
   return (
     <div style={styles.outerContainer}>
       <div style={styles.container}>
         {/* LEFT AREA: PROJECT INFO */}
         <div style={styles.left}>
-          {/* PRD BUTTON - ALWAYS RED, TOP RIGHT OF THIS SECTION */}
-          <button style={styles.prdBtn}>View PRD</button>
+          {/* PRD BUTTON - ONLY IF DOCUMENT EXISTS */}
+          {hasDocument && (
+            <button style={styles.prdBtn} onClick={handleDownload}>View PRD</button>
+          )}
 
           <div style={styles.titleRow}>
-            <h2 style={styles.title}>{title}</h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <h2 style={styles.title}>{title}</h2>
+              {canEdit && (
+                <button style={styles.editBtn} onClick={onEdit} title="Edit Project">
+                  <Pencil size={18} color="#94a3b8" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div style={styles.dates}>
@@ -126,6 +148,20 @@ const styles = {
     fontWeight: 800,
     color: "#1e293b",
     margin: 0,
+  },
+  editBtn: {
+    background: "none",
+    border: "none",
+    padding: "4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    borderRadius: "6px",
+    transition: "background 0.2s",
+    "&:hover": {
+      background: "#f1f5f9",
+    },
   },
   prdBtn: {
     position: "absolute",
