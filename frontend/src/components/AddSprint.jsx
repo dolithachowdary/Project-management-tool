@@ -1,35 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { getProjects } from "../api/projects";
-import { getModules, createModule } from "../api/modules";
-import { createSprint } from "../api/sprints";
+import { createSprint, getNextSprintNumber } from "../api/sprints";
 
 export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
   /* -------- STATE -------- */
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState("");
-  const [sprintName, setSprintName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [goal, setGoal] = useState("");
+  const [nextSprintNum, setNextSprintNum] = useState(null);
 
-  const [availableModules, setAvailableModules] = useState([]);
-  const [selectedModules, setSelectedModules] = useState([]);
-  const [newModules, setNewModules] = useState([]);
+  // Validation State
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   /* -------- EFFECT -------- */
   useEffect(() => {
     if (isOpen) {
       loadProjects();
+      // Reset state on open
+      setProjectId("");
+      setStartDate("");
+      setEndDate("");
+      setGoal("");
+      setNextSprintNum(null);
+      setErrors({});
     }
   }, [isOpen]);
 
   useEffect(() => {
     if (!projectId) {
-      setAvailableModules([]);
-      setSelectedModules([]);
+      setNextSprintNum(null);
       return;
     }
-    loadModules(projectId);
+    fetchNextSprintNum(projectId);
   }, [projectId]);
 
   // Sprint duration logic: 7 days
@@ -39,6 +44,8 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
       const end = new Date(start);
       end.setDate(start.getDate() + 7);
       setEndDate(end.toISOString().split("T")[0]);
+    } else {
+      setEndDate("");
     }
   }, [startDate]);
 
@@ -51,78 +58,43 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
     }
   };
 
-  const loadModules = async (pid) => {
+  const fetchNextSprintNum = async (pid) => {
     try {
-      const res = await getModules(pid);
-      setAvailableModules(res.data?.data || res.data || []);
+      const res = await getNextSprintNumber(pid);
+      setNextSprintNum(res.data?.next_number || res.data?.data?.next_number);
     } catch (err) {
-      console.error("Failed to load modules", err);
+      console.error("Failed to fetch next sprint number", err);
     }
   };
 
   /* -------- HANDLERS -------- */
-  const handleModuleToggle = (moduleId) => {
-    setSelectedModules(prev =>
-      prev.includes(moduleId)
-        ? prev.filter(id => id !== moduleId)
-        : [...prev, moduleId]
-    );
-  };
+  const validate = () => {
+    const newErrors = {};
+    if (!projectId) newErrors.projectId = "Project is required";
+    if (!startDate) newErrors.startDate = "Start date is required";
+    if (!goal.trim()) newErrors.goal = "Goal is required";
 
-  const updateNewModule = (i, field, value) => {
-    const copy = [...newModules];
-    copy[i][field] = value;
-    setNewModules(copy);
-  };
-
-  const addModuleRow = () => {
-    setNewModules([...newModules, { name: "", description: "" }]);
-  };
-
-  const removeModuleRow = (i) => {
-    setNewModules(prev => prev.filter((_, idx) => idx !== i));
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleCreate = async () => {
-    if (!projectId || !sprintName || !startDate || !endDate) {
-      alert("Please fill in all required fields");
+    if (!validate()) {
       return;
     }
 
     setLoading(true);
     try {
-      // 1. Create new modules if any
-      const createdModuleIds = [];
-      for (const m of newModules) {
-        if (m.name.trim()) {
-          const res = await createModule({
-            name: m.name,
-            description: m.description,
-            project_id: projectId
-          });
-          createdModuleIds.push(res.data?.id || res.data?._id);
-        }
-      }
-
-      // 2. Create Sprint
       const sprintData = {
         project_id: projectId,
-        name: sprintName,
         start_date: startDate,
         end_date: endDate,
-        modules: [...selectedModules, ...createdModuleIds],
+        goal: goal,
       };
 
       await createSprint(sprintData);
       if (onSprintAdded) onSprintAdded();
       onClose();
-      // Reset form
-      setProjectId("");
-      setSprintName("");
-      setStartDate("");
-      setEndDate("");
-      setSelectedModules([]);
-      setNewModules([]);
     } catch (err) {
       console.error("Failed to create sprint", err);
       alert("Error creating sprint");
@@ -139,38 +111,50 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
         <h3 style={styles.modalTitle}>Add Sprint</h3>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Project</label>
+          <label style={styles.label}>
+            Project <span style={styles.required}>*</span>
+          </label>
           <select
-            style={styles.select}
+            style={{ ...styles.select, borderColor: errors.projectId ? "#ef4444" : "#e2e8f0" }}
             value={projectId}
-            onChange={e => setProjectId(e.target.value)}
+            onChange={e => {
+              setProjectId(e.target.value);
+              if (errors.projectId) setErrors(prev => ({ ...prev, projectId: null }));
+            }}
           >
             <option value="">Select project</option>
             {projects.map(p => (
               <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>
             ))}
           </select>
+          {errors.projectId && <div style={styles.errorMsg}>{errors.projectId}</div>}
         </div>
 
+        {/* Static Sprint Number Display */}
         <div style={styles.formGroup}>
-          <label style={styles.label}>Sprint</label>
-          <input
-            style={styles.input}
-            placeholder="Sprint Name (e.g. Sprint 1)"
-            value={sprintName}
-            onChange={e => setSprintName(e.target.value)}
-          />
+          <label style={styles.label}>Sprint Name</label>
+          <div style={styles.staticField}>
+            {projectId && nextSprintNum
+              ? `Sprint ${nextSprintNum}`
+              : <span style={styles.placeholderText}>Select a project to see sprint number</span>}
+          </div>
         </div>
 
         <div style={styles.row}>
           <div style={{ flex: 1 }}>
-            <label style={styles.label}>Start Date</label>
+            <label style={styles.label}>
+              Start Date <span style={styles.required}>*</span>
+            </label>
             <input
               type="date"
-              style={styles.input}
+              style={{ ...styles.input, borderColor: errors.startDate ? "#ef4444" : "#e2e8f0" }}
               value={startDate}
-              onChange={e => setStartDate(e.target.value)}
+              onChange={e => {
+                setStartDate(e.target.value);
+                if (errors.startDate) setErrors(prev => ({ ...prev, startDate: null }));
+              }}
             />
+            {errors.startDate && <div style={styles.errorMsg}>{errors.startDate}</div>}
           </div>
           <div style={{ flex: 1 }}>
             <label style={styles.label}>End Date</label>
@@ -178,60 +162,26 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
               type="date"
               style={styles.input}
               value={endDate}
-              onChange={e => setEndDate(e.target.value)}
               readOnly
+              disabled
             />
           </div>
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Modules</label>
-          <div style={styles.moduleSelector}>
-            {availableModules.length === 0 ? (
-              <div style={styles.placeholder}>No existing modules</div>
-            ) : (
-              availableModules.map(m => (
-                <div key={m.id || m._id} style={styles.moduleItem}>
-                  <input
-                    type="checkbox"
-                    id={`mod-${m.id || m._id}`}
-                    checked={selectedModules.includes(m.id || m._id)}
-                    onChange={() => handleModuleToggle(m.id || m._id)}
-                  />
-                  <label htmlFor={`mod-${m.id || m._id}`} style={{ fontSize: 13 }}>{m.name}</label>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div style={styles.newModuleSection}>
-          <label style={styles.label}>Add New Modules</label>
-          {newModules.map((m, i) => (
-            <div key={i} style={{ ...styles.row, marginBottom: 8, alignItems: "center" }}>
-              <input
-                placeholder="Name"
-                style={{ ...styles.input, marginBottom: 0 }}
-                value={m.name}
-                onChange={e => updateNewModule(i, "name", e.target.value)}
-              />
-              <input
-                placeholder="Description"
-                style={{ ...styles.input, marginBottom: 0 }}
-                value={m.description}
-                onChange={e => updateNewModule(i, "description", e.target.value)}
-              />
-              <button
-                onClick={() => removeModuleRow(i)}
-                style={styles.removeBtn}
-              >
-                &times;
-              </button>
-            </div>
-          ))}
-          <button onClick={addModuleRow} style={styles.addLink}>
-            + Add module
-          </button>
+          <label style={styles.label}>
+            Sprint Goal <span style={styles.required}>*</span>
+          </label>
+          <textarea
+            style={{ ...styles.input, minHeight: "80px", resize: "vertical", borderColor: errors.goal ? "#ef4444" : "#e2e8f0" }}
+            placeholder="Define the main goal for this sprint..."
+            value={goal}
+            onChange={e => {
+              setGoal(e.target.value);
+              if (errors.goal) setErrors(prev => ({ ...prev, goal: null }));
+            }}
+          />
+          {errors.goal && <div style={styles.errorMsg}>{errors.goal}</div>}
         </div>
 
         <div style={styles.actions}>
@@ -259,7 +209,7 @@ const styles = {
   modal: {
     background: "#fff",
     padding: "24px",
-    width: "550px",
+    width: "500px",
     maxHeight: "90vh",
     overflowY: "auto",
     borderRadius: "16px",
@@ -271,6 +221,7 @@ const styles = {
     color: "#1e293b",
     marginBottom: "24px",
     marginTop: 0,
+    textAlign: "center"
   },
   formGroup: {
     marginBottom: "16px",
@@ -282,6 +233,10 @@ const styles = {
     color: "#475569",
     marginBottom: "6px",
   },
+  required: {
+    color: "#ef4444",
+    marginLeft: "2px",
+  },
   input: {
     width: "100%",
     padding: "10px 12px",
@@ -292,6 +247,8 @@ const styles = {
     outline: "none",
     marginBottom: "4px",
     boxSizing: "border-box",
+    fontFamily: "inherit",
+    transition: "border-color 0.2s",
   },
   select: {
     width: "100%",
@@ -302,73 +259,42 @@ const styles = {
     color: "#1e293b",
     outline: "none",
     background: "#fff",
+    transition: "border-color 0.2s",
+  },
+  errorMsg: {
+    fontSize: "12px",
+    color: "#ef4444",
+    marginTop: "2px",
+  },
+  staticField: {
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: "8px",
+    border: "1px solid #f1f5f9",
+    background: "#f8fafc",
+    fontSize: "14px",
+    color: "#1e293b",
+    marginBottom: "4px",
+    boxSizing: "border-box",
+    minHeight: "42px",
+    display: "flex",
+    alignItems: "center",
+  },
+  placeholderText: {
+    color: "#94a3b8",
+    fontStyle: "italic",
+    fontSize: "13px",
   },
   row: {
     display: "flex",
     gap: "12px",
     marginBottom: "16px",
   },
-  moduleSelector: {
-    border: "1px solid #e2e8f0",
-    borderRadius: "8px",
-    padding: "8px 12px",
-    maxHeight: "120px",
-    overflowY: "auto",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "8px",
-  },
-  moduleItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    background: "#f8fafc",
-    padding: "4px 8px",
-    borderRadius: "6px",
-    border: "1px solid #f1f5f9",
-  },
-  placeholder: {
-    fontSize: "13px",
-    color: "#94a3b8",
-    fontStyle: "italic",
-    padding: "4px 0",
-  },
-  newModuleSection: {
-    marginTop: "16px",
-    padding: "16px",
-    background: "#fdfdfd",
-    border: "1px dashed #e2e8f0",
-    borderRadius: "12px",
-    marginBottom: "24px",
-  },
-  addLink: {
-    background: "none",
-    border: "none",
-    color: "#c62828",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    padding: "4px 0",
-    marginTop: "4px",
-  },
-  removeBtn: {
-    background: "#fee2e2",
-    color: "#ef4444",
-    border: "none",
-    borderRadius: "4px",
-    width: "24px",
-    height: "24px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "18px",
-    lineHeight: 1,
-  },
   actions: {
     display: "flex",
     justifyContent: "flex-end",
     gap: "12px",
+    marginTop: "32px"
   },
   cancelBtn: {
     padding: "10px 20px",

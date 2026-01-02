@@ -15,5 +15,8 @@ export const updateSprint = (id, data) =>
 export const deleteSprint = (id) =>
     api.delete(`/sprints/${id}`);
 
+export const getNextSprintNumber = (projectId) =>
+    api.get(`/sprints/next-number`, { params: { project_id: projectId } });
+
 export const getSprintHierarchy = (id) =>
     api.get(`/sprints/${id}/hierarchy`);
