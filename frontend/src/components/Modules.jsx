@@ -1,52 +1,64 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { getModules } from "../api/modules";
 import { getTasks } from "../api/tasks";
-import { ChevronDown, ChevronUp, Box, CircleCheckBig, Circle, CircleMinus } from "lucide-react";
+import { ChevronDown, ChevronUp, Box, CircleCheckBig, Circle, CircleMinus, Plus } from "lucide-react";
 import Loader from "./Loader";
 import Avatar from "./Avatar";
+import AddModuleModal from "./AddModuleModal";
 
 export default function Modules({ projectId, projectColor }) {
   const [modules, setModules] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [expandedModules, setExpandedModules] = useState({});
   const [loading, setLoading] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const role = JSON.parse(localStorage.getItem("userData"))?.role || "";
+  const canModify = ["admin", "Project Manager"].includes(role);
+
+  const fetchData = useCallback(async () => {
+    if (!projectId) return;
+    setLoading(true);
+    try {
+      const [mRes, tRes] = await Promise.all([
+        getModules(projectId),
+        getTasks(projectId)
+      ]);
+      const mods = mRes.data?.data || mRes.data || [];
+      setModules(mods);
+      setTasks(tRes.data?.data || tRes.data || []);
+
+      // Expand first module by default if not already interacted
+      if (mods.length > 0 && Object.keys(expandedModules).length === 0) {
+        setExpandedModules({ [mods[0].id || mods[0]._id]: true });
+      }
+    } catch (err) {
+      console.error("Error fetching module data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId, expandedModules]);
 
   useEffect(() => {
-    if (projectId) {
-      const fetchData = async () => {
-        setLoading(true);
-        try {
-          const [mRes, tRes] = await Promise.all([
-            getModules(projectId),
-            getTasks(projectId)
-          ]);
-          const mods = mRes.data?.data || mRes.data || [];
-          setModules(mods);
-          setTasks(tRes.data?.data || tRes.data || []);
-
-          // Expand first module by default
-          if (mods.length > 0) {
-            setExpandedModules({ [mods[0].id || mods[0]._id]: true });
-          }
-        } catch (err) {
-          console.error("Error fetching module data:", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData();
-    }
+    fetchData();
   }, [projectId]);
 
   const toggleModule = (id) => {
     setExpandedModules(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  if (loading) return <Loader fullScreen={false} />;
+  if (loading && modules.length === 0) return <Loader fullScreen={false} />;
 
   return (
     <div style={styles.container}>
-      <h3 style={styles.sectionTitle}>Modules & Tasks</h3>
+      <div style={styles.headerRow}>
+        <h3 style={styles.sectionTitle}>Modules & Tasks</h3>
+        {canModify && (
+          <button style={styles.addBtn} onClick={() => setIsAddModalOpen(true)}>
+            <Plus size={16} /> Add Module
+          </button>
+        )}
+      </div>
 
       <div style={styles.moduleList}>
         {modules.map((m) => {
@@ -140,6 +152,13 @@ export default function Modules({ projectId, projectColor }) {
           );
         })}
       </div>
+
+      <AddModuleModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        projectId={projectId}
+        onModuleAdded={fetchData}
+      />
     </div>
   );
 }
@@ -150,12 +169,36 @@ const styles = {
     flexDirection: "column",
     gap: 20,
   },
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  addBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "8px 16px",
+    background: "#fff",
+    border: "1px solid #e2e8f0",
+    borderRadius: 12,
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#475569",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+    "&:hover": {
+      background: "#f8fafc",
+      color: "#1e293b",
+    },
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 700,
     color: "#1e293b",
     margin: 0,
-    marginBottom: 4,
   },
   moduleList: {
     display: "flex",

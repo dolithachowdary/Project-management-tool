@@ -16,7 +16,7 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
 
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("active");
+  // Removed status state as per request
 
   const [color, setColor] = useState(
     COLORS.find((c) => !usedColors.includes(c)) || COLORS[0]
@@ -30,7 +30,7 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [showMembers, setShowMembers] = useState(false);
 
-
+  const [document, setDocument] = useState(null); // Document upload state
 
   const [modules, setModules] = useState([{ name: "", description: "" }]);
 
@@ -75,23 +75,38 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
     setModules((prev) => [...prev, { name: "", description: "" }]);
   };
 
-  /* ---------------- SUBMIT (FIXED) ---------------- */
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setDocument(e.target.files[0]);
+    }
+  };
+
+  /* ---------------- SUBMIT ---------------- */
 
   const submit = async () => {
     if (!projectName.trim()) return alert("Project name required");
 
-    await createProject({
-      name: projectName,
-      description,
-      status,
-      color, // ✅ Include color
-      start_date: startDate || null,
-      end_date: endDate || null,
-      members: selectedMembers, // ✅ UUID array
-      modules: modules.filter((m) => m.name.trim()), // ✅ clean modules
-    });
+    // Use FormData for file upload
+    const formData = new FormData();
+    formData.append("name", projectName);
+    formData.append("description", description);
+    formData.append("color", color);
+    if (startDate) formData.append("start_date", startDate);
+    if (endDate) formData.append("end_date", endDate);
+    formData.append("members", JSON.stringify(selectedMembers));
+    formData.append("modules", JSON.stringify(modules.filter((m) => m.name.trim())));
 
-    onClose();
+    if (document) {
+      formData.append("document", document);
+    }
+
+    try {
+      await createProject(formData);
+      onClose();
+    } catch (err) {
+      console.error("Failed to create project", err);
+      alert(err.response?.data?.message || "Failed to create project");
+    }
   };
 
   /* ---------------- UI ---------------- */
@@ -148,27 +163,23 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
             />
           </div>
 
-          {/* STATUS */}
-          <div style={styles.field}>
-            <label>Status</label>
-            <select
-              style={styles.input}
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              <option value="active">Active</option>
-              <option value="on_hold">On Hold</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-
           {/* DATES */}
           <div style={styles.row}>
-            <input type="date" style={styles.input} onChange={(e) => setStartDate(e.target.value)} />
-            <input type="date" style={styles.input} onChange={(e) => setEndDate(e.target.value)} />
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+              <label style={{ fontSize: 13, color: "#666" }}>Start Date</label>
+              <input type="date" style={styles.input} onChange={(e) => setStartDate(e.target.value)} />
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+              <label style={{ fontSize: 13, color: "#666" }}>End Date</label>
+              <input type="date" style={styles.input} onChange={(e) => setEndDate(e.target.value)} />
+            </div>
           </div>
 
-
+          {/* DOCUMENT UPLOAD */}
+          <div style={styles.field}>
+            <label>Document Upload</label>
+            <input type="file" onChange={handleFileChange} style={styles.input} />
+          </div>
 
           {/* MEMBERS */}
           <div style={styles.field}>
@@ -199,7 +210,7 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
           <div style={styles.field}>
             <label>Modules</label>
             {modules.map((mod, i) => (
-              <div key={i} style={styles.moduleRow}>
+              <div key={i} style={{ ...styles.moduleRow, marginBottom: 8 }}>
                 <input
                   style={styles.input}
                   placeholder="Module name"

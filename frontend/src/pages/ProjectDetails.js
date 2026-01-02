@@ -8,16 +8,19 @@ import RecentActivity from "../components/RecentActivity";
 import { getProjectById, getProjectSummary, getProjectMembers } from "../api/projects";
 import Loader from "../components/Loader";
 import { formatStatus } from "../utils/helpers";
+import EditProjectModal from "../components/EditProjectModal";
 
 const ProjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const role = localStorage.getItem("role") || "Project Manager";
+  const userData = JSON.parse(localStorage.getItem("userData"));
+  const role = userData?.role || "Project Manager";
 
   const [project, setProject] = useState(null);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -74,6 +77,7 @@ const ProjectDetails = () => {
           </button>
 
           <ProjectHeader
+            projectId={id}
             title={project.name}
             startDate={formatDate(project.start_date)}
             endDate={formatDate(project.end_date)}
@@ -85,6 +89,8 @@ const ProjectDetails = () => {
             modulesSummary={`${summary?.modules?.active || 0} active · ${summary?.modules?.total || 0} total`}
             tasksSummary={`${activeTasks} active · ${totalTasks} total`}
             color={project.color}
+            hasDocument={!!project.document_name}
+            onEdit={() => setIsEditModalOpen(true)}
           />
 
           <div style={styles.contentLayout}>
@@ -100,6 +106,13 @@ const ProjectDetails = () => {
           </div>
         </div>
       </div>
+
+      <EditProjectModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        project={project}
+        onProjectUpdated={loadData}
+      />
     </div>
   );
 };
