@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -12,20 +12,19 @@ import SprintOverview from "../components/SprintOverview";
 import {
   Box,
   CheckCircle2,
-  Clock,
   Calendar,
   ClipboardList,
   LayoutDashboard,
   List,
   Kanban,
   ChevronLeft,
-  Circle,
   Plus,
   ChevronDown,
   ChevronRight,
-  Filter,
-  ArrowUpDown,
+  Workflow
 } from "lucide-react";
+import FlowGraph from "../components/FlowGraph";
+import { AnimatePresence } from "framer-motion";
 
 const SprintDetails = () => {
   const { id } = useParams();
@@ -42,6 +41,8 @@ const SprintDetails = () => {
   const [selectedModule, setSelectedModule] = useState("");
   const [selectedAssignee, setSelectedAssignee] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("Medium");
+  const [showFlowGraph, setShowFlowGraph] = useState(false);
+  const { sprint, modules } = data || { sprint: {}, modules: [] };
 
   const toggleSection = (key) => {
     setCollapsedSections(prev => ({
@@ -86,11 +87,20 @@ const SprintDetails = () => {
     }
   };
 
-  useEffect(() => {
-    loadHierarchy();
-  }, [id]);
+  const fetchProjectData = useCallback(async (projectId) => {
+    try {
+      const [modulesRes, membersRes] = await Promise.all([
+        getModules(projectId),
+        getProjectMembers(projectId)
+      ]);
+      setAllModules(modulesRes.data?.data || modulesRes.data || []);
+      setProjectMembers(membersRes.data?.data || membersRes.data || []);
+    } catch (err) {
+      console.error("Failed to fetch project data:", err);
+    }
+  }, []);
 
-  const loadHierarchy = async () => {
+  const loadHierarchy = useCallback(async () => {
     try {
       setLoading(true);
       const res = await getSprintHierarchy(id);
@@ -105,9 +115,13 @@ const SprintDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, fetchProjectData]);
 
-  const handleDragEnd = async (result) => {
+  useEffect(() => {
+    loadHierarchy();
+  }, [id, loadHierarchy]);
+
+  const handleDragEnd = useCallback(async (result) => {
     const { destination, source, draggableId } = result;
 
     if (!destination) return;
@@ -119,7 +133,7 @@ const SprintDetails = () => {
       // Optimistic update
       const updatedModules = modules.map(mod => ({
         ...mod,
-        tasks: mod.tasks.map(t => t.id === draggableId ? { ...t, status: newStatus } : t)
+        tasks: (mod.tasks || []).map(t => t.id === draggableId ? { ...t, status: newStatus } : t)
       }));
       setData({ ...data, modules: updatedModules });
 
@@ -130,42 +144,8 @@ const SprintDetails = () => {
       alert("Failed to move task. Please try again.");
       loadHierarchy(); // Revert on failure
     }
-  };
+  }, [data, modules, loadHierarchy]);
 
-  const fetchProjectData = async (projectId) => {
-    try {
-      const [modulesRes, membersRes] = await Promise.all([
-        getModules(projectId),
-        getProjectMembers(projectId)
-      ]);
-      setAllModules(modulesRes.data?.data || modulesRes.data || []);
-      setProjectMembers(membersRes.data?.data || membersRes.data || []);
-    } catch (err) {
-      console.error("Failed to fetch project data:", err);
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case "done":
-        return <CheckCircle2 size={16} color="#10b981" />;
-      case "in_progress":
-        return <Clock size={16} color="#3b82f6" />;
-      default:
-        return <Circle size={16} color="#94a3b8" />;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "done":
-        return "#f0fdf4";
-      case "in_progress":
-        return "#eff6ff";
-      default:
-        return "#f8fafc";
-    }
-  };
 
   if (loading) {
     return (
@@ -180,8 +160,6 @@ const SprintDetails = () => {
   }
 
   if (!data) return null;
-
-  const { sprint, modules } = data;
 
   // Calculate total tasks and completed tasks across all modules
   const totalTasks = modules.reduce((acc, mod) => acc + (mod.tasks?.length || 0), 0);
@@ -214,7 +192,25 @@ const SprintDetails = () => {
           {/* SPRINT HEADER */}
           <div style={styles.sprintHeader}>
             <div style={styles.headerLeft}>
-              <h1 style={styles.sprintTitle}>{sprint.project_name} - {sprint.name}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <h1 style={styles.sprintTitle}>{sprint.project_name} - {sprint.name}</h1>
+                <button
+                  onClick={() => setShowFlowGraph(true)}
+                  style={{
+                    background: '#f1f5f9',
+                    border: 'none',
+                    padding: '6px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Show Sprint Flow"
+                >
+                  <Workflow size={18} color="#4F7DFF" strokeWidth={2.5} />
+                </button>
+              </div>
               {sprint.goal && (
                 <div style={styles.goalText}>
                   <span style={styles.goalLabel}>Goal:</span> {sprint.goal}
@@ -316,16 +312,6 @@ const SprintDetails = () => {
                     <button style={styles.addTaskBtn}>
                       <Plus size={16} />
                       Add task
-                    </button>
-
-                    <button style={styles.actionLink}>
-                      <Filter size={16} />
-                      Filter
-                    </button>
-
-                    <button style={styles.actionLink}>
-                      <ArrowUpDown size={16} />
-                      Sort
                     </button>
                   </div>
                 </div>
@@ -429,91 +415,93 @@ const SprintDetails = () => {
                                   <td colSpan="6" style={styles.emptyRow}>No tasks in this section</td>
                                 </tr>
                               )}
-                              <tr
-                                style={styles.addTableRow}
-                                onClick={() => {
-                                  if (inlineAddingTo !== group.key) {
-                                    setInlineAddingTo(group.key);
-                                    setNewTaskTitle("");
-                                    setSelectedModule(allModules[0]?.id || "");
-                                    setSelectedAssignee("");
-                                    setSelectedPriority("Medium");
-                                  }
-                                }}
-                              >
-                                <td colSpan="6" style={styles.addTableCell}>
-                                  {inlineAddingTo === group.key ? (
-                                    <div style={styles.inlineForm}>
-                                      <div style={{ flex: 4, marginRight: '10px' }}>
-                                        <input
-                                          autoFocus
-                                          style={styles.inlineInput}
-                                          placeholder="Task name"
-                                          value={newTaskTitle}
-                                          onChange={(e) => setNewTaskTitle(e.target.value)}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') handleAddTask(group.key);
-                                            if (e.key === 'Escape') setInlineAddingTo(null);
-                                          }}
-                                        />
+                              {group.key === 'planned' && (
+                                <tr
+                                  style={styles.addTableRow}
+                                  onClick={() => {
+                                    if (inlineAddingTo !== group.key) {
+                                      setInlineAddingTo(group.key);
+                                      setNewTaskTitle("");
+                                      setSelectedModule(allModules[0]?.id || "");
+                                      setSelectedAssignee("");
+                                      setSelectedPriority("Medium");
+                                    }
+                                  }}
+                                >
+                                  <td colSpan="6" style={styles.addTableCell}>
+                                    {inlineAddingTo === group.key ? (
+                                      <div style={styles.inlineForm}>
+                                        <div style={{ flex: 4, marginRight: '10px' }}>
+                                          <input
+                                            autoFocus
+                                            style={styles.inlineInput}
+                                            placeholder="Task name"
+                                            value={newTaskTitle}
+                                            onChange={(e) => setNewTaskTitle(e.target.value)}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') handleAddTask(group.key);
+                                              if (e.key === 'Escape') setInlineAddingTo(null);
+                                            }}
+                                          />
+                                        </div>
+                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
+                                          <select
+                                            style={styles.inlineSelect}
+                                            value={selectedModule}
+                                            onChange={(e) => setSelectedModule(e.target.value)}
+                                          >
+                                            <option value="">Module</option>
+                                            {allModules.map(m => (
+                                              <option key={m.id} value={m.id}>{m.name}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
+                                          <select
+                                            style={styles.inlineSelect}
+                                            value={selectedAssignee}
+                                            onChange={(e) => setSelectedAssignee(e.target.value)}
+                                          >
+                                            <option value="">Assignee</option>
+                                            {projectMembers.map(m => (
+                                              <option key={m.id} value={m.id}>{m.full_name}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div style={{ flex: 1, marginRight: '10px' }}>
+                                          <select
+                                            style={styles.inlineSelect}
+                                            value={selectedPriority}
+                                            onChange={(e) => setSelectedPriority(e.target.value)}
+                                          >
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High">High</option>
+                                          </select>
+                                        </div>
+                                        <div style={styles.inlineActions}>
+                                          <button
+                                            style={styles.saveBtn}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleAddTask(group.key);
+                                            }}
+                                          >Save</button>
+                                          <button
+                                            style={styles.cancelBtn}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setInlineAddingTo(null);
+                                            }}
+                                          >Cancel</button>
+                                        </div>
                                       </div>
-                                      <div style={{ flex: 1.5, marginRight: '10px' }}>
-                                        <select
-                                          style={styles.inlineSelect}
-                                          value={selectedModule}
-                                          onChange={(e) => setSelectedModule(e.target.value)}
-                                        >
-                                          <option value="">Module</option>
-                                          {allModules.map(m => (
-                                            <option key={m.id} value={m.id}>{m.name}</option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                      <div style={{ flex: 1.5, marginRight: '10px' }}>
-                                        <select
-                                          style={styles.inlineSelect}
-                                          value={selectedAssignee}
-                                          onChange={(e) => setSelectedAssignee(e.target.value)}
-                                        >
-                                          <option value="">Assignee</option>
-                                          {projectMembers.map(m => (
-                                            <option key={m.user_id} value={m.user_id}>{m.full_name}</option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                      <div style={{ flex: 1, marginRight: '10px' }}>
-                                        <select
-                                          style={styles.inlineSelect}
-                                          value={selectedPriority}
-                                          onChange={(e) => setSelectedPriority(e.target.value)}
-                                        >
-                                          <option value="Low">Low</option>
-                                          <option value="Medium">Medium</option>
-                                          <option value="High">High</option>
-                                        </select>
-                                      </div>
-                                      <div style={styles.inlineActions}>
-                                        <button
-                                          style={styles.saveBtn}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAddTask(group.key);
-                                          }}
-                                        >Save</button>
-                                        <button
-                                          style={styles.cancelBtn}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setInlineAddingTo(null);
-                                          }}
-                                        >Cancel</button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <span style={styles.addTaskText}>+ Add task...</span>
-                                  )}
-                                </td>
-                              </tr>
+                                    ) : (
+                                      <span style={styles.addTaskText}>+ Add task...</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              )}
                             </tbody>
                           </table>
                         )}
@@ -652,6 +640,19 @@ const SprintDetails = () => {
                     */}
         </div>
       </div>
+      <AnimatePresence>
+        {showFlowGraph && (
+          <FlowGraph
+            type="sprint"
+            data={{
+              sprint,
+              modules,
+              tasks: modules.flatMap(m => m.tasks || [])
+            }}
+            onClose={() => setShowFlowGraph(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

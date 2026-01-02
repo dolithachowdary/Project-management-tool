@@ -84,11 +84,7 @@ const Projects = () => {
                           })()}
                           startDate={formatDate(p.start_date || p.startDate)}
                           endDate={formatDate(p.end_date)}
-                          members={(p.members || []).map(m => ({
-                            id: m.id || m.user_id || m,
-                            name: m.name || m.full_name || "Member",
-                            color: m.color || "#e0e7ff"
-                          }))}
+                          members={p.members || []}
                           timeLeft={p.status === "active" ? "Active" : p.status === "completed" ? "Completed" : "On Hold"}
                           color={p.color || "#4F7DFF"}
                         />

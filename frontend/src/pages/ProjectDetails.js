@@ -5,10 +5,12 @@ import Header from "../components/Header";
 import ProjectHeader from "../components/ProjectHeader";
 import Modules from "../components/Modules";
 import RecentActivity from "../components/RecentActivity";
-import { getProjectById, getProjectSummary, getProjectMembers } from "../api/projects";
+import { getProjectById, getProjectSummary, getProjectMembers, getProjectHierarchy } from "../api/projects";
 import Loader from "../components/Loader";
 import { formatStatus } from "../utils/helpers";
 import EditProjectModal from "../components/EditProjectModal";
+import FlowGraph from "../components/FlowGraph";
+import { AnimatePresence } from "framer-motion";
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -21,6 +23,20 @@ const ProjectDetails = () => {
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showFlowGraph, setShowFlowGraph] = useState(false);
+  const [hierarchyData, setHierarchyData] = useState(null);
+
+  const handleShowFlow = async () => {
+    try {
+      if (!hierarchyData) {
+        const res = await getProjectHierarchy(id);
+        setHierarchyData(res.data?.data || res.data);
+      }
+      setShowFlowGraph(true);
+    } catch (err) {
+      console.error("Failed to load hierarchy:", err);
+    }
+  };
 
   const loadData = useCallback(async () => {
     try {
@@ -91,6 +107,7 @@ const ProjectDetails = () => {
             color={project.color}
             hasDocument={!!project.document_name}
             onEdit={() => setIsEditModalOpen(true)}
+            onShowFlow={handleShowFlow}
           />
 
           <div style={styles.contentLayout}>
@@ -113,6 +130,16 @@ const ProjectDetails = () => {
         project={project}
         onProjectUpdated={loadData}
       />
+
+      <AnimatePresence>
+        {showFlowGraph && (
+          <FlowGraph
+            type="project"
+            data={hierarchyData}
+            onClose={() => setShowFlowGraph(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

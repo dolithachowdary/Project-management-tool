@@ -1,4 +1,4 @@
-import { Calendar, Clock3, Box, ClipboardList, Pencil } from "lucide-react";
+import { Calendar, Clock3, Box, ClipboardList, Pencil, GitGraph } from "lucide-react";
 import { AvatarGroup } from "./Avatar";
 
 const ProjectHeader = ({
@@ -17,7 +17,8 @@ const ProjectHeader = ({
   daysLeft = "2 Days Left",
   color = "#4F7DFF",
   hasDocument = false,
-  onEdit
+  onEdit,
+  onShowFlow
 }) => {
   if (!title) return null;
 
@@ -50,6 +51,9 @@ const ProjectHeader = ({
                   <Pencil size={18} color="#94a3b8" />
                 </button>
               )}
+              <button style={styles.editBtn} onClick={onShowFlow} title="Show Project Flow">
+                <GitGraph size={18} color="#4F7DFF" strokeWidth={2.5} />
+              </button>
             </div>
           </div>
 

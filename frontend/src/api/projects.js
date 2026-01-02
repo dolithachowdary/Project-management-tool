@@ -25,3 +25,6 @@ export const deleteProject = (id) =>
 
 export const getProjectMembers = (id) =>
   api.get(`/projects/${id}/members`);
+
+export const getProjectHierarchy = (id) =>
+  api.get(`/projects/${id}/hierarchy`);
