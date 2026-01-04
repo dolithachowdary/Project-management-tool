@@ -37,7 +37,7 @@ export default function RecentActivity({ projectId, sprintId, hideHeader = false
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, sprintId]);
 
   useEffect(() => {
     load();

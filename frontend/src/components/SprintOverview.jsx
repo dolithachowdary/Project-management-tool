@@ -9,13 +9,13 @@ import Avatar from './Avatar';
 
 const SprintOverview = ({ data, styles }) => {
     const sprint = data?.sprint;
-    const modules = data?.modules;
     const projectColor = sprint?.project_color || '#0d9488';
 
     // Extract all tasks from modules
     const allTasks = useMemo(() => {
-        return (modules || []).flatMap(m => (m.tasks || []));
-    }, [modules]);
+        const modules = data?.modules || [];
+        return modules.flatMap(m => (m.tasks || []));
+    }, [data?.modules]);
 
     // 1. Weekly Task Report Data
     const weeklyData = useMemo(() => {
@@ -55,12 +55,18 @@ const SprintOverview = ({ data, styles }) => {
     const burndownData = useMemo(() => {
         if (!sprint?.start_date || !sprint?.end_date) return [];
 
-        const start = parseISO(sprint.start_date);
-        const end = parseISO(sprint.end_date);
+        let start, end;
+        try {
+            start = parseISO(sprint.start_date);
+            end = parseISO(sprint.end_date);
+            if (isNaN(start) || isNaN(end) || start > end) return [];
+        } catch (e) {
+            return [];
+        }
+
         const days = eachDayOfInterval({ start, end });
         const totalEst = allTasks.reduce((sum, t) => sum + (Number(t.est_hours) || 0), 0);
 
-        let remainingEst = totalEst;
         const step = totalEst / (days.length - 1 || 1);
 
         return days.map((day, index) => {
@@ -123,6 +129,8 @@ const SprintOverview = ({ data, styles }) => {
         return Object.values(memberMap);
     }, [allTasks]);
 
+    if (!data) return null;
+
     const dashboardStyles = {
         grid: {
             display: 'grid',
@@ -184,8 +192,6 @@ const SprintOverview = ({ data, styles }) => {
             </g>
         );
     };
-
-    if (!data) return null;
 
     return (
         <div style={dashboardStyles.grid}>
