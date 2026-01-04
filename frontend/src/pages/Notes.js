@@ -483,7 +483,7 @@ const styles = {
     display: "flex",
     height: "100vh",
     background: "#F9FAFB",
-    fontFamily: "'Inter', sans-serif"
+    fontFamily: "'Poppins', sans-serif"
   },
   main: {
     flex: 1,

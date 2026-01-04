@@ -47,7 +47,7 @@ export default function WeeklyTaskGraph({ data = [] }) {
       </div>
 
       <div style={styles.graphBox}>
-        <svg viewBox="0 0 600 180" width="100%" height="180" preserveAspectRatio="none">
+        <svg viewBox="0 0 600 180" width="100%" height="90%" preserveAspectRatio="none">
           {normalized.map((d, i) => {
             const slot = 600 / normalized.length;
             const barWidth = 44;
@@ -136,11 +136,11 @@ const styles = {
   },
   graphBox: {
     width: "100%",
-    height: 180,
+    height: "90%",
   },
   dayLabel: {
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 500,
     fill: "#94a3b8",
   },
   tooltip: {
@@ -155,7 +155,7 @@ const styles = {
     zIndex: 9999,
   },
   emptyWrap: {
-    height: 180,
+    height: "90%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

@@ -149,7 +149,7 @@ const styles = {
     cursor: "pointer",
     fontSize: "18px",
     textAlign: "left",
-    fontFamily: "Poppins, sans-serif",
+    fontFamily: "'Poppins', sans-serif",
   },
 
   activeButton: {
@@ -180,7 +180,7 @@ const styles = {
     cursor: "pointer",
     fontSize: "18px", // Match menuButton size
     textAlign: "left",
-    fontFamily: "Poppins, sans-serif",
+    fontFamily: "'Poppins', sans-serif",
     // marginTop: "5px", // Optional spacing
   },
 };

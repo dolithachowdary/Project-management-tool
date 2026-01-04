@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { updateProject } from "../api/projects";
 
+const COLORS = [
+    "#9e2a2b",
+    "#bf5000",
+    "#124559",
+    "#3d348b",
+    "#AB274F",
+    "#E6A817",
+    "#AF6E4D",
+    "#008080",
+    "#3AA8C1",
+    "#645394",
+    "#C04000",
+];
+
 const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
     const [formData, setFormData] = useState({
         name: "",
@@ -9,8 +23,9 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
         status: "",
         color: ""
     });
-    const [document, setDocument] = useState(null);
+    const [projectDoc, setProjectDoc] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showColors, setShowColors] = useState(false);
 
     useEffect(() => {
         if (project) {
@@ -32,7 +47,7 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            setDocument(e.target.files[0]);
+            setProjectDoc(e.target.files[0]);
         }
     };
 
@@ -46,8 +61,8 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
         data.append("end_date", formData.end_date);
         data.append("status", formData.status);
         data.append("color", formData.color);
-        if (document) {
-            data.append("document", document);
+        if (projectDoc) {
+            data.append("document", projectDoc);
         }
 
         try {
@@ -70,17 +85,46 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
                     <button onClick={onClose} style={styles.closeBtn}>✕</button>
                 </div>
 
-                <form onSubmit={handleSubmit} style={styles.body}>
-                    <div style={styles.field}>
-                        <label style={styles.label}>Project Name</label>
-                        <input
-                            style={styles.input}
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                        />
+                <form onSubmit={handleSubmit} style={styles.body} className="hide-scrollbar">
+                    <div style={styles.row}>
+                        <div style={{ ...styles.field, flex: 1, marginBottom: 0 }}>
+                            <label style={styles.label}>Project Name</label>
+                            <input
+                                style={styles.input}
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div style={{ ...styles.field, marginBottom: 0 }}>
+                            <label style={styles.label}>Color</label>
+                            <div style={styles.colorRow}>
+                                <div
+                                    style={{ ...styles.colorPreview, background: formData.color }}
+                                    onClick={() => setShowColors(!showColors)}
+                                />
+                                {showColors && (
+                                    <div style={styles.colorDropdown}>
+                                        {COLORS.map((c) => (
+                                            <div
+                                                key={c}
+                                                onClick={() => {
+                                                    setFormData({ ...formData, color: c });
+                                                    setShowColors(false);
+                                                }}
+                                                style={{ ...styles.colorCell, background: c }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                                <span style={{ fontSize: 12, color: "#64748b" }}>Click box to change color</span>
+                            </div>
+                        </div>
                     </div>
+
+                    <div style={{ marginBottom: 16 }} />
 
                     <div style={styles.field}>
                         <label style={styles.label}>Description</label>
@@ -161,7 +205,7 @@ const styles = {
     },
     title: { fontSize: 18, fontWeight: 700, color: "#1e293b", margin: 0 },
     closeBtn: { border: "none", background: "none", fontSize: 18, cursor: "pointer" },
-    body: { padding: 20 },
+    body: { padding: 20, overflowY: "auto", maxHeight: "calc(90vh - 120px)" },
     field: { display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 },
     row: { display: "flex", gap: 12 },
     label: { fontSize: 14, fontWeight: 600, color: "#475569" },
@@ -180,6 +224,10 @@ const styles = {
     },
     cancelBtn: { padding: "8px 16px", borderRadius: 8, border: "1px solid #e2e8f0", background: "#fff" },
     saveBtn: { padding: "8px 20px", borderRadius: 8, border: "none", background: "#c62828", color: "#fff", fontWeight: 600 },
+    colorRow: { display: "flex", alignItems: "center", gap: 12, position: "relative" },
+    colorPreview: { width: 32, height: 32, borderRadius: 8, border: "1px solid #e2e8f0", cursor: "pointer" },
+    colorDropdown: { position: "absolute", bottom: "100%", right: 0, marginBottom: 8, background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: 10, display: "grid", gridTemplateColumns: "repeat(4, 28px)", gap: 10, zIndex: 10, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" },
+    colorCell: { width: 28, height: 28, borderRadius: 6, cursor: "pointer" },
 };
 
 export default EditProjectModal;
