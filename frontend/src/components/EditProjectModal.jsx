@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { updateProject, deleteProject } from "../api/projects";
 import { ChevronDown, Trash2 } from "lucide-react";
+import DatePicker from "./DatePicker";
 
 const COLORS = [
     "#9e2a2b",
@@ -215,26 +216,18 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, onProjec
                     </div>
 
                     <div style={styles.row}>
-                        <div style={{ ...styles.field, flex: 1 }}>
-                            <label style={styles.label}>Start Date</label>
-                            <input
-                                type="date"
-                                style={styles.input}
-                                name="start_date"
-                                value={formData.start_date}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div style={{ ...styles.field, flex: 1 }}>
-                            <label style={styles.label}>End Date</label>
-                            <input
-                                type="date"
-                                style={styles.input}
-                                name="end_date"
-                                value={formData.end_date}
-                                onChange={handleChange}
-                            />
-                        </div>
+                        <DatePicker
+                            label="Start Date"
+                            name="start_date"
+                            value={formData.start_date}
+                            onChange={handleChange}
+                        />
+                        <DatePicker
+                            label="End Date"
+                            name="end_date"
+                            value={formData.end_date}
+                            onChange={handleChange}
+                        />
                     </div>
 
                     <div style={styles.field}>

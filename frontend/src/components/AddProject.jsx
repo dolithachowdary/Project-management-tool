@@ -3,6 +3,7 @@ import { createProject } from "../api/projects";
 import { getAssignableUsers } from "../api/users";
 import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import Avatar from "./Avatar";
+import DatePicker from "./DatePicker";
 
 const COLORS = [
   "#9e2a2b",
@@ -242,14 +243,16 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
 
           {/* DATES */}
           <div style={styles.row}>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-              <label style={{ fontSize: 13, color: "#666" }}>Start Date</label>
-              <input type="date" style={styles.input} onChange={(e) => setStartDate(e.target.value)} />
-            </div>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-              <label style={{ fontSize: 13, color: "#666" }}>End Date</label>
-              <input type="date" style={styles.input} onChange={(e) => setEndDate(e.target.value)} />
-            </div>
+            <DatePicker
+              label="Start Date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <DatePicker
+              label="End Date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
           </div>
 
           {/* MEMBERS */}
