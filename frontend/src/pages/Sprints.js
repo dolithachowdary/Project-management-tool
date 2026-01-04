@@ -90,10 +90,6 @@ const Sprints = () => {
                       >
                         <Card
                           {...sprint}
-                          onEdit={["Project Manager", "admin"].includes(role) ? () => {
-                            setEditingSprint(sprint);
-                            setIsEditModalOpen(true);
-                          } : null}
                         />
                       </div>
                     ))
@@ -116,10 +112,6 @@ const Sprints = () => {
                       >
                         <Card
                           {...sprint}
-                          onEdit={["Project Manager", "admin"].includes(role) ? () => {
-                            setEditingSprint(sprint);
-                            setIsEditModalOpen(true);
-                          } : null}
                         />
                       </div>
                     ))

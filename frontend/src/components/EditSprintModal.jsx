@@ -10,7 +10,7 @@ export default function EditSprintModal({ isOpen, onClose, sprint, onSprintUpdat
         end_date: "",
         status: "",
     });
-    const [goals, setGoals] = useState([{ text: "", progress: 0 }]);
+    const [goals, setGoals] = useState([{ text: "" }]);
     const [loading, setLoading] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [errors, setErrors] = useState({});
@@ -29,16 +29,15 @@ export default function EditSprintModal({ isOpen, onClose, sprint, onSprintUpdat
                 try {
                     const parsed = JSON.parse(sprint.goal);
                     if (Array.isArray(parsed)) {
-                        setGoals(parsed.map(g => typeof g === 'string' ? { text: g, progress: 0 } : g));
+                        setGoals(parsed.map(g => typeof g === 'string' ? { text: g } : { text: g.text }));
                     } else {
-                        setGoals([{ text: sprint.goal, progress: 0 }]);
+                        setGoals([{ text: sprint.goal }]);
                     }
                 } catch (e) {
-                    // Fallback for legacy newline separated string
-                    setGoals(sprint.goal.split("\n").map(g => ({ text: g, progress: 0 })));
+                    setGoals(sprint.goal.split("\n").map(g => ({ text: g })));
                 }
             } else {
-                setGoals([{ text: "", progress: 0 }]);
+                setGoals([{ text: "" }]);
             }
             setErrors({});
         }
@@ -51,26 +50,20 @@ export default function EditSprintModal({ isOpen, onClose, sprint, onSprintUpdat
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const addGoal = () => setGoals([...goals, { text: "", progress: 0 }]);
+    const addGoal = () => setGoals([...goals, { text: "" }]);
 
     const removeGoal = (index) => {
         if (goals.length > 1) {
             const newGoals = goals.filter((_, i) => i !== index);
             setGoals(newGoals);
         } else {
-            setGoals([{ text: "", progress: 0 }]);
+            setGoals([{ text: "" }]);
         }
     };
 
     const updateGoal = (index, value) => {
         const newGoals = [...goals];
-        newGoals[index] = { ...newGoals[index], text: value };
-        setGoals(newGoals);
-    };
-
-    const updateGoalProgress = (index, value) => {
-        const newGoals = [...goals];
-        newGoals[index] = { ...newGoals[index], progress: parseInt(value) };
+        newGoals[index] = { text: value };
         setGoals(newGoals);
     };
 
@@ -237,17 +230,6 @@ export default function EditSprintModal({ isOpen, onClose, sprint, onSprintUpdat
                                                 if (errors.goals) setErrors(prev => ({ ...prev, goals: null }));
                                             }}
                                         />
-                                        <div style={styles.progressRow}>
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max="100"
-                                                value={g.progress}
-                                                onChange={(e) => updateGoalProgress(i, e.target.value)}
-                                                style={styles.rangeInput}
-                                            />
-                                            <span style={styles.progressLabel}>{g.progress}%</span>
-                                        </div>
                                     </div>
                                     <button
                                         type="button"

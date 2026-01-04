@@ -24,7 +24,7 @@ export default function Upcoming({ tasks = [], onTaskClick }) {
         <span style={styles.title}>Upcoming Deadlines</span>
       </div>
 
-      <div style={styles.list}>
+      <div style={styles.list} className="hide-scrollbar">
         {upcomingTasks.length === 0 ? (
           <div style={styles.empty}>No upcoming deadlines</div>
         ) : (
@@ -76,9 +76,9 @@ const styles = {
     borderBottom: "1px solid #f8fafc",
     paddingBottom: 8, // Reduced from 12
   },
-  title: { fontWeight: 700, fontSize: 14, color: "#1e293b" }, // Smaller title
+  title: { fontWeight: 700, fontSize: 16, color: "#1e293b" }, // Smaller title
   list: {
-    maxHeight: 400,
+    maxHeight: 330,
     overflowY: "auto",
     paddingRight: 4,
   },

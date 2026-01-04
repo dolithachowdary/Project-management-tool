@@ -12,7 +12,6 @@ import Upcoming from "./Upcoming";
 import RecentActivity from "./RecentActivity";
 import QAPending from "./QAPending";
 import WeeklyTaskGraph from "./WeeklyTaskGraph";
-import TaskListComponent from "./TaskOverviewList";
 import EditSprintModal from "./EditSprintModal";
 import TaskForm from "./TaskForm";
 import { updateTask } from "../api/tasks";
@@ -230,7 +229,6 @@ export default function PMDashboard() {
                 <div key={card.id} style={styles.cardWrapper} onClick={() => navigate(`/sprints/${card.id}`)}>
                   <Card
                     {...card}
-                    onEdit={() => handleEditSprint(card.raw)}
                   />
                 </div>
               ))}
@@ -238,13 +236,6 @@ export default function PMDashboard() {
             </div>
           </div>
 
-          <div style={styles.section}>
-            <TaskListComponent
-              role="Project Manager"
-              tasks={allTasks}
-              onTaskClick={handleEditTask}
-            />
-          </div>
         </div>
 
         {/* RIGHT COLUMN */}
@@ -299,7 +290,7 @@ const styles = {
   },
   mainGrid: {
     display: "flex",
-    gap: 24,
+    gap: 15,
     alignItems: "flex-start",
   },
   left: {
@@ -350,15 +341,16 @@ const styles = {
     alignItems: "center",
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 700,
     color: "#1e293b",
     margin: 0,
+    fontFamily: "'Poppins', sans-serif",
   },
   viewAll: {
     background: "transparent",
     border: "none",
-    color: "#6366f1",
+    color: "#C62828",
     fontSize: 14,
     fontWeight: 600,
     cursor: "pointer",
@@ -403,6 +395,6 @@ const styles = {
     maxWidth: "800px",
     maxHeight: "90vh",
     overflowY: "auto",
-    padding: "20px",
+    padding: "15px",
   },
 };

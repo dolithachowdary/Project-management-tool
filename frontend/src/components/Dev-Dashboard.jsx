@@ -226,6 +226,7 @@ const styles = {
     fontWeight: 700,
     marginBottom: 16,
     color: "#1e293b",
+    fontFamily: "'Poppins', sans-serif",
   },
 
   activityWrapper: {

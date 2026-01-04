@@ -10,7 +10,7 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [status, setStatus] = useState("active");
-  const [goals, setGoals] = useState([{ text: "", progress: 0 }]); // Start with one empty goal
+  const [goals, setGoals] = useState([{ text: "" }]); // Start with one empty goal
   const [nextSprintNum, setNextSprintNum] = useState(null);
 
   // Validation State
@@ -26,7 +26,7 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
       setStartDate("");
       setEndDate("");
       setStatus("active");
-      setGoals([{ text: "", progress: 0 }]);
+      setGoals([{ text: "" }]);
       setNextSprintNum(null);
       setErrors({});
     }
@@ -60,26 +60,20 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
     }
   };
 
-  const addGoal = () => setGoals([...goals, { text: "", progress: 0 }]);
+  const addGoal = () => setGoals([...goals, { text: "" }]);
 
   const removeGoal = (index) => {
     if (goals.length > 1) {
       const newGoals = goals.filter((_, i) => i !== index);
       setGoals(newGoals);
     } else {
-      setGoals([{ text: "", progress: 0 }]); // Clear if last one
+      setGoals([{ text: "" }]); // Clear if last one
     }
   };
 
   const updateGoal = (index, value) => {
     const newGoals = [...goals];
-    newGoals[index] = { ...newGoals[index], text: value };
-    setGoals(newGoals);
-  };
-
-  const updateGoalProgress = (index, value) => {
-    const newGoals = [...goals];
-    newGoals[index] = { ...newGoals[index], progress: parseInt(value) };
+    newGoals[index] = { text: value };
     setGoals(newGoals);
   };
 
@@ -239,17 +233,6 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
                       if (errors.goals) setErrors(prev => ({ ...prev, goals: null }));
                     }}
                   />
-                  <div style={styles.progressRow}>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={g.progress}
-                      onChange={(e) => updateGoalProgress(i, e.target.value)}
-                      style={styles.rangeInput}
-                    />
-                    <span style={styles.progressLabel}>{g.progress}%</span>
-                  </div>
                 </div>
                 <button
                   onClick={() => removeGoal(i)}

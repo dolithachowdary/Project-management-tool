@@ -148,7 +148,7 @@ const styles = {
   scrollArea: {
     flex: 1,
     overflowY: "auto",
-    padding: 20,
+    padding: 10,
   },
 };
 

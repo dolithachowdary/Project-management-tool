@@ -122,8 +122,8 @@ const styles = {
     padding: "16px 20px 8px", // Reduced padding
   },
   title: {
-    fontSize: 14,
-    fontWeight: 400,
+    fontSize: 16,
+    fontWeight: 700,
     color: "#1e293b",
     margin: 0,
     fontFamily: "'Poppins', sans-serif",
