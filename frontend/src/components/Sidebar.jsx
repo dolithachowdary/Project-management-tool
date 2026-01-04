@@ -46,7 +46,7 @@ const Sidebar = () => {
       {/* TOP */}
       <div>
         <div style={styles.logoContainer}>
-          <img src="/light-redsage.png" alt="Logo" style={styles.logo} />
+          <img src={process.env.PUBLIC_URL + "/light-redsage.png"} alt="Logo" style={styles.logo} onError={(e) => { e.target.src = process.env.PUBLIC_URL + "/redsage.png"; }} />
         </div>
 
         <nav style={styles.nav}>

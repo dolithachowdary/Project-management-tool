@@ -48,6 +48,7 @@ const SprintDetails = () => {
   const [selectedAssignee, setSelectedAssignee] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("Medium");
   const [selectedGoalIndex, setSelectedGoalIndex] = useState("");
+  const [selectedPotential, setSelectedPotential] = useState("");
   const [goalFilter, setGoalFilter] = useState("all");
   const [showFlowGraph, setShowFlowGraph] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -101,6 +102,7 @@ const SprintDetails = () => {
         status: sectionKey === 'planned' ? 'todo' : sectionKey,
         priority: selectedPriority || 'Medium',
         goal_index: selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null,
+        potential: selectedPotential || null,
       };
 
       await createTask(payload);
@@ -109,6 +111,7 @@ const SprintDetails = () => {
       setSelectedAssignee("");
       setSelectedPriority("Medium");
       setSelectedGoalIndex("");
+      setSelectedPotential("");
       setInlineAddingTo(null);
       loadHierarchy(); // Refresh the list
     } catch (err) {
@@ -647,6 +650,18 @@ const SprintDetails = () => {
                                             <option value="">Goal</option>
                                             {recalculatedGoals.map((g, idx) => (
                                               <option key={idx} value={idx}>{g.text}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
+                                          <select
+                                            style={styles.inlineSelect}
+                                            value={selectedPotential}
+                                            onChange={(e) => setSelectedPotential(e.target.value)}
+                                          >
+                                            <option value="">Potential</option>
+                                            {["Very Small", "Small", "Medium", "Large", "Very Large"].map(p => (
+                                              <option key={p} value={p}>{p}</option>
                                             ))}
                                           </select>
                                         </div>
@@ -1450,11 +1465,12 @@ const styles = {
     width: "100%",
     border: "1px solid #e2e8f0",
     borderRadius: "4px",
-    padding: "5px 4px",
+    padding: "6px 4px",
     fontSize: "12px",
     outline: "none",
     background: "#fff",
     color: "#475569",
+    minWidth: "85px",
   },
   inlineActions: {
     display: "flex",

@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { getModules } from "../api/modules";
 import { getProjectMembers } from "../api/projects";
 import { getSprints } from "../api/sprints";
-import { formatStatus } from "../utils/helpers";
+import { formatStatus, toApiStatus } from "../utils/helpers";
 
 const RED = "#C62828";
 
@@ -31,7 +31,8 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
     est_hours: "",
     created_by: currentUserId || localStorage.getItem("userId") || "",
     collaborators: [],
-    goal_index: ""
+    goal_index: "",
+    potential: ""
   });
 
   const fetchProjectDetails = useCallback(async (pid) => {
@@ -66,7 +67,8 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
         est_hours: initialData.est_hours || "",
         created_by: initialData.created_by || currentUserId || localStorage.getItem("userId") || "",
         collaborators: initialData.collaborators || [],
-        goal_index: initialData.goal_index !== undefined && initialData.goal_index !== null ? initialData.goal_index.toString() : ""
+        goal_index: initialData.goal_index !== undefined && initialData.goal_index !== null ? initialData.goal_index.toString() : "",
+        potential: initialData.potential || ""
       });
       const pid = initialData.project_id || initialData.project?._id;
       if (pid) {
@@ -86,6 +88,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
     // Sanitize payload: convert empty strings to null for optional/date fields
     const payload = {
       ...formData,
+      status: toApiStatus(formData.status),
       est_hours: formData.est_hours ? parseFloat(formData.est_hours) : null,
       start_date: formData.start_date || null,
       end_date: formData.end_date || null,
@@ -117,7 +120,23 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === "potential") {
+      const potMap = {
+        'Very Small': 2,
+        'Small': 4,
+        'Medium': 6,
+        'Large': 10,
+        'Very Large': 18
+      };
+      setFormData(prev => ({
+        ...prev,
+        potential: value,
+        est_hours: potMap[value] || prev.est_hours
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleCollaboratorChange = (e) => {
@@ -440,6 +459,22 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
           },
             ["High", "Medium", "Low"].map(priority =>
               React.createElement("option", { key: priority, value: priority }, priority)
+            )
+          )
+        ),
+
+        // Potential
+        React.createElement("div", { style: styles.formGroup },
+          React.createElement("label", { style: styles.label }, "Potential (Size)"),
+          React.createElement("select", {
+            name: "potential",
+            value: formData.potential,
+            onChange: handleChange,
+            style: styles.select
+          },
+            React.createElement("option", { value: "" }, "Select Size"),
+            ["Very Small", "Small", "Medium", "Large", "Very Large"].map(p =>
+              React.createElement("option", { key: p, value: p }, p)
             )
           )
         ),
