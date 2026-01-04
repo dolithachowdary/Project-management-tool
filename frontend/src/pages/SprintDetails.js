@@ -9,6 +9,7 @@ import { getProjectMembers } from "../api/projects";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Loader from "../components/Loader";
 import SprintOverview from "../components/SprintOverview";
+import Avatar from "../components/Avatar";
 import {
   Box,
   CheckCircle2,
@@ -184,6 +185,20 @@ const SprintDetails = () => {
         <Header role={role} />
 
         <div style={styles.pageInner}>
+          <style>
+            {`
+              .task-row { transition: background 0.2s; }
+              .task-row:hover { background-color: #f8fafc !important; }
+              .board-card { transition: transform 0.2s ease, box-shadow 0.2s ease !important; }
+              .board-card:hover { 
+                transform: translateY(-4px); 
+                box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1) !important; 
+                border-color: #e2e8f0 !important;
+              }
+              .hide-scrollbar::-webkit-scrollbar { display: none; }
+              .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}
+          </style>
           {/* TOP BAR / NAVIGATION */}
           <div style={styles.topBar}>
             <button onClick={() => navigate("/sprints")} style={styles.backBtn}>
@@ -400,7 +415,7 @@ const SprintDetails = () => {
                             </thead>
                             <tbody>
                               {groupTasks.map(task => (
-                                <tr key={task.id} style={styles.tr}>
+                                <tr key={task.id} style={styles.tr} className="task-row">
                                   <td style={styles.td}>
                                     <div style={styles.taskNameCell}>
                                       <div style={{
@@ -418,9 +433,7 @@ const SprintDetails = () => {
                                   </td>
                                   <td style={styles.td}>
                                     <div style={styles.assigneeCell}>
-                                      <div style={styles.avatar}>
-                                        {(task.assignee_name || "U")[0]}
-                                      </div>
+                                      <Avatar name={task.assignee_name} id={task.assignee_id} size={24} />
                                       <span>{task.assignee_name || "Unassigned"}</span>
                                     </div>
                                   </td>
@@ -554,7 +567,7 @@ const SprintDetails = () => {
 
             {activeTab === "board" && (
               <DragDropContext onDragEnd={handleDragEnd}>
-                <div style={styles.boardContainer}>
+                <div style={styles.boardContainer} className="hide-scrollbar">
                   {[
                     { key: 'planned', label: 'To Do', color: '#64748b' },
                     { key: 'in_progress', label: 'In Progress', color: '#3b82f6' },
@@ -602,6 +615,7 @@ const SprintDetails = () => {
                                       ref={provided.innerRef}
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
+                                      className="board-card"
                                       style={{
                                         ...styles.taskCard,
                                         ...provided.draggableProps.style
@@ -631,9 +645,7 @@ const SprintDetails = () => {
                                             </span>
                                           )}
                                         </div>
-                                        <div style={styles.cardAvatar}>
-                                          {(task.assignee_name || "U")[0]}
-                                        </div>
+                                        <Avatar name={task.assignee_name} id={task.assignee_id} size={24} />
                                       </div>
                                     </div>
                                   )}
@@ -817,10 +829,10 @@ const styles = {
     padding: "12px 0",
     background: "none",
     border: "none",
-    borderBottom: "2px solid #0f172a",
-    color: "#0f172a",
+    borderBottom: "2.5px solid #4F7DFF",
+    color: "#4F7DFF",
     fontSize: "14px",
-    fontWeight: "600",
+    fontWeight: "700",
     cursor: "pointer",
   },
   tabsDivider: {
@@ -1178,12 +1190,14 @@ const styles = {
     justifyContent: "center",
   },
   moduleBadge: {
-    fontSize: "12px",
-    padding: "4px 10px",
+    fontSize: "11px",
+    padding: "3px 8px",
     borderRadius: "6px",
     backgroundColor: "#f1f5f9",
-    color: "#475569",
-    whiteSpace: "nowrap",
+    color: "#64748b",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: "0.3px",
   },
   assigneeCell: {
     display: "flex",
@@ -1201,20 +1215,22 @@ const styles = {
     fontSize: "11px",
     fontWeight: "600",
     color: "#64748b",
-    border: "1px solid #e2e8f0",
   },
   priorityBadge: {
-    fontSize: "12px",
-    padding: "4px 10px",
-    borderRadius: "6px",
-    fontWeight: "500",
+    fontSize: "11px",
+    padding: "3px 10px",
+    borderRadius: "999px",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
   },
   statusBadge: {
-    fontSize: "12px",
-    padding: "4px 10px",
-    borderRadius: "20px",
-    fontWeight: "600",
-    textTransform: "capitalize",
+    fontSize: "11px",
+    padding: "3px 10px",
+    borderRadius: "999px",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
   },
   dateCell: {
     fontSize: "13px",
@@ -1346,12 +1362,13 @@ const styles = {
   },
   boardColumn: {
     flex: 1,
-    minWidth: "300px",
+    minWidth: "320px",
     display: "flex",
     flexDirection: "column",
-    background: "#f1f5f9",
-    borderRadius: "16px",
-    padding: "16px",
+    background: "#f8fafc",
+    borderRadius: "20px",
+    padding: "20px",
+    border: "1px solid #f1f5f9",
   },
   columnHeader: {
     marginBottom: "16px",
@@ -1365,17 +1382,21 @@ const styles = {
     borderRadius: "50%",
   },
   columnTitle: {
-    fontSize: "15px",
-    fontWeight: "600",
-    color: "#1e293b",
+    fontSize: "13px",
+    fontWeight: "700",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
   },
   columnCount: {
-    fontSize: "12px",
-    color: "#64748b",
-    background: "#e2e8f0",
-    padding: "2px 8px",
-    borderRadius: "12px",
-    marginLeft: "4px",
+    fontSize: "11px",
+    color: "#94a3b8",
+    background: "#f1f5f9",
+    padding: "2px 10px",
+    borderRadius: "20px",
+    marginLeft: "8px",
+    fontWeight: "700",
+    border: "1px solid #e2e8f0",
   },
   columnContent: {
     flex: 1,
@@ -1388,10 +1409,12 @@ const styles = {
   },
   taskCard: {
     background: "#fff",
-    borderRadius: "12px",
+    borderRadius: "16px",
     padding: "16px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    border: "1px solid #f1f5f9",
     cursor: "grab",
+    transition: "transform 0.2s ease, box-shadow 0.2s ease",
   },
   cardHeader: {
     marginBottom: "12px",
@@ -1425,13 +1448,7 @@ const styles = {
     width: "24px",
     height: "24px",
     borderRadius: "50%",
-    backgroundColor: "#0d9488",
-    color: "#fff",
-    fontSize: "10px",
-    fontWeight: "600",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    overflow: "hidden",
   },
   boardAddTaskBtn: {
     display: "flex",
