@@ -5,6 +5,7 @@ import { getModules } from "../api/modules";
 import { getProjectMembers } from "../api/projects";
 import { getSprints } from "../api/sprints";
 import { formatStatus } from "../utils/helpers";
+import DatePicker from "./DatePicker";
 
 const RED = "#C62828";
 
@@ -459,26 +460,18 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
         ),
 
         // Dates
-        React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Start Date"),
-          React.createElement("input", {
-            type: "date",
-            name: "start_date",
-            value: formData.start_date,
-            onChange: handleChange,
-            style: styles.input
-          })
-        ),
-        React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "End Date"),
-          React.createElement("input", {
-            type: "date",
-            name: "end_date",
-            value: formData.end_date,
-            onChange: handleChange,
-            style: styles.input
-          })
-        ),
+        React.createElement(DatePicker, {
+          label: "Start Date",
+          name: "start_date",
+          value: formData.start_date,
+          onChange: handleChange,
+        }),
+        React.createElement(DatePicker, {
+          label: "End Date",
+          name: "end_date",
+          value: formData.end_date,
+          onChange: handleChange,
+        }),
 
         // Collaborators (Multi-select) - EDIT MODE ONLY
         isEdit && React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },

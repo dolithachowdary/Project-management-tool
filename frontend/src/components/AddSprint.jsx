@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getProjects } from "../api/projects";
 import { createSprint, getNextSprintNumber } from "../api/sprints";
 import { Plus, Trash2 } from "lucide-react";
+import DatePicker from "./DatePicker";
 
 export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProjectId }) {
   /* -------- STATE -------- */
@@ -175,36 +176,24 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
         </div>
 
         <div style={styles.row}>
-          <div style={{ flex: 1 }}>
-            <label style={styles.label}>
-              Start Date <span style={styles.required}>*</span>
-            </label>
-            <input
-              type="date"
-              style={{ ...styles.input, borderColor: errors.startDate ? "#ef4444" : "#e2e8f0" }}
-              value={startDate}
-              onChange={e => {
-                setStartDate(e.target.value);
-                if (errors.startDate) setErrors(prev => ({ ...prev, startDate: null }));
-              }}
-            />
-            {errors.startDate && <div style={styles.errorMsg}>{errors.startDate}</div>}
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={styles.label}>
-              End Date <span style={styles.required}>*</span>
-            </label>
-            <input
-              type="date"
-              style={{ ...styles.input, borderColor: errors.endDate ? "#ef4444" : "#e2e8f0" }}
-              value={endDate}
-              onChange={e => {
-                setEndDate(e.target.value);
-                if (errors.endDate) setErrors(prev => ({ ...prev, endDate: null }));
-              }}
-            />
-            {errors.endDate && <div style={styles.errorMsg}>{errors.endDate}</div>}
-          </div>
+          <DatePicker
+            label="Start Date"
+            required
+            value={startDate}
+            onChange={e => {
+              setStartDate(e.target.value);
+              if (errors.startDate) setErrors(prev => ({ ...prev, startDate: null }));
+            }}
+          />
+          <DatePicker
+            label="End Date"
+            required
+            value={endDate}
+            onChange={e => {
+              setEndDate(e.target.value);
+              if (errors.endDate) setErrors(prev => ({ ...prev, endDate: null }));
+            }}
+          />
         </div>
 
         <div style={styles.formGroup}>
