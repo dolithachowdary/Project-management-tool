@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createProject } from "../api/projects";
 import { getAssignableUsers } from "../api/users";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
+import Avatar from "./Avatar";
 
 const COLORS = [
-  "#F6C1CC",
-  "#DFE6D8",
-  "#D8EDFF",
-  "#E0E7FF",
-  "#FFF1C1",
-  "#EADCF8",
+  "#9e2a2b",
+  "#bf5000",
+  "#124559",
+  "#3d348b",
+  "#AB274F",
+  "#E6A817",
+  "#AF6E4D",
+  "#008080",
+  "#3AA8C1",
+  "#645394",
+  "#C04000",
 ];
 
 export default function AddProject({ isOpen, onClose, usedColors = [] }) {
@@ -30,9 +37,47 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [showMembers, setShowMembers] = useState(false);
 
-  const [document, setDocument] = useState(null); // Document upload state
+  const [projectDoc, setProjectDoc] = useState(null); // Document upload state (removed from UI)
 
   const [modules, setModules] = useState([{ name: "", description: "" }]);
+
+  const colorDropdownRef = useRef(null);
+  const memberDropdownRef = useRef(null);
+  const colorPickerBtnRef = useRef(null);
+  const memberSelectBtnRef = useRef(null);
+
+  /* ---------------- CLICK OUTSIDE ---------------- */
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Color Dropdown
+      if (
+        showColors &&
+        colorDropdownRef.current &&
+        !colorDropdownRef.current.contains(event.target) &&
+        colorPickerBtnRef.current &&
+        !colorPickerBtnRef.current.contains(event.target)
+      ) {
+        setShowColors(false);
+      }
+
+      // Member Dropdown
+      if (
+        showMembers &&
+        memberDropdownRef.current &&
+        !memberDropdownRef.current.contains(event.target) &&
+        memberSelectBtnRef.current &&
+        !memberSelectBtnRef.current.contains(event.target)
+      ) {
+        setShowMembers(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showColors, showMembers]);
 
   /* ---------------- LOAD USERS ---------------- */
 
@@ -75,9 +120,17 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
     setModules((prev) => [...prev, { name: "", description: "" }]);
   };
 
+  const removeModule = (index) => {
+    if (modules.length === 1) {
+      setModules([{ name: "", description: "" }]); // Just clear it if it's the last one
+    } else {
+      setModules((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setDocument(e.target.files[0]);
+      setProjectDoc(e.target.files[0]);
     }
   };
 
@@ -96,8 +149,8 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
     formData.append("members", JSON.stringify(selectedMembers));
     formData.append("modules", JSON.stringify(modules.filter((m) => m.name.trim())));
 
-    if (document) {
-      formData.append("document", document);
+    if (projectDoc) {
+      formData.append("document", projectDoc);
     }
 
     try {
@@ -111,6 +164,13 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
 
   /* ---------------- UI ---------------- */
 
+  const getSelectedMemberNames = () => {
+    return users
+      .filter((u) => selectedMembers.includes(u.id))
+      .map((u) => u.full_name)
+      .join(", ");
+  };
+
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
@@ -121,43 +181,60 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
         </div>
 
         {/* BODY */}
-        <div style={styles.body}>
+        <div style={styles.body} className="hide-scrollbar">
           {/* PROJECT NAME + COLOR */}
-          <div style={styles.field}>
-            <label>Project name</label>
-            <div style={styles.nameRow}>
+          {/* NAME & COLOR ROW */}
+          <div style={styles.row}>
+            {/* PROJECT NAME */}
+            <div style={{ ...styles.field, flex: 1, marginBottom: 0 }}>
+              <label style={styles.label}>Project name</label>
               <input
                 style={styles.input}
                 placeholder="Enter project title"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
               />
-              <div
-                style={{ ...styles.colorPreview, background: color }}
-                onClick={() => setShowColors(!showColors)}
-              />
-              {showColors && (
-                <div style={styles.colorDropdown}>
-                  {COLORS.map((c) => (
-                    <div
-                      key={c}
-                      onClick={() => {
-                        setColor(c);
-                        setShowColors(false);
-                      }}
-                      style={{ ...styles.colorCell, background: c }}
-                    />
-                  ))}
+            </div>
+
+            {/* COLOR PICKER */}
+            <div style={{ ...styles.field, marginBottom: 0 }}>
+              <label style={styles.label}>Color</label>
+              <div style={styles.nameRow}>
+                <div
+                  ref={colorPickerBtnRef}
+                  style={styles.colorTrigger}
+                  onClick={() => setShowColors(!showColors)}
+                >
+                  <div style={{ ...styles.colorPreview, background: color }} />
+                  <ChevronDown size={14} color="#666" />
                 </div>
-              )}
+
+                {showColors && (
+                  <div ref={colorDropdownRef} style={styles.colorDropdown}>
+                    {COLORS.map((c) => (
+                      <div
+                        key={c}
+                        onClick={() => {
+                          setColor(c);
+                          setShowColors(false);
+                        }}
+                        style={{ ...styles.colorCell, background: c }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
+          <div style={{ marginBottom: 20 }} /> {/* Spacer since fields inside row had marginBottom: 0 */}
+
           {/* DESCRIPTION */}
           <div style={styles.field}>
-            <label>Description</label>
+            <label style={styles.label}>Description</label>
             <textarea
               style={{ ...styles.input, minHeight: 70 }}
+              placeholder="Enter project description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -175,59 +252,80 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
             </div>
           </div>
 
-          {/* DOCUMENT UPLOAD */}
-          <div style={styles.field}>
-            <label>Document Upload</label>
-            <input type="file" onChange={handleFileChange} style={styles.input} />
-          </div>
-
           {/* MEMBERS */}
           <div style={styles.field}>
-            <label>Add members</label>
-            <div style={styles.selectBox} onClick={() => setShowMembers(!showMembers)}>
+            <label style={styles.label}>Add members</label>
+            <div
+              ref={memberSelectBtnRef}
+              style={styles.selectBox}
+              onClick={() => setShowMembers(!showMembers)}
+            >
               {selectedMembers.length === 0
-                ? "Select members"
-                : `${selectedMembers.length} selected`}
+                ? <span style={{ color: "#999" }}>Select members</span>
+                : getSelectedMemberNames()}
+              <ChevronDown size={16} color="#666" />
             </div>
 
             {showMembers && (
-              <div style={styles.dropdown}>
+              <div ref={memberDropdownRef} style={styles.dropdown} className="hide-scrollbar">
                 {users.map((u) => (
-                  <label key={u.id} style={styles.dropdownItem}>
+                  <div
+                    key={u.id}
+                    style={styles.dropdownItem}
+                    onClick={() => toggleMember(u.id)}
+                  >
                     <input
                       type="checkbox"
                       checked={selectedMembers.includes(u.id)}
-                      onChange={() => toggleMember(u.id)}
+                      readOnly
                     />
-                    {u.full_name} ({u.role})
-                  </label>
+                    <Avatar name={u.full_name} id={u.id} size={24} />
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontWeight: 500, fontSize: 13 }}>{u.full_name}</span>
+                      <span style={{ fontSize: 11, color: "#666" }}>{u.role}</span>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* MODULES */}
-          <div style={styles.field}>
-            <label>Modules</label>
-            {modules.map((mod, i) => (
-              <div key={i} style={{ ...styles.moduleRow, marginBottom: 8 }}>
-                <input
-                  style={styles.input}
-                  placeholder="Module name"
-                  value={mod.name}
-                  onChange={(e) => updateModule(i, "name", e.target.value)}
-                />
-                <input
-                  style={styles.input}
-                  placeholder="Description"
-                  value={mod.description}
-                  onChange={(e) => updateModule(i, "description", e.target.value)}
-                />
-              </div>
-            ))}
-            <button onClick={addModule} style={styles.addModuleBtn}>
-              + Add module
-            </button>
+          <div style={{ ...styles.field, marginTop: 10 }}>
+            <label style={styles.label}>Modules</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {modules.map((mod, i) => (
+                <div key={i} style={styles.moduleRow}>
+                  <input
+                    style={{ ...styles.input, flex: 1 }}
+                    placeholder="Module name"
+                    value={mod.name}
+                    onChange={(e) => updateModule(i, "name", e.target.value)}
+                  />
+                  <input
+                    style={{ ...styles.input, flex: 2 }}
+                    placeholder="Description"
+                    value={mod.description}
+                    onChange={(e) => updateModule(i, "description", e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: 4 }}>
+                    <button
+                      onClick={addModule}
+                      style={styles.actionBtn}
+                      title="Add Module"
+                    >
+                      <Plus size={16} color="#c62828" />
+                    </button>
+                    <button
+                      onClick={() => removeModule(i)}
+                      style={styles.actionBtn}
+                      title="Remove Module"
+                    >
+                      <Trash2 size={16} color="#ef4444" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -256,13 +354,14 @@ const styles = {
     zIndex: 1000,
   },
   modal: {
-    width: 700,
-    maxHeight: "85vh",
+    width: 600,
+    maxHeight: "90vh",
     background: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     display: "flex",
     flexDirection: "column",
     overflow: "hidden",
+    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
   },
   header: {
     padding: "16px 20px",
@@ -270,7 +369,7 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
   },
-  body: { padding: 20, overflowY: "auto" },
+  body: { padding: 20, overflowY: "auto", flex: 1 },
   footer: {
     padding: "14px 20px",
     borderTop: "1px solid #eee",
@@ -278,19 +377,104 @@ const styles = {
     justifyContent: "flex-end",
     gap: 10,
   },
-  closeBtn: { border: "none", background: "none", fontSize: 18, cursor: "pointer" },
-  field: { display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 },
-  row: { display: "flex", gap: 12 },
+  closeBtn: { border: "none", background: "none", fontSize: 18, cursor: "pointer", color: "#64748b" },
+  field: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 },
+  label: { fontSize: 14, fontWeight: 600, color: "#475569" },
+  row: { display: "flex", gap: 16 },
   nameRow: { display: "flex", gap: 10, alignItems: "center", position: "relative" },
-  input: { padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" },
-  colorPreview: { width: 32, height: 32, borderRadius: 6, border: "1px solid #ccc", cursor: "pointer" },
-  colorDropdown: { position: "absolute", top: "100%", right: 0, background: "#fff", border: "1px solid #ddd", borderRadius: 8, padding: 10, display: "grid", gridTemplateColumns: "repeat(6, 28px)", gap: 8 },
-  colorCell: { width: 28, height: 28, borderRadius: 6 },
-  selectBox: { padding: "8px 10px", border: "1px solid #ccc", borderRadius: 6, cursor: "pointer" },
-  dropdown: { border: "1px solid #ddd", borderRadius: 6, padding: 8, maxHeight: 160, overflowY: "auto" },
-  dropdownItem: { display: "flex", gap: 8, fontSize: 14 },
-  moduleRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 },
-  addModuleBtn: { border: "none", background: "none", color: "#4F7DFF", cursor: "pointer" },
-  cancelBtn: { padding: "6px 14px", border: "1px solid #ccc", background: "#fff" },
-  createBtn: { padding: "6px 16px", background: "#4F7DFF", color: "#fff", border: "none", borderRadius: 6 },
+  input: {
+    padding: "10px 12px",
+    borderRadius: 8,
+    border: "1px solid #e2e8f0",
+    fontSize: 14,
+    color: "#1e293b",
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+    transition: "border-color 0.2s",
+  },
+  colorTrigger: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "1px solid #e2e8f0",
+    cursor: "pointer",
+    background: "#fff",
+    width: "fit-content",
+  },
+  colorPreview: { width: 24, height: 24, borderRadius: 6, border: "1px solid #eee" },
+  colorDropdown: {
+    position: "absolute",
+    top: "calc(100% + 5px)",
+    right: 0,
+    background: "#fff",
+    border: "1px solid #f1f5f9",
+    borderRadius: 12,
+    padding: 12,
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 28px)",
+    gap: 10,
+    zIndex: 100,
+    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
+  },
+  colorCell: { width: 28, height: 28, borderRadius: 6, cursor: "pointer", border: "1px solid rgba(0,0,0,0.05)" },
+  selectBox: {
+    padding: "10px 12px",
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontSize: 14,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: "#fff",
+    minHeight: 40,
+  },
+  dropdown: {
+    border: "1px solid #f1f5f9",
+    borderRadius: 12,
+    padding: 8,
+    maxHeight: 250,
+    overflowY: "auto",
+    background: "#fff",
+    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+    marginTop: 5,
+  },
+  dropdownItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "8px 12px",
+    cursor: "pointer",
+    borderRadius: 8,
+    transition: "background 0.2s",
+    "&:hover": { background: "#f8fafc" },
+  },
+  moduleRow: { display: "flex", gap: 12, alignItems: "center" },
+  actionBtn: {
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: 6,
+    width: 28,
+    height: 28,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    "&:hover": { background: "#f1f5f9", borderColor: "#cbd5e1" }
+  },
+  cancelBtn: { padding: "10px 20px", borderRadius: 8, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", fontWeight: 600, cursor: "pointer" },
+  createBtn: {
+    padding: "10px 24px",
+    background: "#c62828",
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+    fontWeight: 600,
+    cursor: "pointer",
+    boxShadow: "0 4px 6px -1px rgba(198, 40, 40, 0.2)",
+  },
 };

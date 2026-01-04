@@ -155,7 +155,7 @@ export default function PMDashboard() {
 
           <div style={styles.topRow}>
             <div style={styles.graphWrapper}>
-              <h3 style={styles.sectionTitle}>Weekly task report</h3>
+              <h3 style={styles.sectionTitle}>Weekly task graph</h3>
               <div style={{ flex: 1, minHeight: 0 }}>
                 <WeeklyTaskGraph data={weeklyStats} />
               </div>
@@ -237,7 +237,6 @@ const styles = {
     flexDirection: "column",
     gap: 16,
     position: "sticky",
-    top: 20,
     paddingRight: 4,
   },
   topRow: {

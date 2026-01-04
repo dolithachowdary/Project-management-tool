@@ -113,7 +113,7 @@ const styles = {
   row: {
     display: "flex",
     gap: 12,
-    marginBottom: 20,
+    
     flexWrap: "wrap"
   },
 
