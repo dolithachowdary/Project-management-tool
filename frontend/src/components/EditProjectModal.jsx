@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { updateProject } from "../api/projects";
+import React, { useState, useEffect, useRef } from "react";
+import { updateProject, deleteProject } from "../api/projects";
+import { ChevronDown, Trash2 } from "lucide-react";
 
 const COLORS = [
     "#9e2a2b",
@@ -15,10 +16,11 @@ const COLORS = [
     "#C04000",
 ];
 
-const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
+const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, onProjectDeleted }) => {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
+        start_date: "",
         end_date: "",
         status: "",
         color: ""
@@ -26,18 +28,42 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
     const [projectDoc, setProjectDoc] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showColors, setShowColors] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
+    const colorDropdownRef = useRef(null);
+    const colorPickerBtnRef = useRef(null);
 
     useEffect(() => {
         if (project) {
             setFormData({
                 name: project.name || "",
                 description: project.description || "",
+                start_date: project.start_date ? project.start_date.split("T")[0] : "",
                 end_date: project.end_date ? project.end_date.split("T")[0] : "",
                 status: project.status || "active",
                 color: project.color || "#4F7DFF"
             });
         }
     }, [project]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                showColors &&
+                colorDropdownRef.current &&
+                !colorDropdownRef.current.contains(event.target) &&
+                colorPickerBtnRef.current &&
+                !colorPickerBtnRef.current.contains(event.target)
+            ) {
+                setShowColors(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showColors]);
 
     if (!isOpen) return null;
 
@@ -51,6 +77,26 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
         }
     };
 
+    const handleDelete = async () => {
+        setShowConfirmDelete(true);
+    };
+
+    const confirmDelete = async () => {
+        setLoading(true);
+        try {
+            await deleteProject(project.id);
+            if (onProjectDeleted) onProjectDeleted();
+            else if (onProjectUpdated) onProjectUpdated();
+            onClose();
+        } catch (err) {
+            console.error("Failed to delete project:", err);
+            alert(err.response?.data?.message || "Failed to delete project");
+        } finally {
+            setLoading(false);
+            setShowConfirmDelete(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -58,6 +104,7 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
         const data = new FormData();
         data.append("name", formData.name);
         data.append("description", formData.description);
+        data.append("start_date", formData.start_date);
         data.append("end_date", formData.end_date);
         data.append("status", formData.status);
         data.append("color", formData.color);
@@ -80,6 +127,33 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
+                {/* CONFIRM DELETE OVERLAY */}
+                {showConfirmDelete && (
+                    <div style={styles.confirmOverlay}>
+                        <div style={styles.confirmBox}>
+                            <h4 style={styles.confirmTitle}>Are you sure you want to delete this?</h4>
+                            <p style={styles.confirmText}>
+                                This will permanently delete all data related to this project including tasks, modules, and sprints.
+                            </p>
+                            <div style={styles.confirmActions}>
+                                <button
+                                    onClick={() => setShowConfirmDelete(false)}
+                                    style={styles.cancelBtn}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    style={styles.confirmDeleteBtn}
+                                    disabled={loading}
+                                >
+                                    {loading ? "Deleting..." : "Delete"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div style={styles.header}>
                     <h3 style={styles.title}>Edit Project</h3>
                     <button onClick={onClose} style={styles.closeBtn}>✕</button>
@@ -100,13 +174,18 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
 
                         <div style={{ ...styles.field, marginBottom: 0 }}>
                             <label style={styles.label}>Color</label>
-                            <div style={styles.colorRow}>
+                            <div style={styles.colorTriggerWrapper}>
                                 <div
-                                    style={{ ...styles.colorPreview, background: formData.color }}
+                                    ref={colorPickerBtnRef}
+                                    style={styles.colorTrigger}
                                     onClick={() => setShowColors(!showColors)}
-                                />
+                                >
+                                    <div style={{ ...styles.colorPreview, background: formData.color }} />
+                                    <ChevronDown size={14} color="#666" />
+                                </div>
+
                                 {showColors && (
-                                    <div style={styles.colorDropdown}>
+                                    <div ref={colorDropdownRef} style={styles.colorDropdown}>
                                         {COLORS.map((c) => (
                                             <div
                                                 key={c}
@@ -119,7 +198,6 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
                                         ))}
                                     </div>
                                 )}
-                                <span style={{ fontSize: 12, color: "#64748b" }}>Click box to change color</span>
                             </div>
                         </div>
                     </div>
@@ -138,6 +216,16 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
 
                     <div style={styles.row}>
                         <div style={{ ...styles.field, flex: 1 }}>
+                            <label style={styles.label}>Start Date</label>
+                            <input
+                                type="date"
+                                style={styles.input}
+                                name="start_date"
+                                value={formData.start_date}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div style={{ ...styles.field, flex: 1 }}>
                             <label style={styles.label}>End Date</label>
                             <input
                                 type="date"
@@ -147,27 +235,33 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated }) => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <div style={{ ...styles.field, flex: 1 }}>
-                            <label style={styles.label}>Status</label>
-                            <select
-                                style={styles.input}
-                                name="status"
-                                value={formData.status}
-                                onChange={handleChange}
-                            >
-                                <option value="active">Active</option>
-                                <option value="on_hold">On Hold</option>
-                                <option value="completed">Completed</option>
-                            </select>
-                        </div>
                     </div>
 
                     <div style={styles.field}>
-                        <label style={styles.label}>Update Document (PRD)</label>
-                        <input type="file" onChange={handleFileChange} style={styles.input} />
+                        <label style={styles.label}>Status</label>
+                        <select
+                            style={styles.input}
+                            name="status"
+                            value={formData.status}
+                            onChange={handleChange}
+                        >
+                            <option value="active">Active</option>
+                            <option value="on_hold">On Hold</option>
+                            <option value="completed">Completed</option>
+                        </select>
                     </div>
 
                     <div style={styles.footer}>
+                        <button
+                            type="button"
+                            onClick={handleDelete}
+                            style={styles.deleteBtn}
+                            title="Delete Project"
+                            disabled={loading}
+                        >
+                            <Trash2 size={20} color="#ef4444" />
+                        </button>
+                        <div style={{ flex: 1 }} />
                         <button type="button" onClick={onClose} style={styles.cancelBtn}>Cancel</button>
                         <button type="submit" style={styles.saveBtn} disabled={loading}>
                             {loading ? "Saving..." : "Save Changes"}
@@ -222,12 +316,69 @@ const styles = {
         gap: 12,
         marginTop: 8,
     },
-    cancelBtn: { padding: "8px 16px", borderRadius: 8, border: "1px solid #e2e8f0", background: "#fff" },
-    saveBtn: { padding: "8px 20px", borderRadius: 8, border: "none", background: "#c62828", color: "#fff", fontWeight: 600 },
-    colorRow: { display: "flex", alignItems: "center", gap: 12, position: "relative" },
-    colorPreview: { width: 32, height: 32, borderRadius: 8, border: "1px solid #e2e8f0", cursor: "pointer" },
-    colorDropdown: { position: "absolute", bottom: "100%", right: 0, marginBottom: 8, background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: 10, display: "grid", gridTemplateColumns: "repeat(4, 28px)", gap: 10, zIndex: 10, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" },
-    colorCell: { width: 28, height: 28, borderRadius: 6, cursor: "pointer" },
+    cancelBtn: { padding: "8px 16px", borderRadius: 8, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontWeight: 600, color: "#64748b" },
+    saveBtn: { padding: "8px 20px", borderRadius: 8, border: "none", background: "#c62828", color: "#fff", fontWeight: 600, cursor: "pointer" },
+    deleteBtn: {
+        background: "none",
+        border: "1px solid #fee2e2",
+        padding: "8px",
+        borderRadius: 8,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.2s",
+        "&:hover": { background: "#fee2e2" }
+    },
+    colorTriggerWrapper: { display: "flex", alignItems: "center", gap: 12, position: "relative" },
+    colorTrigger: {
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "6px 12px",
+        borderRadius: 8,
+        border: "1px solid #e2e8f0",
+        cursor: "pointer",
+        background: "#fff",
+        width: "fit-content",
+    },
+    colorPreview: { width: 24, height: 24, borderRadius: 6, border: "1px solid #eee" },
+    colorDropdown: { position: "absolute", top: "calc(100% + 5px)", right: 0, background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: 12, display: "grid", gridTemplateColumns: "repeat(4, 28px)", gap: 10, zIndex: 100, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)" },
+    colorCell: { width: 28, height: 28, borderRadius: 6, cursor: "pointer", border: "1px solid rgba(0,0,0,0.05)" },
+
+    confirmOverlay: {
+        position: "absolute",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.7)",
+        backdropFilter: "blur(2px)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 2100,
+        padding: 20,
+    },
+    confirmBox: {
+        background: "#fff",
+        borderRadius: 16,
+        padding: 24,
+        width: "100%",
+        maxWidth: 320,
+        textAlign: "center",
+        boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+    },
+    confirmTitle: { fontSize: 16, fontWeight: 700, color: "#1e293b", margin: "0 0 12px 0" },
+    confirmText: { fontSize: 13, color: "#64748b", margin: "0 0 24px 0", lineHeight: 1.5 },
+    confirmActions: { display: "flex", gap: 12, justifyContent: "center" },
+    confirmDeleteBtn: {
+        padding: "8px 24px",
+        borderRadius: 8,
+        border: "none",
+        background: "#ef4444",
+        color: "#fff",
+        fontWeight: 600,
+        cursor: "pointer",
+        fontSize: 14,
+    },
 };
 
 export default EditProjectModal;

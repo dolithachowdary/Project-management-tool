@@ -21,8 +21,10 @@ import {
   Plus,
   ChevronDown,
   ChevronRight,
-  Workflow
+  Workflow,
+  Pencil
 } from "lucide-react";
+import EditSprintModal from "../components/EditSprintModal";
 import FlowGraph from "../components/FlowGraph";
 import { AnimatePresence } from "framer-motion";
 
@@ -42,6 +44,7 @@ const SprintDetails = () => {
   const [selectedAssignee, setSelectedAssignee] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("Medium");
   const [showFlowGraph, setShowFlowGraph] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { sprint, modules } = data || { sprint: {}, modules: [] };
 
   const toggleSection = (key) => {
@@ -192,30 +195,25 @@ const SprintDetails = () => {
           {/* SPRINT HEADER */}
           <div style={styles.sprintHeader}>
             <div style={styles.headerLeft}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <h1 style={styles.sprintTitle}>{sprint.project_name} - {sprint.name}</h1>
-                <button
-                  onClick={() => setShowFlowGraph(true)}
-                  style={{
-                    background: '#f1f5f9',
-                    border: 'none',
-                    padding: '6px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  title="Show Sprint Flow"
-                >
-                  <Workflow size={18} color="#4F7DFF" strokeWidth={2.5} />
-                </button>
-              </div>
-              {sprint.goal && (
-                <div style={styles.goalText}>
-                  <span style={styles.goalLabel}>Goal:</span> {sprint.goal}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    style={styles.editHeaderBtn}
+                    title="Edit Sprint"
+                  >
+                    <Pencil size={18} color="#94a3b8" />
+                  </button>
+                  <button
+                    onClick={() => setShowFlowGraph(true)}
+                    style={styles.editHeaderBtn}
+                    title="Show Sprint Flow"
+                  >
+                    <Workflow size={18} color="#4F7DFF" strokeWidth={2.5} />
+                  </button>
                 </div>
-              )}
+              </div>
               <div style={styles.metaRow}>
                 <div style={styles.metaItem}>
                   <Calendar size={14} />
@@ -236,38 +234,80 @@ const SprintDetails = () => {
               </div>
             </div>
 
+            <div style={styles.headerCenter}>
+              <h3 style={styles.sectionTitle}>Goals</h3>
+              {(() => {
+                let goals = [];
+                if (sprint.goal) {
+                  try {
+                    const parsed = JSON.parse(sprint.goal);
+                    goals = Array.isArray(parsed) ? parsed.map(g => typeof g === 'string' ? { text: g, progress: 0 } : g) : [];
+                  } catch (e) {
+                    goals = sprint.goal.split("\n").filter(g => g.trim()).map(g => ({ text: g, progress: 0 }));
+                  }
+                }
+                return (
+                  <div style={styles.goalsProgressContainer}>
+                    {goals.map((g, index) => (
+                      <div key={index} style={styles.goalProgressItem}>
+                        <div style={styles.goalInfo}>
+                          <div style={{ ...styles.goalNumberSmall, backgroundColor: sprint.project_color || "#3b82f6" }}>
+                            {index + 1}
+                          </div>
+                          <span style={styles.goalTextSmall}>{g.text}</span>
+                        </div>
+                        <div style={styles.goalProgressBarWrapper}>
+                          <div style={styles.goalProgressBarBg}>
+                            <div style={{
+                              ...styles.goalProgressBarFill,
+                              width: `${g.progress}%`,
+                              backgroundColor: sprint.project_color || "#3b82f6"
+                            }} />
+                          </div>
+                          <span style={styles.goalProgressText}>{g.progress}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
             <div style={styles.headerRight}>
-              <div style={styles.progressContainer}>
-                <svg width="80" height="80" style={styles.progressSvg}>
-                  {/* Background Circle */}
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r={radius}
-                    stroke="#e2e8f0"
-                    strokeWidth="6"
-                    fill="transparent"
-                  />
-                  {/* Progress Circle */}
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r={radius}
-                    stroke={sprint.project_color || "#0d9488"}
-                    strokeWidth="6"
-                    fill="transparent"
-                    strokeDasharray={circumference}
-                    style={{
-                      strokeDashoffset: offset,
-                      transition: "stroke-dashoffset 0.5s ease",
-                      strokeLinecap: "round"
-                    }}
-                    transform="rotate(-90 40 40)"
-                  />
-                </svg>
-                <div style={{ ...styles.progressValue, color: sprint.project_color || "#0d9488" }}>
-                  {progressPercent}<span style={{ fontSize: '10px' }}>%</span>
+              <div style={styles.overallWrapper}>
+                <div style={styles.progressContainer}>
+                  <svg width="80" height="80" style={styles.progressSvg}>
+                    {/* Background Circle */}
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r={radius}
+                      stroke="#e2e8f0"
+                      strokeWidth="6"
+                      fill="transparent"
+                    />
+                    {/* Progress Circle */}
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r={radius}
+                      stroke={sprint.project_color || "#3b82f6"}
+                      strokeWidth="6"
+                      fill="transparent"
+                      strokeDasharray={circumference}
+                      style={{
+                        strokeDashoffset: offset,
+                        transition: "stroke-dashoffset 0.5s ease",
+                        strokeLinecap: "round"
+                      }}
+                      transform="rotate(-90 40 40)"
+                    />
+                  </svg>
+                  <div style={{ ...styles.progressValue, color: sprint.project_color || "#3b82f6" }}>
+                    {progressPercent}<span style={{ fontSize: '10px' }}>%</span>
+                  </div>
                 </div>
+                <h3 style={styles.sectionTitle}>Overall</h3>
               </div>
             </div>
           </div>
@@ -653,6 +693,14 @@ const SprintDetails = () => {
           />
         )}
       </AnimatePresence>
+
+      <EditSprintModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        sprint={sprint}
+        onSprintUpdated={loadHierarchy}
+        onSprintDeleted={() => navigate("/sprints")}
+      />
     </div>
   );
 };
@@ -669,12 +717,12 @@ const styles = {
     height: "100vh",
   },
   pageInner: {
-    padding: "20px",
+    padding: "10px",
     maxWidth: "1400px",
     margin: "0",
   },
   topBar: {
-    marginBottom: "15px",
+    marginBottom: "8px",
   },
   backBtn: {
     display: "flex",
@@ -694,14 +742,53 @@ const styles = {
   },
   sprintHeader: {
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    alignItems: "center",
     backgroundColor: "#fff",
     borderRadius: "24px",
-    padding: "20px",
-    marginBottom: "10px", // Reduced bottom margin to bring tabs closer
+    padding: "16px 30px",
+    marginBottom: "10px",
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)",
     border: "1px solid #f1f5f9",
+    gap: "32px",
+  },
+  headerLeft: {
+    flex: "0 0 auto",
+    minWidth: "260px",
+    maxWidth: "420px",
+  },
+  headerCenter: {
+    flex: "0 1 500px",
+    padding: "0 32px",
+    borderLeft: "1px solid #f1f5f9",
+    borderRight: "1px solid #f1f5f9",
+    maxHeight: "130px",
+    overflowY: "auto",
+    msOverflowStyle: 'none',
+    scrollbarWidth: 'none',
+    '&::-webkit-scrollbar': { display: 'none' }
+  },
+  headerRight: {
+    flex: "0 0 120px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  overallWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "8px",
+  },
+  sectionTitle: {
+    fontSize: "12px",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    fontWeight: "700",
+    color: "#94a3b8",
+    marginBottom: "12px",
+    marginTop: 0,
+    textAlign: "center",
   },
   tabsContainer: {
     display: "flex",
@@ -740,7 +827,7 @@ const styles = {
     width: "100%",
     height: "1px",
     backgroundColor: "#e2e8f0",
-    marginBottom: "24px",
+    marginBottom: "15px",
     marginTop: "-1px", // Overlap with tab border for clean look
   },
   sprintTitle: {
@@ -748,6 +835,18 @@ const styles = {
     fontWeight: "500",
     color: "#0f172a",
     margin: "0 0 8px 0",
+  },
+  editHeaderBtn: {
+    background: '#f1f5f9',
+    border: 'none',
+    padding: '6px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+    'hover': { background: '#e2e8f0' }
   },
   goalText: {
     fontSize: "18px",
@@ -761,22 +860,85 @@ const styles = {
     color: "#0f172a",
     marginRight: "4px",
   },
+  goalsProgressContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+  goalProgressItem: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+  goalInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+  },
+  goalNumberSmall: {
+    width: "18px",
+    height: "18px",
+    borderRadius: "50%",
+    backgroundColor: "#3b82f6",
+    color: "#fff",
+    fontSize: "10px",
+    fontWeight: "700",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  goalTextSmall: {
+    fontSize: "14px",
+    color: "#1e293b",
+    fontWeight: "600",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  goalProgressBarWrapper: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    paddingLeft: "28px",
+  },
+  goalProgressBarBg: {
+    flex: 1,
+    height: "6px",
+    backgroundColor: "#f1f5f9",
+    borderRadius: "3px",
+    overflow: "hidden",
+  },
+  goalProgressBarFill: {
+    height: "100%",
+    borderRadius: "3px",
+    transition: "width 0.4s ease",
+  },
+  goalProgressText: {
+    fontSize: "11px",
+    fontWeight: "700",
+    color: "#64748b",
+    minWidth: "30px",
+  },
   metaRow: {
     display: "flex",
-    gap: "24px",
+    alignItems: "center",
+    gap: "32px",
+    marginTop: "0",
   },
   metaItem: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "10px",
     color: "#64748b",
     fontSize: "14px",
+    fontWeight: "500",
   },
   headerRight: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    paddingRight: "40px",
+    paddingRight: "20px",
   },
   progressContainer: {
     position: "relative",

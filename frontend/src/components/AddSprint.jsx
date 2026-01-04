@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getProjects } from "../api/projects";
 import { createSprint, getNextSprintNumber } from "../api/sprints";
+import { Plus, Trash2 } from "lucide-react";
 
 export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
   /* -------- STATE -------- */
@@ -8,7 +9,8 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
   const [projectId, setProjectId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [goal, setGoal] = useState("");
+  const [status, setStatus] = useState("active");
+  const [goals, setGoals] = useState([{ text: "", progress: 0 }]); // Start with one empty goal
   const [nextSprintNum, setNextSprintNum] = useState(null);
 
   // Validation State
@@ -23,7 +25,8 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
       setProjectId("");
       setStartDate("");
       setEndDate("");
-      setGoal("");
+      setStatus("active");
+      setGoals([""]);
       setNextSprintNum(null);
       setErrors({});
     }
@@ -37,17 +40,7 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
     fetchNextSprintNum(projectId);
   }, [projectId]);
 
-  // Sprint duration logic: 7 days
-  useEffect(() => {
-    if (startDate) {
-      const start = new Date(startDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + 7);
-      setEndDate(end.toISOString().split("T")[0]);
-    } else {
-      setEndDate("");
-    }
-  }, [startDate]);
+  // Manual end date - calculation removed per user request
 
   const loadProjects = async () => {
     try {
@@ -67,12 +60,36 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
     }
   };
 
+  const addGoal = () => setGoals([...goals, { text: "", progress: 0 }]);
+
+  const removeGoal = (index) => {
+    if (goals.length > 1) {
+      const newGoals = goals.filter((_, i) => i !== index);
+      setGoals(newGoals);
+    } else {
+      setGoals([{ text: "", progress: 0 }]); // Clear if last one
+    }
+  };
+
+  const updateGoal = (index, value) => {
+    const newGoals = [...goals];
+    newGoals[index] = { ...newGoals[index], text: value };
+    setGoals(newGoals);
+  };
+
+  const updateGoalProgress = (index, value) => {
+    const newGoals = [...goals];
+    newGoals[index] = { ...newGoals[index], progress: parseInt(value) };
+    setGoals(newGoals);
+  };
+
   /* -------- HANDLERS -------- */
   const validate = () => {
     const newErrors = {};
     if (!projectId) newErrors.projectId = "Project is required";
     if (!startDate) newErrors.startDate = "Start date is required";
-    if (!goal.trim()) newErrors.goal = "Goal is required";
+    if (!endDate) newErrors.endDate = "End date is required";
+    if (goals.every(g => !g.text.trim())) newErrors.goals = "At least one goal is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -89,7 +106,8 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
         project_id: projectId,
         start_date: startDate,
         end_date: endDate,
-        goal: goal,
+        status: status,
+        goal: JSON.stringify(goals.filter(g => g.text.trim())),
       };
 
       await createSprint(sprintData);
@@ -140,6 +158,19 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
           </div>
         </div>
 
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Status</label>
+          <select
+            style={styles.select}
+            value={status}
+            onChange={e => setStatus(e.target.value)}
+          >
+            <option value="active">Active</option>
+            <option value="on_hold">On Hold</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
         <div style={styles.row}>
           <div style={{ flex: 1 }}>
             <label style={styles.label}>
@@ -157,31 +188,71 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
             {errors.startDate && <div style={styles.errorMsg}>{errors.startDate}</div>}
           </div>
           <div style={{ flex: 1 }}>
-            <label style={styles.label}>End Date</label>
+            <label style={styles.label}>
+              End Date <span style={styles.required}>*</span>
+            </label>
             <input
               type="date"
-              style={styles.input}
+              style={{ ...styles.input, borderColor: errors.endDate ? "#ef4444" : "#e2e8f0" }}
               value={endDate}
-              readOnly
-              disabled
+              onChange={e => {
+                setEndDate(e.target.value);
+                if (errors.endDate) setErrors(prev => ({ ...prev, endDate: null }));
+              }}
             />
+            {errors.endDate && <div style={styles.errorMsg}>{errors.endDate}</div>}
           </div>
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>
-            Sprint Goal <span style={styles.required}>*</span>
-          </label>
-          <textarea
-            style={{ ...styles.input, minHeight: "80px", resize: "vertical", borderColor: errors.goal ? "#ef4444" : "#e2e8f0" }}
-            placeholder="Define the main goal for this sprint..."
-            value={goal}
-            onChange={e => {
-              setGoal(e.target.value);
-              if (errors.goal) setErrors(prev => ({ ...prev, goal: null }));
-            }}
-          />
-          {errors.goal && <div style={styles.errorMsg}>{errors.goal}</div>}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <label style={styles.label}>
+              Sprint Goals <span style={styles.required}>*</span>
+            </label>
+            <button
+              onClick={addGoal}
+              style={styles.addGoalIconButton}
+              title="Add Goal"
+            >
+              <Plus size={18} color="#c62828" />
+            </button>
+          </div>
+          <div style={styles.goalsList} className="hide-scrollbar">
+            {goals.map((g, i) => (
+              <div key={i} style={styles.goalRow}>
+                <div style={styles.goalInputStack}>
+                  <input
+                    style={{ ...styles.input, marginBottom: 0 }}
+                    placeholder={`Goal ${i + 1}`}
+                    value={g.text}
+                    onChange={e => {
+                      updateGoal(i, e.target.value);
+                      if (errors.goals) setErrors(prev => ({ ...prev, goals: null }));
+                    }}
+                  />
+                  <div style={styles.progressRow}>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={g.progress}
+                      onChange={(e) => updateGoalProgress(i, e.target.value)}
+                      style={styles.rangeInput}
+                    />
+                    <span style={styles.progressLabel}>{g.progress}%</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => removeGoal(i)}
+                  style={styles.actionBtn}
+                  title="Remove Goal"
+                >
+                  <Trash2 size={16} color="#ef4444" />
+                </button>
+              </div>
+            ))}
+          </div>
+          {errors.goals && <div style={styles.errorMsg}>{errors.goals}</div>}
         </div>
 
         <div style={styles.actions}>
@@ -316,6 +387,70 @@ const styles = {
     fontSize: "14px",
     cursor: "pointer",
     boxShadow: "0 4px 6px -1px rgba(198, 40, 40, 0.2)",
+  },
+  addGoalIconButton: {
+    background: "none",
+    border: "none",
+    padding: 4,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  goalsList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    maxHeight: "250px",
+    overflowY: "auto",
+    paddingRight: 4,
+  },
+  goalRow: {
+    display: "flex",
+    gap: "8px",
+    alignItems: "flex-start",
+  },
+  goalInputStack: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px"
+  },
+  progressRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "0 4px"
+  },
+  rangeInput: {
+    flex: 1,
+    height: "6px",
+    borderRadius: "3px",
+    appearance: "none",
+    background: "#e2e8f0",
+    outline: "none",
+    accentColor: "#c62828",
+  },
+  progressLabel: {
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#64748b",
+    minWidth: "35px",
+    textAlign: "right"
+  },
+  actionBtn: {
+    background: "none",
+    border: "1px solid #fee2e2",
+    padding: "8px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    margin: "auto 0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s",
+    flexShrink: 0,
+    "&:hover": { background: "#fee2e2" }
   },
 };
 

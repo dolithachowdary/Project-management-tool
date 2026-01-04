@@ -129,6 +129,7 @@ const ProjectDetails = () => {
         onClose={() => setIsEditModalOpen(false)}
         project={project}
         onProjectUpdated={loadData}
+        onProjectDeleted={() => navigate("/projects")}
       />
 
       <AnimatePresence>
