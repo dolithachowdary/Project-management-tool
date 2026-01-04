@@ -4,14 +4,37 @@ import DevTaskPie from "./DevTaskPie";
 import WeeklyTaskGraph from "./WeeklyTaskGraph";
 import RecentActivity from "./RecentActivity";
 import Loader from "./Loader";
-import { getTasks } from "../api/tasks";
+import { getTasks, updateTask } from "../api/tasks";
 import { getProjects } from "../api/projects";
+import TaskForm from "./TaskForm";
+import toast from "react-hot-toast";
 
 const DevDashboard = ({ role }) => {
   const [tasks, setTasks] = useState([]);
   const [pieData, setPieData] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allProjects, setAllProjects] = useState([]);
+  const [editingTask, setEditingTask] = useState(null);
+  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+
+  const handleEditTask = (t) => {
+    setEditingTask(t);
+    setIsEditTaskModalOpen(true);
+  };
+
+  const handleTaskUpdate = async (taskData) => {
+    try {
+      await updateTask(editingTask.id || editingTask._id, taskData);
+      toast.success("Task updated!");
+      setIsEditTaskModalOpen(false);
+      setEditingTask(null);
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update task");
+    }
+  };
 
   const userData = JSON.parse(localStorage.getItem("userData") || "{}");
   const currentUserId = userData.id || userData.user_id;
@@ -21,15 +44,18 @@ const DevDashboard = ({ role }) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [tasksRes, weeklyRes] = await Promise.all([
+        const [tasksRes, weeklyRes, projectsRes] = await Promise.all([
           getTasks(),
-          import("../api/dashboard").then(m => m.getWeeklyStats()).catch(() => ({ data: { data: [] } }))
+          import("../api/dashboard").then(m => m.getWeeklyStats()).catch(() => ({ data: { data: [] } })),
+          getProjects()
         ]);
 
         const tasksData = tasksRes.data?.data || tasksRes.data || [];
         const weeklyData = weeklyRes.data?.data || weeklyRes.data || [];
+        const projectsData = projectsRes.data?.data || projectsRes.data || [];
 
         setWeeklyStats(weeklyData);
+        setAllProjects(projectsData);
 
         // Filter tasks for current dev
         const myTasks = tasksData.filter(t => {
@@ -92,6 +118,7 @@ const DevDashboard = ({ role }) => {
             tasks={tasks}
             currentUserId={currentUserId}
             currentUser={userName}
+            onTaskClick={handleEditTask}
           />
         </div>
 
@@ -111,6 +138,23 @@ const DevDashboard = ({ role }) => {
         </div>
       </div>
 
+      {isEditTaskModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent} className="hide-scrollbar">
+            <TaskForm
+              onSave={handleTaskUpdate}
+              onCancel={() => {
+                setIsEditTaskModalOpen(false);
+                setEditingTask(null);
+              }}
+              projects={allProjects}
+              currentUserId={userData?.id}
+              initialData={editingTask}
+              initialProjectId={editingTask?.project_id}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -187,7 +231,24 @@ const styles = {
   activityWrapper: {
     display: "flex",
     flexDirection: "column",
-  }
+  },
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(15, 23, 42, 0.4)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2000,
+    backdropFilter: "blur(4px)",
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: "800px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    padding: "20px",
+  },
 };
 
 export default DevDashboard;

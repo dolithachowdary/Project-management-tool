@@ -26,7 +26,7 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
       setStartDate("");
       setEndDate("");
       setStatus("active");
-      setGoals([""]);
+      setGoals([{ text: "", progress: 0 }]);
       setNextSprintNum(null);
       setErrors({});
     }

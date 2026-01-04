@@ -6,7 +6,7 @@ import Loader from "./Loader";
 import Avatar from "./Avatar";
 import AddModuleModal from "./AddModuleModal";
 
-export default function Modules({ projectId, projectColor }) {
+export default function Modules({ projectId, projectColor, onTaskClick }) {
   const [modules, setModules] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [expandedModules, setExpandedModules] = useState({});
@@ -109,7 +109,11 @@ export default function Modules({ projectId, projectColor }) {
               {isExpanded && (
                 <div style={styles.taskList}>
                   {moduleTasks.map((t) => (
-                    <div key={t.id || t._id} style={styles.taskItem}>
+                    <div
+                      key={t.id || t._id}
+                      style={{ ...styles.taskItem, cursor: onTaskClick ? 'pointer' : 'default' }}
+                      onClick={() => onTaskClick && onTaskClick(t)}
+                    >
                       <div style={styles.taskLeft}>
                         {t.status?.toLowerCase() === "done" ? (
                           <CircleCheckBig size={16} color="#16a34a" />

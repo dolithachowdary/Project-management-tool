@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { format } from "date-fns";
 import { Download, FileSpreadsheet, Printer, Save } from "lucide-react";
+import * as XLSX from "xlsx";
 
 export default function TimesheetPreview({ data, onSave, isHistory = false }) {
     const printRef = useRef();
@@ -33,45 +34,96 @@ export default function TimesheetPreview({ data, onSave, isHistory = false }) {
         setEditableData(newData);
     };
 
-    const calculateGrandTotal = () => {
-        return editableData.reduce((acc, d) => acc + parseFloat(d.total_hrs || 0), 0).toFixed(2);
+    const calculateTotals = () => {
+        let reg = 0, ot = 0, sick = 0, vac = 0, other = 0, grand = 0;
+        editableData.forEach(d => {
+            reg += parseFloat(d.regular_hrs || 0);
+            ot += parseFloat(d.overtime_hrs || 0);
+            sick += parseFloat(d.sick_hrs || 0);
+            vac += parseFloat(d.vacation_hrs || 0);
+            other += parseFloat(d.other_hrs || 0) + parseFloat(d.holiday_hrs || 0);
+            grand += parseFloat(d.total_hrs || 0);
+        });
+        return { reg, ot, sick, vac, other, grand };
     };
+
+    const totals = calculateTotals();
 
     const handleSaveLocal = (status) => {
         if (onSave) {
             onSave({
                 ...data,
                 daily_data: editableData,
-                total_hours: calculateGrandTotal(),
+                total_hours: totals.grand.toFixed(2),
                 status
             });
         }
     };
 
     const handleExportExcel = () => {
-        const headers = ["DATE", "TASK ID", "START TIME", "END TIME", "REGULAR HRS", "OVER TIME", "SICK", "VACATION", "HOLIDAY", "OTHER", "TOTAL HOURS"];
-        const rows = editableData.map(r => [
-            r.day, r.task_id, r.start_time, r.end_time, r.regular_hrs, r.overtime_hrs, r.sick_hrs, r.vacation_hrs, r.holiday_hrs, r.other_hrs, r.total_hrs
+        // 1. Create Data Arrays for the Header Sections
+        const metaInfo = [
+            ["Redsage"],
+            ["Timesheet Report"],
+            [],
+            ["Employee:", employee?.name || "-"],
+            ["Project:", project?.name || "-"],
+            ["FROM:", start_date ? format(new Date(start_date), "MM/dd/yyyy") : "-", "", "TO:", end_date ? format(new Date(end_date), "MM/dd/yyyy") : "-"],
+            []
+        ];
+
+        const tableHeaders = [
+            ["DATE", "TASK ID", "START", "FINISH", "REGULAR HRS", "OVERTIME", "SICK", "VACATION", "OTHER", "TOTAL HRS"]
+        ];
+
+        const tableRows = editableData.map(r => [
+            r.day,
+            r.task_id,
+            r.start_time,
+            r.end_time,
+            r.regular_hrs,
+            r.overtime_hrs,
+            r.sick_hrs,
+            r.vacation_hrs,
+            (parseFloat(r.holiday_hrs) + parseFloat(r.other_hrs)).toFixed(2),
+            r.total_hrs
         ]);
 
-        let csvContent = "data:text/csv;charset=utf-8,"
-            + headers.join(",") + "\n"
-            + rows.map(e => e.join(",")).join("\n");
+        const totalRow = [
+            ["TOTAL HOURS", "", "", "", totals.reg.toFixed(2), totals.ot.toFixed(2), totals.sick.toFixed(2), totals.vac.toFixed(2), totals.other.toFixed(2), totals.grand.toFixed(2)]
+        ];
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `timesheet_${employee?.name}_${start_date}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // 2. Combine all sections into a single Array of Arrays (AOA)
+        const finalData = [...metaInfo, ...tableHeaders, ...tableRows, ...totalRow];
+
+        // 3. Create Worksheet and Workbook
+        const worksheet = XLSX.utils.aoa_to_sheet(finalData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Timesheet");
+
+        // 4. Set Column Widths (Characters)
+        worksheet["!cols"] = [
+            { wch: 15 }, // Date
+            { wch: 30 }, // Task ID
+            { wch: 10 }, // Start
+            { wch: 10 }, // Finish
+            { wch: 12 }, // Reg
+            { wch: 12 }, // OT
+            { wch: 10 }, // Sick
+            { wch: 10 }, // Vac
+            { wch: 10 }, // Other
+            { wch: 12 }  // Total
+        ];
+
+        // 5. Save File
+        XLSX.writeFile(workbook, `timesheet_${employee?.name || 'report'}.xlsx`);
     };
 
     const handlePrint = () => {
         const content = printRef.current;
         const pri = window.open("", "PRINT", "height=800,width=1000");
         pri.document.write("<html><head><title>Timesheet</title>");
-        pri.document.write("<style>body { font-family: sans-serif; padding: 20px; }</style>");
+        pri.document.write("<style>body { font-family: sans-serif; padding: 20px; } table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #000; padding: 8px; text-align: center; } th { background-color: #6A4C9C; color: #fff; }</style>");
         pri.document.write("</head><body>");
         pri.document.write(content.innerHTML);
         pri.document.write("</body></html>");
@@ -97,85 +149,77 @@ export default function TimesheetPreview({ data, onSave, isHistory = false }) {
                 </button>
             </div>
 
-            <div ref={printRef} style={styles.sheet}>
-                {/* HEADER */}
+            <div ref={printRef} style={styles.sheet} className="timesheet-paper">
                 <div style={styles.logoRow}>
-                    <div style={styles.logoWrap}>
-                        <span style={styles.logoIcon}>🔴</span>
-                        <span style={styles.logoText}>Redsage</span>
-                    </div>
+                    <img src="/light-redsage.png" alt="Redsage" style={styles.redsageLogo} />
                 </div>
 
-                <div style={styles.titleBanner}>
-                    <div style={styles.titleText}>Timesheet</div>
-                    <div style={styles.weekDates}>
-                        <div style={styles.dateBlock}>
-                            <span style={styles.dateLabel}>FROM:</span>
-                            <span style={styles.dateVal}>{start_date ? format(new Date(start_date), "dd MMM") : "-"}</span>
+                <div style={styles.headerInfo}>
+                    <div style={styles.templateTitle}>Timesheet Report</div>
+
+                    <div style={styles.metaRowInfo}>
+                        <div style={styles.metaCol}>
+                            <span style={styles.metaLabel}>Employee:</span>
+                            <span style={styles.metaVal}>{employee?.name || "-"}</span>
                         </div>
-                        <div style={styles.dateBlock}>
-                            <span style={styles.dateLabel}>TO:</span>
-                            <span style={styles.dateVal}>{end_date ? format(new Date(end_date), "dd MMM") : "-"}</span>
+                        <div style={styles.metaCol}>
+                            <span style={styles.metaLabel}>Project:</span>
+                            <span style={styles.metaVal}>{project?.name || "-"}</span>
                         </div>
                     </div>
-                </div>
 
-                {/* INFO GRID */}
-                <div style={styles.infoGrid}>
-                    <div style={styles.infoRow}>
-                        <div style={styles.infoLabel}>EMPLOYEE:</div>
-                        <div style={styles.infoVal}>{employee?.name || "-"}</div>
-                        <div style={styles.infoLabel}>PROJECT:</div>
-                        <div style={styles.infoVal}>{project?.name || "-"}</div>
-                    </div>
-                    <div style={styles.infoRow}>
-                        <div style={styles.infoLabel}>SUPERVISOR:</div>
-                        <div style={styles.infoVal}>{supervisor_name || data.supervisor?.name || "-"}</div>
-                        <div style={styles.infoLabel}>APPROVED HOURS THIS WEEK:</div>
-                        <div style={{ ...styles.infoVal, background: "#d1fae5" }}>{data.approved_hours || "0.00"}</div>
+                    <div style={styles.metaRowInfo}>
+                        <div style={styles.metaCol}>
+                            <span style={styles.metaLabel}>FROM:</span>
+                            <span style={styles.metaVal}>{start_date ? format(new Date(start_date), "MM/dd/yyyy") : "__________"}</span>
+                        </div>
+                        <div style={styles.metaCol}>
+                            <span style={styles.metaLabel}>TO:</span>
+                            <span style={styles.metaVal}>{end_date ? format(new Date(end_date), "MM/dd/yyyy") : "__________"}</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* TABLE */}
                 <table style={styles.table}>
                     <thead>
                         <tr style={styles.theadRow}>
-                            <th>DATE</th>
-                            <th>TASK ID</th>
-                            <th>START TIME</th>
-                            <th>END TIME</th>
-                            <th>REGULAR HRS</th>
-                            <th>OVER TIME (+HRS)</th>
-                            <th>SICK (-HRS)</th>
-                            <th>VACATION (-HRS)</th>
-                            <th>HOLIDAY (-HRS)</th>
-                            <th>OTHER (-HRS)</th>
-                            <th>TOTAL HOURS</th>
+                            <th style={{ ...styles.th, width: "100px" }}>Date</th>
+                            <th style={{ ...styles.th, width: "220px" }}>Task ID</th>
+                            <th style={styles.th}>Start</th>
+                            <th style={styles.th}>Finish</th>
+                            <th style={styles.th}>Regular hours</th>
+                            <th style={styles.th}>Overtime</th>
+                            <th style={styles.th}>Sick</th>
+                            <th style={styles.th}>Vacation</th>
+                            <th style={styles.th}>Other</th>
+                            <th style={styles.th}>Total hours</th>
                         </tr>
                     </thead>
                     <tbody>
                         {editableData.map((row, idx) => (
                             <tr key={idx} style={styles.tbodyRow}>
-                                <td>{row.day}</td>
-                                <td><input style={styles.tableInput} value={row.task_id} onChange={(e) => handleCellChange(idx, 'task_id', e.target.value)} /></td>
-                                <td><input style={styles.tableInput} value={row.start_time} onChange={(e) => handleCellChange(idx, 'start_time', e.target.value)} /></td>
-                                <td><input style={styles.tableInput} value={row.end_time} onChange={(e) => handleCellChange(idx, 'end_time', e.target.value)} /></td>
-                                <td><input style={styles.tableInput} value={row.regular_hrs} onChange={(e) => handleCellChange(idx, 'regular_hrs', e.target.value)} /></td>
-                                <td><input style={styles.tableInput} value={row.overtime_hrs} onChange={(e) => handleCellChange(idx, 'overtime_hrs', e.target.value)} /></td>
-                                <td><input style={styles.tableInput} value={row.sick_hrs} onChange={(e) => handleCellChange(idx, 'sick_hrs', e.target.value)} /></td>
-                                <td><input style={styles.tableInput} value={row.vacation_hrs} onChange={(e) => handleCellChange(idx, 'vacation_hrs', e.target.value)} /></td>
-                                <td><input style={styles.tableInput} value={row.holiday_hrs} onChange={(e) => handleCellChange(idx, 'holiday_hrs', e.target.value)} /></td>
-                                <td><input style={styles.tableInput} value={row.other_hrs} onChange={(e) => handleCellChange(idx, 'other_hrs', e.target.value)} /></td>
-                                <td style={{ fontWeight: 700, color: "#166534", background: "#f0fdf4" }}>{row.total_hrs}</td>
+                                <td style={styles.td}>{row.day}</td>
+                                <td style={styles.td}><input style={styles.tableInput} value={row.task_id} onChange={(e) => handleCellChange(idx, 'task_id', e.target.value)} /></td>
+                                <td style={styles.td}><input style={styles.tableInput} value={row.start_time} onChange={(e) => handleCellChange(idx, 'start_time', e.target.value)} /></td>
+                                <td style={styles.td}><input style={styles.tableInput} value={row.end_time} onChange={(e) => handleCellChange(idx, 'end_time', e.target.value)} /></td>
+                                <td style={styles.td}><input style={styles.tableInput} value={row.regular_hrs} onChange={(e) => handleCellChange(idx, 'regular_hrs', e.target.value)} /></td>
+                                <td style={styles.td}><input style={styles.tableInput} value={row.overtime_hrs} onChange={(e) => handleCellChange(idx, 'overtime_hrs', e.target.value)} /></td>
+                                <td style={styles.td}><input style={styles.tableInput} value={row.sick_hrs} onChange={(e) => handleCellChange(idx, 'sick_hrs', e.target.value)} /></td>
+                                <td style={styles.td}><input style={styles.tableInput} value={row.vacation_hrs} onChange={(e) => handleCellChange(idx, 'vacation_hrs', e.target.value)} /></td>
+                                <td style={styles.td}><input style={styles.tableInput} value={(parseFloat(row.holiday_hrs) + parseFloat(row.other_hrs)).toFixed(2)} onChange={(e) => handleCellChange(idx, 'other_hrs', e.target.value)} /></td>
+                                <td style={{ ...styles.td, fontWeight: 700, background: "#f8fafc" }}>{row.total_hrs}</td>
                             </tr>
                         ))}
-                    </tbody>
-                    <tfoot>
-                        <tr style={styles.tfootRow}>
-                            <td colSpan={10} style={{ textAlign: "right", paddingRight: 20 }}>TOTAL HOURS</td>
-                            <td style={{ background: "#86efac", fontWeight: 800 }}>{calculateGrandTotal()}</td>
+                        <tr style={styles.totalRow}>
+                            <td style={styles.totalLabel} colSpan={4}>TOTAL HOURS</td>
+                            <td style={styles.totalVal}>{totals.reg.toFixed(2)}</td>
+                            <td style={styles.totalVal}>{totals.ot.toFixed(2)}</td>
+                            <td style={styles.totalVal}>{totals.sick.toFixed(2)}</td>
+                            <td style={styles.totalVal}>{totals.vac.toFixed(2)}</td>
+                            <td style={styles.totalVal}>{totals.other.toFixed(2)}</td>
+                            <td style={{ ...styles.totalVal, background: "#6A4C9C", color: "#fff", fontWeight: 800 }}>{totals.grand.toFixed(2)}</td>
                         </tr>
-                    </tfoot>
+                    </tbody>
                 </table>
 
                 {/* SIGNATURES */}
@@ -216,6 +260,7 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         gap: 16,
+        paddingBottom: 40,
     },
     actions: {
         display: "flex",
@@ -235,21 +280,11 @@ const styles = {
         fontWeight: 600,
         color: "#64748b",
     },
-    tableInput: {
-        width: "100%",
-        border: "none",
-        background: "transparent",
-        padding: "8px",
-        fontSize: "14px",
-        outline: "none",
-        textAlign: "center",
-        fontWeight: "600",
-    },
     saveBtn: {
         padding: "8px 16px",
         borderRadius: 8,
         border: "none",
-        background: "#4F7DFF",
+        background: "#6A4C9C",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
@@ -261,163 +296,151 @@ const styles = {
     sheet: {
         background: "#fff",
         padding: "40px",
-        border: "1px solid #e2e8f0",
-        borderRadius: 4,
+        borderRadius: 8,
         boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-        minWidth: "1000px",
+        minWidth: "1100px",
+        fontFamily: "'Inter', sans-serif",
     },
     logoRow: {
-        marginBottom: 20,
+        marginBottom: 30,
     },
-    logoWrap: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
+    redsageLogo: {
+        width: "180px",
     },
-    logoIcon: {
-        fontSize: 32,
+    headerInfo: {
+        marginBottom: 30,
     },
-    logoText: {
-        fontSize: 36,
-        fontWeight: 800,
-        color: "#000",
-        letterSpacing: "-1px",
-    },
-    titleBanner: {
-        background: "#0a3a7b",
-        color: "#fff",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "stretch",
-        border: "2px solid #000",
-    },
-    titleText: {
-        padding: "12px 24px",
+    templateTitle: {
         fontSize: 24,
         fontWeight: 700,
-        borderRight: "2px solid #000",
-        display: "flex",
-        alignItems: "center",
-        flex: 1,
-        justifyContent: "center",
+        color: "#1e293b",
+        marginBottom: 20,
     },
-    weekDates: {
+    metaRowInfo: {
         display: "flex",
-        background: "#f1f5f9",
-        color: "#000",
+        gap: 60,
+        marginBottom: 12,
+        fontSize: 15,
     },
-    dateBlock: {
-        padding: "8px 16px",
-        borderLeft: "2px solid #000",
+    metaCol: {
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
+        gap: 10,
+        alignItems: "baseline",
     },
-    dateLabel: {
-        fontSize: 12,
+    metaLabel: {
         fontWeight: 700,
+        color: "#475569",
+        minWidth: "80px",
     },
-    dateVal: {
-        fontSize: 16,
-        fontWeight: 800,
-    },
-    infoGrid: {
-        marginTop: -2,
-        border: "2px solid #000",
-        borderTop: "none",
-    },
-    infoRow: {
-        display: "grid",
-        gridTemplateColumns: "150px 1fr 200px 150px",
-        borderBottom: "2px solid #000",
-    },
-    infoLabel: {
-        background: "#f1f5f9",
-        padding: "8px 12px",
-        fontSize: 13,
-        fontWeight: 700,
-        borderRight: "2px solid #000",
-    },
-    infoVal: {
-        padding: "8px 12px",
-        fontSize: 14,
-        fontWeight: 600,
-        borderRight: "2px solid #000",
-        background: "#fff",
+    metaVal: {
+        color: "#1e293b",
+        borderBottom: "1px solid #cbd5e1",
+        minWidth: "150px",
+        paddingBottom: "2px",
     },
     table: {
         width: "100%",
         borderCollapse: "collapse",
-        marginTop: 20,
-        border: "2px solid #000",
+        border: "2px solid #6A4C9C",
     },
     theadRow: {
-        background: "#d8e2ef",
+        background: "#6A4C9C",
     },
-    tbodyRow: {
-        borderBottom: "1px solid #ccc",
+    th: {
+        color: "#fff",
+        padding: "12px 8px",
+        fontSize: 13,
+        fontWeight: 600,
+        border: "1px solid rgba(255,255,255,0.1)",
     },
-    tfootRow: {
+    td: {
+        padding: "0",
+        border: "1px solid #cbd5e1",
+        textAlign: "center",
+        fontSize: 14,
+    },
+    tableInput: {
+        width: "100%",
+        border: "none",
+        background: "transparent",
+        padding: "10px 4px",
+        fontSize: "13px",
+        outline: "none",
+        textAlign: "center",
+        color: "#1e293b",
+    },
+    totalRow: {
         background: "#f1f5f9",
     },
+    totalLabel: {
+        padding: "12px",
+        textAlign: "right",
+        fontWeight: 700,
+        fontSize: 13,
+        color: "#1e293b",
+        border: "1px solid #cbd5e1",
+    },
+    totalVal: {
+        padding: "12px 4px",
+        fontWeight: 700,
+        fontSize: 14,
+        border: "1px solid #cbd5e1",
+        textAlign: "center",
+    },
     signatureGrid: {
-        marginTop: 30,
+        marginTop: 50,
         display: "flex",
-        gap: 20,
+        gap: 60,
     },
     sigBlock: {
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        gap: 12,
+        gap: 25,
     },
     sigLine: {
         display: "flex",
         alignItems: "flex-end",
-        gap: 12,
+        gap: 15,
     },
     sigLabel: {
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 700,
-        width: 200,
+        width: 180,
+        color: "#475569",
     },
     sigUnderline: {
         flex: 1,
-        borderBottom: "2px solid #000",
+        borderBottom: "1px solid #000",
         height: 24,
     },
     dateBlockSig: {
         width: 250,
         display: "flex",
         flexDirection: "column",
-        gap: 12,
+        gap: 25,
     },
     sigDate: {
         display: "flex",
         alignItems: "flex-end",
-        gap: 10,
+        gap: 12,
     },
     sigLabelSmall: {
-        background: "#d8e2ef",
-        padding: "4px 10px",
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 700,
-        border: "2px solid #000",
-        width: 60,
-        textAlign: "center",
+        color: "#64748b",
     },
     sigUnderlineSmall: {
         flex: 1,
-        border: "2px solid #000",
-        height: 30,
-        background: "#fff",
+        borderBottom: "1px solid #000",
+        height: 24,
     },
     footer: {
-        marginTop: 40,
+        marginTop: 60,
         textAlign: "center",
-        fontSize: 12,
-        color: "#64748b",
-        padding: "10px",
-        borderTop: "1px solid #e2e8f0",
+        fontSize: 11,
+        color: "#94a3b8",
+        paddingTop: 20,
+        borderTop: "1px solid #f1f5f9",
     }
 };

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Avatar, { AvatarGroup } from "./Avatar";
+import { Pencil } from "lucide-react";
 
 const Card = ({
   title,
@@ -10,13 +11,27 @@ const Card = ({
   availableMembers = [],
   timeLeft,
   color = "#4F7DFF",
+  onEdit,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   return (
     <div style={styles.card}>
       {/* TITLE */}
-      <h4 style={styles.title}>{title}</h4>
+      <div style={styles.titleRow}>
+        <h4 style={styles.title}>{title}</h4>
+        {onEdit && (
+          <button
+            style={styles.editBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+          >
+            <Pencil size={14} color="#94a3b8" />
+          </button>
+        )}
+      </div>
 
       {/* PROGRESS */}
       <div style={styles.labelRow}>
@@ -93,12 +108,31 @@ const styles = {
     height: "100%",
     boxSizing: "border-box"
   },
+  titleRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 8,
+    marginBottom: 4,
+  },
   title: {
     fontSize: 16,
     fontWeight: 700,
     color: "#1e293b",
     margin: 0,
-    marginBottom: 4,
+    flex: 1,
+  },
+  editBtn: {
+    background: "none",
+    border: "none",
+    padding: 4,
+    cursor: "pointer",
+    borderRadius: 4,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "background 0.2s",
+    "&:hover": { background: "#f1f5f9" }
   },
   labelRow: {
     display: "flex",

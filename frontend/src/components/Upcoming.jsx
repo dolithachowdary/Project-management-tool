@@ -1,20 +1,22 @@
 import React from "react";
 import { Calendar, Clock } from "lucide-react";
 
-export default function Upcoming({ tasks = [] }) {
+export default function Upcoming({ tasks = [], onTaskClick }) {
   // Sort by date and take top 5
-  const upcomingTasks = tasks
+  const upcomingTasksData = tasks
     .filter(t => t.end_date || t.endDate)
     .sort((a, b) => new Date(a.end_date || a.endDate) - new Date(b.end_date || b.endDate))
-    .slice(0, 5)
-    .map(t => ({
-      id: t.id || t._id,
-      title: t.title || t.taskName,
-      date: new Date(t.end_date || t.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      time: t.end_time || "End of day",
-      project: t.project_name || t.projectName || "General",
-      color: t.priority === "High" ? "#ef4444" : t.priority === "Low" ? "#10b981" : "#f59e0b"
-    }));
+    .slice(0, 5);
+
+  const upcomingTasks = upcomingTasksData.map(t => ({
+    id: t.id || t._id,
+    title: t.title || t.taskName,
+    date: new Date(t.end_date || t.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    time: t.end_time || "End of day",
+    project: t.project_name || t.projectName || "General",
+    color: t.priority === "High" ? "#ef4444" : t.priority === "Low" ? "#10b981" : "#f59e0b",
+    raw: t
+  }));
 
   return (
     <div style={styles.card}>
@@ -27,7 +29,11 @@ export default function Upcoming({ tasks = [] }) {
           <div style={styles.empty}>No upcoming deadlines</div>
         ) : (
           upcomingTasks.map((item, idx) => (
-            <div key={item.id} style={styles.rowWrap}>
+            <div
+              key={item.id}
+              style={{ ...styles.rowWrap, cursor: onTaskClick ? 'pointer' : 'default' }}
+              onClick={() => onTaskClick && onTaskClick(item.raw)}
+            >
               <div style={styles.leftCol}>
                 <div style={{ ...styles.dotWrap, borderColor: item.color }}>
                   <div style={{ ...styles.dot, background: item.color }}></div>

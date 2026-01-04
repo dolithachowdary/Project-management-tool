@@ -30,6 +30,8 @@ const ProjectDetails = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddSprintModalOpen, setIsAddSprintModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
   const [allProjects, setAllProjects] = useState([]);
   const [showFlowGraph, setShowFlowGraph] = useState(false);
   const [hierarchyData, setHierarchyData] = useState(null);
@@ -99,6 +101,25 @@ const ProjectDetails = () => {
     }
   };
 
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setIsEditTaskModalOpen(true);
+  };
+
+  const handleUpdateTask = async (taskData) => {
+    try {
+      const { updateTask } = await import("../api/tasks");
+      await updateTask(editingTask.id || editingTask._id, taskData);
+      toast.success("Task updated successfully!");
+      setIsEditTaskModalOpen(false);
+      setEditingTask(null);
+      loadData();
+    } catch (err) {
+      console.error("Failed to update task:", err);
+      toast.error("Failed to update task");
+    }
+  };
+
   return (
     <div style={styles.pageContainer}>
       <Sidebar />
@@ -133,7 +154,11 @@ const ProjectDetails = () => {
           <div style={styles.contentLayout}>
             {/* LEFT COLUMN: MODULES & TASKS */}
             <div style={styles.leftCol}>
-              <Modules projectId={id} projectColor={project.color} />
+              <Modules
+                projectId={id}
+                projectColor={project.color}
+                onTaskClick={handleEditTask}
+              />
             </div>
 
             {/* RIGHT COLUMN: RECENT ACTIVITY */}
@@ -169,6 +194,24 @@ const ProjectDetails = () => {
               onCancel={() => setIsAddTaskModalOpen(false)}
               projects={allProjects}
               currentUserId={userData?.id}
+              initialProjectId={id}
+            />
+          </div>
+        </div>
+      )}
+
+      {isEditTaskModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent} className="hide-scrollbar">
+            <TaskForm
+              onSave={handleUpdateTask}
+              onCancel={() => {
+                setIsEditTaskModalOpen(false);
+                setEditingTask(null);
+              }}
+              projects={allProjects}
+              currentUserId={userData?.id}
+              initialData={editingTask}
               initialProjectId={id}
             />
           </div>

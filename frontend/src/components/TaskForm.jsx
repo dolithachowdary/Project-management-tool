@@ -30,7 +30,8 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
     priority: "Medium",
     est_hours: "",
     created_by: currentUserId || localStorage.getItem("userId") || "",
-    collaborators: []
+    collaborators: [],
+    goal_index: ""
   });
 
   const fetchProjectDetails = useCallback(async (pid) => {
@@ -64,7 +65,8 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
         priority: initialData.priority || "Medium",
         est_hours: initialData.est_hours || "",
         created_by: initialData.created_by || currentUserId || localStorage.getItem("userId") || "",
-        collaborators: initialData.collaborators || []
+        collaborators: initialData.collaborators || [],
+        goal_index: initialData.goal_index !== undefined && initialData.goal_index !== null ? initialData.goal_index.toString() : ""
       });
       const pid = initialData.project_id || initialData.project?._id;
       if (pid) {
@@ -87,7 +89,8 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       est_hours: formData.est_hours ? parseFloat(formData.est_hours) : null,
       start_date: formData.start_date || null,
       end_date: formData.end_date || null,
-      created_by: formData.created_by || null
+      created_by: formData.created_by || null,
+      goal_index: formData.goal_index !== "" ? parseInt(formData.goal_index) : null
     };
     onSave(payload);
   };
@@ -99,7 +102,8 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       project_id: pid,
       module_id: "",
       sprint_id: "",
-      assignee_id: ""
+      assignee_id: "",
+      goal_index: ""
     }));
 
     if (!pid) {
@@ -325,13 +329,15 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
           )
         ),
 
-        // Sprint
         React.createElement("div", { style: styles.formGroup },
           React.createElement("label", { style: styles.label }, "Sprint", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("select", {
             name: "sprint_id",
             value: formData.sprint_id,
-            onChange: handleChange,
+            onChange: (e) => {
+              handleChange(e);
+              setFormData(prev => ({ ...prev, goal_index: "" }));
+            },
             style: styles.select,
             disabled: !formData.project_id,
             required: true
@@ -340,6 +346,34 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
             sprints.map(s =>
               React.createElement("option", { key: s.id || s._id, value: s.id || s._id }, s.name)
             )
+          )
+        ),
+
+        // Sprint Goal
+        React.createElement("div", { style: styles.formGroup },
+          React.createElement("label", { style: styles.label }, "Sprint Goal"),
+          React.createElement("select", {
+            name: "goal_index",
+            value: formData.goal_index,
+            onChange: handleChange,
+            style: styles.select,
+            disabled: !formData.sprint_id
+          },
+            React.createElement("option", { value: "" }, "Select Goal"),
+            (() => {
+              const selectedSprint = sprints.find(s => (s.id || s._id) === formData.sprint_id);
+              if (!selectedSprint || !selectedSprint.goal) return [];
+              try {
+                const parsed = JSON.parse(selectedSprint.goal);
+                return (Array.isArray(parsed) ? parsed : []).map((g, i) =>
+                  React.createElement("option", { key: i, value: i.toString() }, typeof g === 'string' ? g : g.text)
+                );
+              } catch (e) {
+                return selectedSprint.goal.split("\n").filter(g => g.trim()).map((g, i) =>
+                  React.createElement("option", { key: i, value: i.toString() }, g)
+                );
+              }
+            })()
           )
         ),
 

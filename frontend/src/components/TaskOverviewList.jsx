@@ -50,6 +50,7 @@ export default function TaskOverviewList({
   role,
   currentUserId,
   currentUser = "A",
+  onTaskClick
 }) {
   const filtered =
     role === "Developer"
@@ -89,7 +90,11 @@ export default function TaskOverviewList({
           sorted.map((task) => {
             const color = STATUS_COLORS[task.status] || STATUS_COLORS["To Do"];
             return (
-              <div key={task.id} style={styles.row}>
+              <div
+                key={task.id}
+                style={{ ...styles.row, cursor: onTaskClick ? 'pointer' : 'default' }}
+                onClick={() => onTaskClick && onTaskClick(task)}
+              >
                 {getStatusIcon(task.status)}
                 <div style={{ flex: 1 }}>
                   <div style={styles.task}>{task.title || task.taskName}</div>
@@ -117,7 +122,11 @@ export default function TaskOverviewList({
               <div style={styles.project}>{project}</div>
               {groupedByProject[project].map((task) => {
                 return (
-                  <div key={task.id} style={styles.row}>
+                  <div
+                    key={task.id}
+                    style={{ ...styles.row, cursor: onTaskClick ? 'pointer' : 'default' }}
+                    onClick={() => onTaskClick && onTaskClick(task)}
+                  >
                     {getStatusIcon(task.status)}
                     <div style={{ flex: 1 }}>
                       <div style={styles.task}>{task.title || task.taskName}</div>

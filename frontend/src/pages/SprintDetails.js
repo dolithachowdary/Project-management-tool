@@ -5,10 +5,11 @@ import Header from "../components/Header";
 import { getSprintHierarchy } from "../api/sprints";
 import { createTask, updateTask } from "../api/tasks";
 import { getModules } from "../api/modules";
-import { getProjectMembers } from "../api/projects";
+import { getProjectMembers, getProjects } from "../api/projects";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Loader from "../components/Loader";
 import SprintOverview from "../components/SprintOverview";
+import TaskForm from "../components/TaskForm";
 import Avatar from "../components/Avatar";
 import {
   Box,
@@ -34,19 +35,42 @@ const SprintDetails = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const role = localStorage.getItem("role") || "Project Manager";
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const role = userData.role || "Project Manager";
   const [activeTab, setActiveTab] = useState("overview");
   const [collapsedSections, setCollapsedSections] = useState({});
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [inlineAddingTo, setInlineAddingTo] = useState(null); // sectionKey
   const [allModules, setAllModules] = useState([]);
   const [projectMembers, setProjectMembers] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [selectedModule, setSelectedModule] = useState("");
   const [selectedAssignee, setSelectedAssignee] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("Medium");
+  const [selectedGoalIndex, setSelectedGoalIndex] = useState("");
+  const [goalFilter, setGoalFilter] = useState("all");
   const [showFlowGraph, setShowFlowGraph] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
   const { sprint, modules } = data || { sprint: {}, modules: [] };
+
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setIsEditTaskModalOpen(true);
+  };
+
+  const handleTaskUpdate = async (taskData) => {
+    try {
+      await updateTask(editingTask.id, taskData);
+      setIsEditTaskModalOpen(false);
+      setEditingTask(null);
+      loadHierarchy();
+    } catch (err) {
+      console.error("Failed to update task:", err);
+      alert("Failed to update task.");
+    }
+  };
 
   const toggleSection = (key) => {
     setCollapsedSections(prev => ({
@@ -75,7 +99,8 @@ const SprintDetails = () => {
         module_id: moduleId,
         assignee_id: selectedAssignee || null,
         status: sectionKey === 'planned' ? 'todo' : sectionKey,
-        priority: selectedPriority || 'Medium'
+        priority: selectedPriority || 'Medium',
+        goal_index: selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null,
       };
 
       await createTask(payload);
@@ -83,6 +108,7 @@ const SprintDetails = () => {
       setSelectedModule("");
       setSelectedAssignee("");
       setSelectedPriority("Medium");
+      setSelectedGoalIndex("");
       setInlineAddingTo(null);
       loadHierarchy(); // Refresh the list
     } catch (err) {
@@ -125,6 +151,12 @@ const SprintDetails = () => {
     loadHierarchy();
   }, [id, loadHierarchy]);
 
+  useEffect(() => {
+    getProjects().then(res => {
+      setAllProjects(res.data?.data || res.data || []);
+    }).catch(console.error);
+  }, []);
+
   const handleDragEnd = useCallback(async (result) => {
     const { destination, source, draggableId } = result;
 
@@ -150,6 +182,34 @@ const SprintDetails = () => {
     }
   }, [data, modules, loadHierarchy]);
 
+  const sprintGoals = React.useMemo(() => {
+    if (!sprint.goal) return [];
+    try {
+      const parsed = JSON.parse(sprint.goal);
+      return Array.isArray(parsed) ? parsed.map((g, i) => (typeof g === 'string' ? { text: g, progress: 0, index: i } : { ...g, index: i })) : [];
+    } catch (e) {
+      return sprint.goal.split("\n").filter(g => g.trim()).map((g, i) => ({ text: g, progress: 0, index: i }));
+    }
+  }, [sprint.goal]);
+
+  const recalculatedGoals = React.useMemo(() => {
+    return sprintGoals.map(goal => {
+      const goalTasks = (modules || []).flatMap(m => (m.tasks || [])).filter(t => t.goal_index === goal.index);
+      const completed = goalTasks.filter(t => t.status?.toLowerCase() === 'done').length;
+      const total = goalTasks.length;
+      const calcProgress = total > 0 ? Math.round((completed / total) * 100) : 0;
+      return { ...goal, progress: calcProgress, taskCount: total, completedCount: completed };
+    });
+  }, [sprintGoals, modules]);
+
+  const filteredModules = React.useMemo(() => {
+    if (goalFilter === "all") return modules;
+    return modules.map(mod => ({
+      ...mod,
+      tasks: (mod.tasks || []).filter(t => t.goal_index === parseInt(goalFilter))
+    })).filter(mod => mod.tasks.length > 0);
+  }, [modules, goalFilter]);
+
 
   if (loading) {
     return (
@@ -165,11 +225,13 @@ const SprintDetails = () => {
 
   if (!data) return null;
 
-  // Calculate total tasks and completed tasks across all modules
-  const totalTasks = modules.reduce((acc, mod) => acc + (mod.tasks?.length || 0), 0);
-  const completedTasks = modules.reduce((acc, mod) => {
-    return acc + (mod.tasks?.filter(t => t.status?.toLowerCase() === 'done').length || 0);
-  }, 0);
+  // Calculate total tasks and completed tasks based on filter
+  const activeTasks = (goalFilter === "all")
+    ? modules.flatMap(m => m.tasks || [])
+    : modules.flatMap(m => m.tasks || []).filter(t => t.goal_index === parseInt(goalFilter));
+
+  const totalTasks = activeTasks.length;
+  const completedTasks = activeTasks.filter(t => t.status?.toLowerCase() === 'done').length;
   const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   // SVG Circle constants
@@ -250,42 +312,50 @@ const SprintDetails = () => {
             </div>
 
             <div style={styles.headerCenter}>
-              <h3 style={styles.sectionTitle}>Goals</h3>
-              {(() => {
-                let goals = [];
-                if (sprint.goal) {
-                  try {
-                    const parsed = JSON.parse(sprint.goal);
-                    goals = Array.isArray(parsed) ? parsed.map(g => typeof g === 'string' ? { text: g, progress: 0 } : g) : [];
-                  } catch (e) {
-                    goals = sprint.goal.split("\n").filter(g => g.trim()).map(g => ({ text: g, progress: 0 }));
-                  }
-                }
-                return (
-                  <div style={styles.goalsProgressContainer}>
-                    {goals.map((g, index) => (
-                      <div key={index} style={styles.goalProgressItem}>
-                        <div style={styles.goalInfo}>
-                          <div style={{ ...styles.goalNumberSmall, backgroundColor: sprint.project_color || "#3b82f6" }}>
-                            {index + 1}
-                          </div>
-                          <span style={styles.goalTextSmall}>{g.text}</span>
-                        </div>
-                        <div style={styles.goalProgressBarWrapper}>
-                          <div style={styles.goalProgressBarBg}>
-                            <div style={{
-                              ...styles.goalProgressBarFill,
-                              width: `${g.progress}%`,
-                              backgroundColor: sprint.project_color || "#3b82f6"
-                            }} />
-                          </div>
-                          <span style={styles.goalProgressText}>{g.progress}%</span>
-                        </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <h3 style={styles.sectionTitle}>Goals</h3>
+                {goalFilter !== 'all' && (
+                  <button
+                    onClick={() => setGoalFilter('all')}
+                    style={styles.clearFilterBtn}
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+              <div style={styles.goalsProgressContainer}>
+                {recalculatedGoals.map((g, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      ...styles.goalProgressItem,
+                      opacity: goalFilter !== 'all' && goalFilter !== index.toString() ? 0.5 : 1,
+                      border: goalFilter === index.toString() ? `1px solid ${sprint.project_color || "#3b82f6"}` : '1px solid transparent',
+                      padding: '4px 8px',
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setGoalFilter(goalFilter === index.toString() ? 'all' : index.toString())}
+                  >
+                    <div style={styles.goalInfo}>
+                      <div style={{ ...styles.goalNumberSmall, backgroundColor: sprint.project_color || "#3b82f6" }}>
+                        {index + 1}
                       </div>
-                    ))}
+                      <span style={styles.goalTextSmall}>{g.text}</span>
+                    </div>
+                    <div style={styles.goalProgressBarWrapper}>
+                      <div style={styles.goalProgressBarBg}>
+                        <div style={{
+                          ...styles.goalProgressBarFill,
+                          width: `${g.progress}%`,
+                          backgroundColor: sprint.project_color || "#3b82f6"
+                        }} />
+                      </div>
+                      <span style={styles.goalProgressText}>{g.progress}%</span>
+                    </div>
                   </div>
-                );
-              })()}
+                ))}
+              </div>
             </div>
 
             <div style={styles.headerRight}>
@@ -322,7 +392,14 @@ const SprintDetails = () => {
                     {progressPercent}<span style={{ fontSize: '10px' }}>%</span>
                   </div>
                 </div>
-                <h3 style={styles.sectionTitle}>Overall</h3>
+                <h3 style={styles.sectionTitle}>
+                  {goalFilter === 'all' ? 'Overall' : `Goal ${parseInt(goalFilter) + 1}`}
+                </h3>
+                {goalFilter !== 'all' && (
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', fontWeight: 500 }}>
+                    {recalculatedGoals[parseInt(goalFilter)]?.text}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -356,7 +433,10 @@ const SprintDetails = () => {
           {/* TAB CONTENT */}
           <div style={styles.tabContent}>
             {activeTab === "overview" && (
-              <SprintOverview data={data} styles={styles} />
+              <SprintOverview
+                data={{ ...data, modules: filteredModules }}
+                styles={styles}
+              />
             )}
 
             {activeTab === "list" && (
@@ -364,7 +444,13 @@ const SprintDetails = () => {
                 {/* ACTION BAR */}
                 <div style={styles.actionBar}>
                   <div style={styles.leftActions}>
-                    <button style={styles.addTaskBtn}>
+                    <button
+                      style={styles.addTaskBtn}
+                      onClick={() => {
+                        setInlineAddingTo('planned');
+                        setNewTaskTitle("");
+                      }}
+                    >
                       <Plus size={16} />
                       Add task
                     </button>
@@ -378,7 +464,7 @@ const SprintDetails = () => {
                     { key: 'in_progress', label: 'In Progress', color: '#3b82f6' },
                     { key: 'done', label: 'Completed', color: '#10b981' }
                   ].map(group => {
-                    const groupTasks = modules.flatMap(m =>
+                    const groupTasks = filteredModules.flatMap(m =>
                       (m.tasks || []).filter(t => {
                         const status = t.status?.toLowerCase() || 'planned';
                         if (group.key === 'planned') return status === 'planned' || status === 'todo';
@@ -405,8 +491,9 @@ const SprintDetails = () => {
                           <table style={styles.taskTable}>
                             <thead>
                               <tr>
-                                <th style={{ ...styles.th, width: '40%' }}>Task name</th>
+                                <th style={{ ...styles.th, width: '35%' }}>Task name</th>
                                 <th style={styles.th}>Module</th>
+                                {goalFilter === 'all' && <th style={styles.th}>Goal</th>}
                                 <th style={styles.th}>Assignee</th>
                                 <th style={styles.th}>Priority</th>
                                 <th style={styles.th}>Dates</th>
@@ -415,7 +502,12 @@ const SprintDetails = () => {
                             </thead>
                             <tbody>
                               {groupTasks.map(task => (
-                                <tr key={task.id} style={styles.tr} className="task-row">
+                                <tr
+                                  key={task.id}
+                                  style={{ ...styles.tr, cursor: 'pointer' }}
+                                  className="task-row"
+                                  onClick={() => handleEditTask(task)}
+                                >
                                   <td style={styles.td}>
                                     <div style={styles.taskNameCell}>
                                       <div style={{
@@ -431,6 +523,20 @@ const SprintDetails = () => {
                                   <td style={styles.td}>
                                     <span style={styles.moduleBadge}>{task.module_name}</span>
                                   </td>
+                                  {goalFilter === 'all' && (
+                                    <td style={styles.td}>
+                                      {task.goal_index !== null && task.goal_index !== undefined ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                          <div style={{ ...styles.goalNumberSmall, backgroundColor: sprint.project_color || "#3b82f6", width: '14px', height: '14px', fontSize: '9px' }}>
+                                            {(task.goal_index + 1)}
+                                          </div>
+                                          <span style={{ fontSize: '12px', color: '#64748b' }}>
+                                            {recalculatedGoals[task.goal_index]?.text || `Goal ${task.goal_index + 1}`}
+                                          </span>
+                                        </div>
+                                      ) : '-'}
+                                    </td>
+                                  )}
                                   <td style={styles.td}>
                                     <div style={styles.assigneeCell}>
                                       <Avatar name={task.assignee_name} id={task.assignee_id} size={24} />
@@ -532,6 +638,18 @@ const SprintDetails = () => {
                                             <option value="High">High</option>
                                           </select>
                                         </div>
+                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
+                                          <select
+                                            style={styles.inlineSelect}
+                                            value={selectedGoalIndex}
+                                            onChange={(e) => setSelectedGoalIndex(e.target.value)}
+                                          >
+                                            <option value="">Goal</option>
+                                            {recalculatedGoals.map((g, idx) => (
+                                              <option key={idx} value={idx}>{g.text}</option>
+                                            ))}
+                                          </select>
+                                        </div>
                                         <div style={styles.inlineActions}>
                                           <button
                                             style={styles.saveBtn}
@@ -573,7 +691,7 @@ const SprintDetails = () => {
                     { key: 'in_progress', label: 'In Progress', color: '#3b82f6' },
                     { key: 'done', label: 'Completed', color: '#10b981' }
                   ].map(group => {
-                    const groupTasks = modules.flatMap(m =>
+                    const groupTasks = filteredModules.flatMap(m =>
                       (m.tasks || []).filter(t => {
                         const status = t.status?.toLowerCase() || 'planned';
                         return status === group.key || (group.key === 'planned' && status === 'todo');
@@ -618,14 +736,28 @@ const SprintDetails = () => {
                                       className="board-card"
                                       style={{
                                         ...styles.taskCard,
-                                        ...provided.draggableProps.style
+                                        ...provided.draggableProps.style,
+                                        cursor: 'pointer'
                                       }}
+                                      onClick={() => handleEditTask(task)}
                                     >
                                       <div style={styles.cardHeader}>
-                                        <div style={{ ...styles.moduleBadge, marginBottom: '8px', display: 'inline-block' }}>
-                                          {task.module_name}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                          <div style={{ ...styles.moduleBadge, marginBottom: '8px', display: 'inline-block' }}>
+                                            {task.module_name}
+                                          </div>
+                                          {task.goal_index !== null && task.goal_index !== undefined && goalFilter === 'all' && (
+                                            <div style={{ ...styles.goalNumberSmall, backgroundColor: sprint.project_color || "#3b82f6", width: '16px', height: '16px', fontSize: '10px' }}>
+                                              {task.goal_index + 1}
+                                            </div>
+                                          )}
                                         </div>
                                         <h4 style={styles.cardTitle}>{task.title}</h4>
+                                        {task.goal_index !== null && task.goal_index !== undefined && goalFilter === 'all' && (
+                                          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                                            {recalculatedGoals[task.goal_index]?.text}
+                                          </div>
+                                        )}
                                       </div>
 
                                       <div style={styles.cardFooter}>
@@ -666,6 +798,28 @@ const SprintDetails = () => {
                                       if (e.key === 'Escape') setInlineAddingTo(null);
                                     }}
                                   />
+                                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                    <select
+                                      style={{ ...styles.inlineSelect, fontSize: '11px', padding: '4px' }}
+                                      value={selectedModule}
+                                      onChange={(e) => setSelectedModule(e.target.value)}
+                                    >
+                                      <option value="">Module</option>
+                                      {allModules.map(m => (
+                                        <option key={m.id} value={m.id}>{m.name}</option>
+                                      ))}
+                                    </select>
+                                    <select
+                                      style={{ ...styles.inlineSelect, fontSize: '11px', padding: '4px' }}
+                                      value={selectedGoalIndex}
+                                      onChange={(e) => setSelectedGoalIndex(e.target.value)}
+                                    >
+                                      <option value="">Goal</option>
+                                      {recalculatedGoals.map((g, idx) => (
+                                        <option key={idx} value={idx}>{g.text}</option>
+                                      ))}
+                                    </select>
+                                  </div>
                                   <div style={styles.boardInlineActions}>
                                     <button style={styles.boardSaveBtn} onClick={() => handleAddTask(group.key)}>Add</button>
                                     <button style={styles.boardCancelBtn} onClick={() => setInlineAddingTo(null)}>Cancel</button>
@@ -698,8 +852,8 @@ const SprintDetails = () => {
             type="sprint"
             data={{
               sprint,
-              modules,
-              tasks: modules.flatMap(m => m.tasks || [])
+              modules: filteredModules,
+              tasks: filteredModules.flatMap(m => m.tasks || [])
             }}
             onClose={() => setShowFlowGraph(false)}
           />
@@ -713,6 +867,24 @@ const SprintDetails = () => {
         onSprintUpdated={loadHierarchy}
         onSprintDeleted={() => navigate("/sprints")}
       />
+
+      {isEditTaskModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent} className="hide-scrollbar">
+            <TaskForm
+              onSave={handleTaskUpdate}
+              onCancel={() => {
+                setIsEditTaskModalOpen(false);
+                setEditingTask(null);
+              }}
+              projects={allProjects}
+              currentUserId={userData?.id}
+              initialData={editingTask}
+              initialProjectId={sprint.project_id}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1525,6 +1697,46 @@ const styles = {
       color: "#0d9488",
       borderColor: "#0d9488",
     }
+  },
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(15, 23, 42, 0.4)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2000,
+    backdropFilter: "blur(4px)",
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: "800px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    padding: "20px",
+  },
+  clearFilterBtn: {
+    padding: "4px 10px",
+    background: "#fee2e2",
+    color: "#ef4444",
+    border: "none",
+    borderRadius: "20px",
+    fontSize: "11px",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "all 0.2s",
+  },
+  goalNumberSmall: {
+    width: "18px",
+    height: "18px",
+    borderRadius: "50%",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "11px",
+    fontWeight: "700",
+    flexShrink: 0,
   }
 };
 

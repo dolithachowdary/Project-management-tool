@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Card from "../components/Card";
 import { useNavigate } from "react-router-dom";
 import AddSprint from "../components/AddSprint";
+import EditSprintModal from "../components/EditSprintModal";
 import { getSprints } from "../api/sprints";
 import Loader from "../components/Loader";
 
@@ -12,6 +13,8 @@ const Sprints = () => {
   const [openAddSprint, setOpenAddSprint] = useState(false);
   const [sprints, setSprints] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingSprint, setEditingSprint] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const role = localStorage.getItem("role") || "Project Manager";
 
   useEffect(() => {
@@ -85,7 +88,13 @@ const Sprints = () => {
                         style={styles.cardWrapper}
                         onClick={() => navigate(`/sprints/${sprint.id || sprint._id}`)}
                       >
-                        <Card {...sprint} />
+                        <Card
+                          {...sprint}
+                          onEdit={["Project Manager", "admin"].includes(role) ? () => {
+                            setEditingSprint(sprint);
+                            setIsEditModalOpen(true);
+                          } : null}
+                        />
                       </div>
                     ))
                   ) : (
@@ -105,7 +114,13 @@ const Sprints = () => {
                         style={styles.cardWrapper}
                         onClick={() => navigate(`/sprints/${sprint.id || sprint._id}`)}
                       >
-                        <Card {...sprint} />
+                        <Card
+                          {...sprint}
+                          onEdit={["Project Manager", "admin"].includes(role) ? () => {
+                            setEditingSprint(sprint);
+                            setIsEditModalOpen(true);
+                          } : null}
+                        />
                       </div>
                     ))
                   ) : (
@@ -132,6 +147,16 @@ const Sprints = () => {
           isOpen={openAddSprint}
           onClose={() => setOpenAddSprint(false)}
           onSprintAdded={loadSprints}
+        />
+
+        <EditSprintModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingSprint(null);
+          }}
+          sprint={editingSprint}
+          onSprintUpdated={loadSprints}
         />
       </div>
     </div>

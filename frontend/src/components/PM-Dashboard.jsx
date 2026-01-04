@@ -13,6 +13,10 @@ import RecentActivity from "./RecentActivity";
 import QAPending from "./QAPending";
 import WeeklyTaskGraph from "./WeeklyTaskGraph";
 import TaskListComponent from "./TaskOverviewList";
+import EditSprintModal from "./EditSprintModal";
+import TaskForm from "./TaskForm";
+import { updateTask } from "../api/tasks";
+import toast from "react-hot-toast";
 
 export default function PMDashboard() {
   const navigate = useNavigate();
@@ -24,6 +28,37 @@ export default function PMDashboard() {
   const [weeklyStats, setWeeklyStats] = useState([]);
   const [statsData, setStatsData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allProjects, setAllProjects] = useState([]);
+  const [editingSprint, setEditingSprint] = useState(null);
+  const [isEditSprintModalOpen, setIsEditSprintModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
+  const handleEditSprint = (s) => {
+    setEditingSprint(s);
+    setIsEditSprintModalOpen(true);
+  };
+
+  const handleEditTask = (t) => {
+    setEditingTask(t);
+    setIsEditTaskModalOpen(true);
+  };
+
+  const handleTaskUpdate = async (taskData) => {
+    try {
+      await updateTask(editingTask.id || editingTask._id, taskData);
+      toast.success("Task updated!");
+      setIsEditTaskModalOpen(false);
+      setEditingTask(null);
+      // We need to refresh the dashboard data
+      window.location.reload(); // Simple refresh for now or call fetchData
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update task");
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,8 +92,11 @@ export default function PMDashboard() {
             color: m.color || "#e0e7ff"
           })),
           timeLeft: p.status || "Active",
-          color: p.color || getRandomColor(p.id)
+          color: p.color || getRandomColor(p.id),
+          raw: p
         }));
+
+        setAllProjects(projectsData);
 
         // Map Sprints
         const mappedSprints = sprintsData.map(s => {
@@ -74,7 +112,8 @@ export default function PMDashboard() {
             endDate: formatDate(s.end_date),
             members: [],
             timeLeft: s.status || "Active",
-            color: s.project_color || getRandomColor(s.id)
+            color: s.project_color || getRandomColor(s.id),
+            raw: s
           };
         });
 
@@ -189,11 +228,22 @@ export default function PMDashboard() {
             <div style={styles.cardGrid}>
               {activeSprints.map(card => (
                 <div key={card.id} style={styles.cardWrapper} onClick={() => navigate(`/sprints/${card.id}`)}>
-                  <Card {...card} />
+                  <Card
+                    {...card}
+                    onEdit={() => handleEditSprint(card.raw)}
+                  />
                 </div>
               ))}
               {activeSprints.length === 0 && <div style={styles.empty}>No active sprints found.</div>}
             </div>
+          </div>
+
+          <div style={styles.section}>
+            <TaskListComponent
+              role="Project Manager"
+              tasks={allTasks}
+              onTaskClick={handleEditTask}
+            />
           </div>
         </div>
 
@@ -203,13 +253,40 @@ export default function PMDashboard() {
             <MiniCalendar />
           </div>
           <div style={styles.sideItem}>
-            <Upcoming tasks={allTasks} />
+            <Upcoming tasks={allTasks} onTaskClick={handleEditTask} />
           </div>
           <div style={styles.sideItem}>
             <QAPending />
           </div>
         </aside>
       </div>
+
+      {isEditSprintModalOpen && (
+        <EditSprintModal
+          isOpen={isEditSprintModalOpen}
+          onClose={() => setIsEditSprintModalOpen(false)}
+          sprint={editingSprint}
+          onSprintUpdated={() => window.location.reload()}
+        />
+      )}
+
+      {isEditTaskModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent} className="hide-scrollbar">
+            <TaskForm
+              onSave={handleTaskUpdate}
+              onCancel={() => {
+                setIsEditTaskModalOpen(false);
+                setEditingTask(null);
+              }}
+              projects={allProjects}
+              currentUserId={userData?.id}
+              initialData={editingTask}
+              initialProjectId={editingTask?.project_id}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -310,5 +387,22 @@ const styles = {
     border: "1px dashed #e2e8f0",
     color: "#94a3b8",
     gridColumn: "1 / -1",
-  }
+  },
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(15, 23, 42, 0.4)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2000,
+    backdropFilter: "blur(4px)",
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: "800px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    padding: "20px",
+  },
 };
