@@ -490,12 +490,13 @@ const styles = {
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
-    position: "relative"
+    position: "relative",
+    height: "100vh",
   },
   content: {
     padding: "15px",
     flex: 1,
-    overflowY: "auto"
+    overflowY: "auto",
   },
   grid: {
     display: "grid",

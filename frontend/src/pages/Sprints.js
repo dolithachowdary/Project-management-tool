@@ -160,12 +160,18 @@ const styles = {
     display: "flex",
     height: "100vh",
     background: "#f9f9f9",
+    overflow: "hidden",
   },
   mainContent: {
     flex: 1,
-    overflowY: "auto",
+    display: "flex",
+    flexDirection: "column",
+    height: "100vh",
+    overflow: "hidden",
   },
   pageInner: {
+    flex: 1,
+    overflowY: "auto",
     padding: 24,
   },
   section: {

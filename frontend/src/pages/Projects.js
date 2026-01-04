@@ -120,9 +120,24 @@ export default Projects;
 
 /* ---------------- STYLES (Unchanged) ---------------- */
 const styles = {
-  pageContainer: { display: "flex", height: "100vh", background: "#f9f9f9" },
-  mainContent: { flex: 1, overflowY: "auto" },
-  pageInner: { padding: 20 },
+  pageContainer: {
+    display: "flex",
+    height: "100vh",
+    background: "#f9f9f9",
+    overflow: "hidden",
+  },
+  mainContent: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    height: "100vh",
+    overflow: "hidden",
+  },
+  pageInner: {
+    flex: 1,
+    overflowY: "auto",
+    padding: 20
+  },
   fab: {
     position: "fixed",
     bottom: 24,

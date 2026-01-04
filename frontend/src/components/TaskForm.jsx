@@ -14,8 +14,8 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
   const [sprints, setSprints] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
 
-  const role = localStorage.getItem("role");
-  const isDev = role === "Developer";
+  const role = localStorage.getItem("role") || "";
+  const isDev = role.toLowerCase() === "developer";
 
   const [formData, setFormData] = useState({
     title: "",
@@ -312,13 +312,14 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
         ),
 
         React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },
-          React.createElement("label", { style: styles.label }, "Description"),
+          React.createElement("label", { style: styles.label }, "Description", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("textarea", {
             name: "description",
             value: formData.description,
             onChange: handleChange,
             placeholder: "Enter task description",
-            style: styles.textarea
+            style: styles.textarea,
+            required: true
           })
         ),
 
@@ -370,13 +371,14 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
         // Sprint Goal
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Sprint Goal"),
+          React.createElement("label", { style: styles.label }, "Sprint Goal", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("select", {
             name: "goal_index",
             value: formData.goal_index,
             onChange: handleChange,
             style: styles.select,
-            disabled: !formData.sprint_id
+            disabled: !formData.sprint_id,
+            required: true
           },
             React.createElement("option", { value: "" }, "Select Goal"),
             (() => {
@@ -416,31 +418,39 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
         // Assigned To
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Assigned To"),
-          React.createElement("select", {
-            name: "assignee_id",
-            value: formData.assignee_id,
-            onChange: handleChange,
-            style: styles.select,
-            disabled: !formData.project_id || isDev
-          },
-            React.createElement("option", { value: "" }, "Select Member"),
-            members.map(person => (
-              React.createElement("option", { key: person.id || person._id, value: person.id || person._id },
-                person.full_name || person.name || person.email
-              )
-            ))
+          React.createElement("label", { style: styles.label }, "Assigned To", React.createElement("span", { style: styles.required }, " *")),
+          isDev ? (
+            React.createElement("div", { style: styles.staticText },
+              members.find(m => (m.id || m._id) === formData.assignee_id)?.full_name || localStorage.getItem("userName") || "You"
+            )
+          ) : (
+            React.createElement("select", {
+              name: "assignee_id",
+              value: formData.assignee_id,
+              onChange: handleChange,
+              style: styles.select,
+              disabled: !formData.project_id,
+              required: true
+            },
+              React.createElement("option", { value: "" }, "Select Member"),
+              members.map(person => (
+                React.createElement("option", { key: person.id || person._id, value: person.id || person._id },
+                  person.full_name || person.name || person.email
+                )
+              ))
+            )
           )
         ),
 
         // Status
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Status"),
+          React.createElement("label", { style: styles.label }, "Status", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("select", {
             name: "status",
             value: formData.status,
             onChange: handleChange,
-            style: styles.select
+            style: styles.select,
+            required: true
           },
             statusOptions.map(opt =>
               React.createElement("option", { key: opt.value, value: opt.value }, opt.label)
@@ -450,12 +460,13 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
         // Priority
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Priority"),
+          React.createElement("label", { style: styles.label }, "Priority", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("select", {
             name: "priority",
             value: formData.priority,
             onChange: handleChange,
-            style: styles.select
+            style: styles.select,
+            required: true
           },
             ["High", "Medium", "Low"].map(priority =>
               React.createElement("option", { key: priority, value: priority }, priority)
@@ -465,12 +476,13 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
         // Potential
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Potential (Size)"),
+          React.createElement("label", { style: styles.label }, "Potential (Size)", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("select", {
             name: "potential",
             value: formData.potential,
             onChange: handleChange,
-            style: styles.select
+            style: styles.select,
+            required: true
           },
             React.createElement("option", { value: "" }, "Select Size"),
             ["Very Small", "Small", "Medium", "Large", "Very Large"].map(p =>
@@ -481,7 +493,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
         // Estimated Hours
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Est. Hours"),
+          React.createElement("label", { style: styles.label }, "Est. Hours", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("input", {
             type: "number",
             step: "0.25",
@@ -489,29 +501,32 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
             value: formData.est_hours,
             onChange: handleChange,
             placeholder: "0.00",
-            style: styles.input
+            style: styles.input,
+            required: true
           })
         ),
 
         // Dates
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Start Date"),
+          React.createElement("label", { style: styles.label }, "Start Date", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("input", {
             type: "date",
             name: "start_date",
             value: formData.start_date,
             onChange: handleChange,
-            style: styles.input
+            style: styles.input,
+            required: true
           })
         ),
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "End Date"),
+          React.createElement("label", { style: styles.label }, "End Date", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("input", {
             type: "date",
             name: "end_date",
             value: formData.end_date,
             onChange: handleChange,
-            style: styles.input
+            style: styles.input,
+            required: true
           })
         ),
 
