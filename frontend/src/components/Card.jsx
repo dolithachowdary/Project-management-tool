@@ -116,8 +116,8 @@ const styles = {
     marginBottom: 4,
   },
   title: {
-    fontSize: 16,
-    fontWeight: 700,
+    fontSize: 14,
+    fontWeight: 600,
     color: "#1e293b",
     margin: 0,
     flex: 1,

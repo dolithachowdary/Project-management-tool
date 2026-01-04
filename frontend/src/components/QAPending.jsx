@@ -43,7 +43,7 @@ export default function QAPending() {
       <div style={styles.header}>QA Pending Tasks</div>
       <div style={styles.sub}>{tasks.length} tasks ready for verification</div>
 
-      <div style={styles.scrollArea}>
+      <div style={styles.scrollArea} className="hide-scrollbar">
         {tasks.length === 0 ? (
           <div style={styles.empty}>
             <Search size={32} color="#e2e8f0" />
