@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { getProjects } from "../api/projects";
 import { createSprint, getNextSprintNumber } from "../api/sprints";
 
-export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
+export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProjectId }) {
   /* -------- STATE -------- */
   const [projects, setProjects] = useState([]);
-  const [projectId, setProjectId] = useState("");
+  const [projectId, setProjectId] = useState(initialProjectId || "");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [goal, setGoal] = useState("");
@@ -19,15 +19,15 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
   useEffect(() => {
     if (isOpen) {
       loadProjects();
-      // Reset state on open
-      setProjectId("");
+      // Reset state on open, but preserve initialProjectId if provided
+      setProjectId(initialProjectId || "");
       setStartDate("");
       setEndDate("");
       setGoal("");
       setNextSprintNum(null);
       setErrors({});
     }
-  }, [isOpen]);
+  }, [isOpen, initialProjectId]);
 
   useEffect(() => {
     if (!projectId) {
@@ -107,28 +107,37 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded }) {
 
   return (
     <div style={styles.overlay}>
-      <div style={styles.modal}>
+      <div style={styles.modal} className="hide-scrollbar">
         <h3 style={styles.modalTitle}>Add Sprint</h3>
 
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            Project <span style={styles.required}>*</span>
-          </label>
-          <select
-            style={{ ...styles.select, borderColor: errors.projectId ? "#ef4444" : "#e2e8f0" }}
-            value={projectId}
-            onChange={e => {
-              setProjectId(e.target.value);
-              if (errors.projectId) setErrors(prev => ({ ...prev, projectId: null }));
-            }}
-          >
-            <option value="">Select project</option>
-            {projects.map(p => (
-              <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>
-            ))}
-          </select>
-          {errors.projectId && <div style={styles.errorMsg}>{errors.projectId}</div>}
-        </div>
+        {!initialProjectId ? (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>
+              Project <span style={styles.required}>*</span>
+            </label>
+            <select
+              style={{ ...styles.select, borderColor: errors.projectId ? "#ef4444" : "#e2e8f0" }}
+              value={projectId}
+              onChange={e => {
+                setProjectId(e.target.value);
+                if (errors.projectId) setErrors(prev => ({ ...prev, projectId: null }));
+              }}
+            >
+              <option value="">Select project</option>
+              {projects.map(p => (
+                <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>
+              ))}
+            </select>
+            {errors.projectId && <div style={styles.errorMsg}>{errors.projectId}</div>}
+          </div>
+        ) : (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Project</label>
+            <div style={styles.staticField}>
+              {projects.find(p => (p.id || p._id) === initialProjectId)?.name || "Current Project"}
+            </div>
+          </div>
+        )}
 
         {/* Static Sprint Number Display */}
         <div style={styles.formGroup}>

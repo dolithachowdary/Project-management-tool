@@ -1,4 +1,4 @@
-import { Calendar, Clock3, Box, ClipboardList, Pencil, GitGraph } from "lucide-react";
+import { Calendar, Clock3, Box, ClipboardList, Pencil, GitGraph, Plus } from "lucide-react";
 import { AvatarGroup } from "./Avatar";
 
 const ProjectHeader = ({
@@ -18,7 +18,9 @@ const ProjectHeader = ({
   color = "#4F7DFF",
   hasDocument = false,
   onEdit,
-  onShowFlow
+  onShowFlow,
+  onAddSprint,
+  onAddTask
 }) => {
   if (!title) return null;
 
@@ -82,8 +84,15 @@ const ProjectHeader = ({
           {/* SPRINT CARD */}
           <div style={{ ...styles.statCard, background: "#f0f7ff" }}>
             <div style={styles.cardInfo}>
-              <div style={{ ...styles.iconBox, background: "#fff" }}>
-                <Clock3 size={16} color="#3b82f6" />
+              <div style={styles.cardHeaderArea}>
+                <div style={{ ...styles.iconBox, background: "#fff" }}>
+                  <Clock3 size={16} color="#3b82f6" />
+                </div>
+                {canEdit && (
+                  <button style={styles.cardAddBtn} className="card-add-btn" onClick={onAddSprint} title="Add Sprint">
+                    <Plus size={14} color="#3b82f6" />
+                  </button>
+                )}
               </div>
               <div style={styles.cardText}>
                 <div style={styles.cardLabel}>{currentSprintName}</div>
@@ -110,8 +119,15 @@ const ProjectHeader = ({
           {/* TASKS CARD */}
           <div style={{ ...styles.statCard, background: "#fff7ed" }}>
             <div style={styles.cardInfo}>
-              <div style={{ ...styles.iconBox, background: "#fff" }}>
-                <ClipboardList size={16} color="#f97316" />
+              <div style={styles.cardHeaderArea}>
+                <div style={{ ...styles.iconBox, background: "#fff" }}>
+                  <ClipboardList size={16} color="#f97316" />
+                </div>
+                {canEdit && (
+                  <button style={styles.cardAddBtn} className="card-add-btn" onClick={onAddTask} title="Create Task">
+                    <Plus size={14} color="#f97316" />
+                  </button>
+                )}
               </div>
               <div style={styles.cardText}>
                 <div style={styles.cardLabel}>Tasks</div>
@@ -132,17 +148,18 @@ const styles = {
   container: {
     background: "#fff",
     borderRadius: 24,
-    padding: "36px",
+    padding: "24px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
     border: "1px solid #f1f5f9",
     display: "flex",
-    gap: 40,
-    alignItems: "stretch", // Changed from flex-end
+    flexWrap: "wrap",
+    gap: "24px",
+    alignItems: "stretch",
+    boxSizing: "border-box",
   },
   left: {
-    flex: "1 1 350px",
-    maxWidth: 450,
-    position: "relative", // Needed for absolute PRD button
+    flex: "1 1 300px",
+    position: "relative",
   },
   titleRow: {
     marginBottom: 8,
@@ -231,17 +248,17 @@ const styles = {
     fontWeight: 800,
   },
   rightStats: {
-    flex: "1",
+    flex: "2 1 400px",
     display: "flex",
-    gap: 20,
+    gap: 16,
+    flexWrap: "wrap",
     justifyContent: "flex-start",
   },
   statCard: {
-    flex: "1",
-    minWidth: 180,
-    maxWidth: 240,
-    borderRadius: 24,
-    padding: "24px",
+    flex: "1 1 160px",
+    minWidth: 160,
+    borderRadius: 20,
+    padding: "20px",
     display: "flex",
     alignItems: "center",
     transition: "transform 0.2s ease",
@@ -260,6 +277,27 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+  },
+  cardHeaderArea: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  cardAddBtn: {
+    background: "#fff",
+    border: "1px solid #e2e8f0",
+    width: "24px",
+    height: "24px",
+    borderRadius: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      transform: "scale(1.1)",
+      borderColor: "#cbd5e1",
+    }
   },
   cardText: {
     width: "100%",

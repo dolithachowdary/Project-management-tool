@@ -9,8 +9,13 @@ import { getProjectById, getProjectSummary, getProjectMembers, getProjectHierarc
 import Loader from "../components/Loader";
 import { formatStatus } from "../utils/helpers";
 import EditProjectModal from "../components/EditProjectModal";
+import AddSprint from "../components/AddSprint";
+import TaskForm from "../components/TaskForm";
 import FlowGraph from "../components/FlowGraph";
 import { AnimatePresence } from "framer-motion";
+import { getProjects } from "../api/projects";
+import { createTask } from "../api/tasks";
+import toast from "react-hot-toast";
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -23,6 +28,9 @@ const ProjectDetails = () => {
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddSprintModalOpen, setIsAddSprintModalOpen] = useState(false);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [allProjects, setAllProjects] = useState([]);
   const [showFlowGraph, setShowFlowGraph] = useState(false);
   const [hierarchyData, setHierarchyData] = useState(null);
 
@@ -41,19 +49,17 @@ const ProjectDetails = () => {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [pRes, sRes, mRes] = await Promise.all([
+      const [pRes, sRes, mRes, allPRes] = await Promise.all([
         getProjectById(id),
         getProjectSummary(id),
-        getProjectMembers(id)
+        getProjectMembers(id),
+        getProjects()
       ]);
 
-      const projectData = pRes.data?.data || pRes.data;
-      const summaryData = sRes.data?.data || sRes.data;
-      const membersData = mRes.data?.data || mRes.data || [];
-
-      setProject(projectData);
-      setSummary(summaryData);
-      setMembers(membersData);
+      setProject(pRes.data?.data || pRes.data);
+      setSummary(sRes.data?.data || sRes.data);
+      setMembers(mRes.data?.data || mRes.data || []);
+      setAllProjects(allPRes.data?.data || allPRes.data || []);
     } catch (err) {
       console.error("Error loading project details:", err);
     } finally {
@@ -81,13 +87,25 @@ const ProjectDetails = () => {
   const activeTasks = totalTasks - completedTasks;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
+  const handleAddTask = async (taskData) => {
+    try {
+      await createTask(taskData);
+      toast.success("Task created successfully!");
+      setIsAddTaskModalOpen(false);
+      loadData(); // Refresh summary/modules
+    } catch (err) {
+      console.error("Failed to create task:", err);
+      toast.error("Failed to create task");
+    }
+  };
+
   return (
     <div style={styles.pageContainer}>
       <Sidebar />
-      <div style={styles.mainContent}>
+      <div style={styles.mainContent} className="hide-scrollbar">
         <Header role={role} />
 
-        <div style={styles.pageInner}>
+        <div style={styles.pageInner} className="hide-scrollbar">
           <button onClick={() => navigate("/projects")} style={styles.backBtn}>
             <span style={styles.backArrow}>‹</span> Back to Projects
           </button>
@@ -108,6 +126,8 @@ const ProjectDetails = () => {
             hasDocument={!!project.document_name}
             onEdit={() => setIsEditModalOpen(true)}
             onShowFlow={handleShowFlow}
+            onAddSprint={() => setIsAddSprintModalOpen(true)}
+            onAddTask={() => setIsAddTaskModalOpen(true)}
           />
 
           <div style={styles.contentLayout}>
@@ -118,7 +138,9 @@ const ProjectDetails = () => {
 
             {/* RIGHT COLUMN: RECENT ACTIVITY */}
             <div style={styles.rightCol}>
-              <RecentActivity projectId={id} />
+              <div style={styles.activityCard}>
+                <RecentActivity projectId={id} />
+              </div>
             </div>
           </div>
         </div>
@@ -130,6 +152,27 @@ const ProjectDetails = () => {
         project={project}
         onProjectUpdated={loadData}
       />
+
+      <AddSprint
+        isOpen={isAddSprintModalOpen}
+        onClose={() => setIsAddSprintModalOpen(false)}
+        onSprintAdded={loadData}
+        initialProjectId={id}
+      />
+
+      {isAddTaskModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent} className="hide-scrollbar">
+            <TaskForm
+              onSave={handleAddTask}
+              onCancel={() => setIsAddTaskModalOpen(false)}
+              projects={allProjects}
+              currentUserId={userData?.id}
+              initialProjectId={id}
+            />
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {showFlowGraph && (
@@ -154,14 +197,16 @@ const styles = {
   mainContent: {
     flex: 1,
     overflowY: "auto",
+    overflowX: "hidden",
     display: "flex",
     flexDirection: "column",
   },
   pageInner: {
-    padding: "0 32px 40px",
+    padding: "0 24px 40px",
     maxWidth: 1440,
     margin: "0 auto",
     width: "100%",
+    boxSizing: "border-box",
   },
   backBtn: {
     background: "none",
@@ -185,19 +230,43 @@ const styles = {
     lineHeight: 1,
   },
   contentLayout: {
-    display: "grid",
-    gridTemplateColumns: "1fr 340px",
+    display: "flex",
+    flexWrap: "wrap",
     gap: 32,
     alignItems: "start",
   },
   leftCol: {
+    flex: "1 1 400px",
     display: "flex",
     flexDirection: "column",
     gap: 32,
+    minWidth: 0, // Prevent flex items from overflowing
   },
   rightCol: {
+    flex: "0 0 280px",
     position: "sticky",
     top: 24,
+  },
+  activityCard: {
+    height: "calc(100vh - 420px)",
+    minHeight: 450,
+  },
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(15, 23, 42, 0.4)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2000,
+    backdropFilter: "blur(4px)",
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: "800px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    padding: "20px",
   },
   errorContainer: {
     padding: 60,

@@ -272,7 +272,8 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: 12,
-    width: 180,
+    flex: "0 1 180px",
+    minWidth: 100,
   },
   progressTrack: {
     flex: 1,

@@ -8,7 +8,7 @@ import { formatStatus } from "../utils/helpers";
 
 const RED = "#C62828";
 
-export default function TaskForm({ onSave, onCancel, projects = [], initialData, currentUserId }) {
+export default function TaskForm({ onSave, onCancel, projects = [], initialData, currentUserId, initialProjectId }) {
   const [modules, setModules] = useState([]);
   const [members, setMembers] = useState([]);
   const [sprints, setSprints] = useState([]);
@@ -21,7 +21,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
     title: "",
     description: "",
     module_id: "",
-    project_id: "",
+    project_id: initialProjectId || "",
     sprint_id: "",
     assignee_id: isDev ? (currentUserId || localStorage.getItem("userId")) : "",
     status: "To Do",
@@ -70,8 +70,10 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       if (pid) {
         fetchProjectDetails(pid);
       }
+    } else if (initialProjectId) {
+      fetchProjectDetails(initialProjectId);
     }
-  }, [initialData, currentUserId, fetchProjectDetails, isDev]);
+  }, [initialData, currentUserId, fetchProjectDetails, isDev, initialProjectId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -208,6 +210,15 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       backgroundColor: "#fff",
       boxSizing: "border-box"
     },
+    staticText: {
+      padding: "12px 14px",
+      fontSize: "14px",
+      color: "#1e293b",
+      background: "#f8fafc",
+      borderRadius: "8px",
+      border: "1px solid #e2e8f0",
+      fontWeight: "600"
+    },
     buttonGroup: {
       display: "flex",
       gap: "12px",
@@ -289,18 +300,27 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
         ),
 
         // Project
-        React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Project", React.createElement("span", { style: styles.required }, " *")),
-          React.createElement("select", {
-            name: "project_id",
-            value: formData.project_id,
-            onChange: onProjectChange,
-            style: styles.select,
-            required: true
-          },
-            React.createElement("option", { value: "" }, "Select Project"),
-            projects.map(project =>
-              React.createElement("option", { key: project._id || project.id, value: project._id || project.id }, project.name)
+        !initialProjectId ? (
+          React.createElement("div", { style: styles.formGroup },
+            React.createElement("label", { style: styles.label }, "Project", React.createElement("span", { style: styles.required }, " *")),
+            React.createElement("select", {
+              name: "project_id",
+              value: formData.project_id,
+              onChange: onProjectChange,
+              style: styles.select,
+              required: true
+            },
+              React.createElement("option", { value: "" }, "Select Project"),
+              projects.map(project =>
+                React.createElement("option", { key: project._id || project.id, value: project._id || project.id }, project.name)
+              )
+            )
+          )
+        ) : (
+          React.createElement("div", { style: styles.formGroup },
+            React.createElement("label", { style: styles.label }, "Project"),
+            React.createElement("div", { style: styles.staticText },
+              projects.find(p => (p.id || p._id) === initialProjectId)?.name || "Current Project"
             )
           )
         ),

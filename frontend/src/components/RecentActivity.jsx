@@ -82,18 +82,13 @@ export default function RecentActivity({ projectId, sprintId, hideHeader = false
                     <div style={styles.content}>
                       <div style={styles.itemTitle}>
                         {l.message ? (
-                          <span dangerouslySetInnerHTML={{ __html: l.message.replace(/#(\w+)/g, '<span style="font-weight:700;">$1</span>') }} />
+                          <span dangerouslySetInnerHTML={{ __html: l.message }} />
                         ) : (
-                          <>
-                            <span style={styles.actionText}>{l.action === 'created' ? 'Added a new project' : l.action}</span>{" "}
-                          </>
+                          <span style={styles.actionText}>{l.action === 'created' ? 'Added a new item' : l.action}</span>
                         )}
                       </div>
                       <div style={styles.metaRow}>
                         <span style={styles.time}>{format(new Date(l.changed_at || l.created_at || Date.now()), 'h:mm a')}</span>
-                        <div style={styles.userNote}>
-                          {l.user_name || "System"} {l.action} this task
-                        </div>
                       </div>
                     </div>
 
@@ -127,10 +122,11 @@ const styles = {
     padding: "16px 20px 8px", // Reduced padding
   },
   title: {
-    fontSize: 16, // Slightly smaller
-    fontWeight: 700,
+    fontSize: 14,
+    fontWeight: 400,
     color: "#1e293b",
     margin: 0,
+    fontFamily: "'Poppins', sans-serif",
   },
   scrollArea: {
     flex: 1,
@@ -147,10 +143,12 @@ const styles = {
     marginBottom: 20,
   },
   dateLabel: {
-    fontSize: 13,
-    fontWeight: 600,
+    fontSize: 12,
+    fontWeight: 500,
     color: "#94a3b8",
     marginBottom: 16,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
   },
   feed: {
     display: "flex",
@@ -176,11 +174,15 @@ const styles = {
     minWidth: 0,
   },
   itemTitle: {
-    fontSize: 15,
-    fontWeight: 700,
+    fontSize: 14,
+    fontWeight: 400,
     color: "#1e293b",
     marginBottom: 4,
-    lineHeight: 1.2,
+    lineHeight: 1.4,
+    fontFamily: "'Poppins', sans-serif",
+  },
+  actionText: {
+    fontWeight: 400,
   },
   metaRow: {
     display: "flex",
@@ -188,8 +190,8 @@ const styles = {
     gap: 4,
   },
   time: {
-    fontSize: 12,
-    fontWeight: 600,
+    fontSize: 11,
+    fontWeight: 400,
     color: "#94a3b8",
   },
   userNote: {
