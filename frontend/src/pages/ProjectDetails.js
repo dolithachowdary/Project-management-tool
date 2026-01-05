@@ -14,7 +14,7 @@ import TaskForm from "../components/TaskForm";
 import FlowGraph from "../components/FlowGraph";
 import { AnimatePresence } from "framer-motion";
 import { getProjects } from "../api/projects";
-import { createTask } from "../api/tasks";
+import { createTask, updateTask } from "../api/tasks";
 import toast from "react-hot-toast";
 
 const ProjectDetails = () => {
@@ -108,7 +108,6 @@ const ProjectDetails = () => {
 
   const handleUpdateTask = async (taskData) => {
     try {
-      const { updateTask } = await import("../api/tasks");
       await updateTask(editingTask.id || editingTask._id, taskData);
       toast.success("Task updated successfully!");
       setIsEditTaskModalOpen(false);

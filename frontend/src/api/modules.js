@@ -7,8 +7,8 @@ export const createModule = (data) =>
   api.post("/modules", data);
 
 export const updateModule = (id, data) =>
-  api.patch("/modules", data, { params: { id } });
+  api.patch(`/modules/${id}`, data);
 
 export const deleteModule = (id) =>
-  api.delete("/modules", { params: { id } });
+  api.delete(`/modules/${id}`);
 

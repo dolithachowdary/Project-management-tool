@@ -41,7 +41,7 @@ export default function Modules({ projectId, projectColor, onTaskClick }) {
 
   useEffect(() => {
     fetchData();
-  }, [projectId]);
+  }, [fetchData]);
 
   const toggleModule = (id) => {
     setExpandedModules(prev => ({ ...prev, [id]: !prev[id] }));

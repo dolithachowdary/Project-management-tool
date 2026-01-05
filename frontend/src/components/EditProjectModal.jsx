@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 import { updateProject, deleteProject } from "../api/projects";
 import { ChevronDown, Trash2 } from "lucide-react";
 import DatePicker from "./DatePicker";
@@ -26,7 +27,6 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, onProjec
         status: "",
         color: ""
     });
-    const [projectDoc, setProjectDoc] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showColors, setShowColors] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -72,11 +72,6 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, onProjec
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setProjectDoc(e.target.files[0]);
-        }
-    };
 
     const handleDelete = async () => {
         setShowConfirmDelete(true);
@@ -91,7 +86,7 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, onProjec
             onClose();
         } catch (err) {
             console.error("Failed to delete project:", err);
-            alert(err.response?.data?.message || "Failed to delete project");
+            toast.error(err.response?.data?.message || "Failed to delete project");
         } finally {
             setLoading(false);
             setShowConfirmDelete(false);
@@ -109,9 +104,6 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, onProjec
         data.append("end_date", formData.end_date);
         data.append("status", formData.status);
         data.append("color", formData.color);
-        if (projectDoc) {
-            data.append("document", projectDoc);
-        }
 
         try {
             await updateProject(project.id, data);
@@ -119,7 +111,7 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, onProjec
             onClose();
         } catch (err) {
             console.error("Failed to update project:", err);
-            alert(err.response?.data?.message || "Failed to update project");
+            toast.error(err.response?.data?.message || "Failed to update project");
         } finally {
             setLoading(false);
         }

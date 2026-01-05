@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { getNotes, createNote as createNoteApi, updateNote as updateNoteApi, deleteNote as deleteNoteApi } from "../api/notes";
@@ -34,7 +35,6 @@ export default function Notes() {
   // New Note Widget State
   const [newNoteColor, setNewNoteColor] = useState(COLORS[0]);
   const [isWidgetMenuOpen, setIsWidgetMenuOpen] = useState(false);
-  const [setNewNoteContent] = useState("");
 
   // Inline Editing State
   const [editingId, setEditingId] = useState(null); // ID of note being edited
@@ -45,12 +45,7 @@ export default function Notes() {
   const [openCardMenuId, setOpenCardMenuId] = useState(null);
 
 
-  /* -------- FETCH NOTES -------- */
-  useEffect(() => {
-    fetchNotes();
-  }, []);
-
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       const data = await getNotes();
       const formatted = data.map(n => ({
@@ -65,7 +60,12 @@ export default function Notes() {
     } catch (err) {
       console.error("Failed to fetch notes:", err);
     }
-  };
+  }, []);
+
+  /* -------- FETCH NOTES -------- */
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
 
   /* -------- TEXT FORMATTING -------- */
   const format = (cmd, isInline = false) => {
@@ -81,7 +81,7 @@ export default function Notes() {
   };
 
   /* -------- CREATE NEW NOTE -------- */
-  const createNote = async () => {
+  const createNote = useCallback(async () => {
     const el = document.getElementById("new-note-editor");
     if (!el) return;
     const content = el.innerHTML.trim();
@@ -95,17 +95,16 @@ export default function Notes() {
 
       fetchNotes();
       el.innerHTML = "";
-      setNewNoteContent("");
       setNewNoteColor(COLORS[0]);
 
     } catch (err) {
       console.error("Create Note Error:", err);
-      alert("Failed to create note");
+      toast.error("Failed to create note");
     }
-  };
+  }, [newNoteColor.id, fetchNotes]);
 
   /* -------- UPDATE EXISTING NOTE -------- */
-  const updateNote = async (id) => {
+  const updateNote = useCallback(async (id) => {
     const el = document.getElementById(`inline-editor-${id}`);
     if (!el) return;
     const content = el.innerHTML.trim();
@@ -119,13 +118,13 @@ export default function Notes() {
       fetchNotes();
     } catch (err) {
       console.error(err);
-      alert("Failed to save changes");
+      toast.error("Failed to save changes");
     }
 
     setEditingId(null);
     setEditContent("");
     setEditColor(null);
-  };
+  }, [editColor?.id, fetchNotes]);
 
   /* -------- ACTIONS -------- */
   const deleteNote = async (id) => {
@@ -138,7 +137,7 @@ export default function Notes() {
     } catch (err) {
       console.error("Failed to delete", err);
       fetchNotes(); // Revert on failure
-      alert("Failed to delete note");
+      toast.error("Failed to delete note");
     }
   };
 
@@ -204,7 +203,7 @@ export default function Notes() {
 
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [editingId, openCardMenuId, isWidgetMenuOpen, notes, editColor]);
+  }, [editingId, openCardMenuId, isWidgetMenuOpen, notes, editColor, updateNote]);
   // Added dependencies to ensure updateNote has access to latest state scope if needed (though updateNote uses refs mostly)
 
   /* ================= RENDER ================= */
@@ -405,7 +404,6 @@ export default function Notes() {
             suppressContentEditableWarning
             style={styles.editorInput}
             placeholder="Type anything to remember..."
-            onInput={(e) => setNewNoteContent(e.currentTarget.innerHTML)}
           />
 
           {/* Toolbar */}

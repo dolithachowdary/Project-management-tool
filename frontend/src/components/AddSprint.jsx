@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { getProjects } from "../api/projects";
 import { createSprint, getNextSprintNumber } from "../api/sprints";
 import { Plus, Trash2 } from "lucide-react";
@@ -55,7 +56,9 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
   const fetchNextSprintNum = async (pid) => {
     try {
       const res = await getNextSprintNumber(pid);
-      setNextSprintNum(res.data?.next_number || res.data?.data?.next_number);
+      // res.data is from Axios, which contains the server response { success, data: { next_number } }
+      const num = res.data?.data?.next_number || res.data?.next_number;
+      setNextSprintNum(num);
     } catch (err) {
       console.error("Failed to fetch next sprint number", err);
     }
@@ -110,7 +113,7 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
       onClose();
     } catch (err) {
       console.error("Failed to create sprint", err);
-      alert("Error creating sprint");
+      toast.error("Error creating sprint");
     } finally {
       setLoading(false);
     }

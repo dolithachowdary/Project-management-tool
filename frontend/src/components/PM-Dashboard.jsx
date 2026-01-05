@@ -12,7 +12,6 @@ import Upcoming from "./Upcoming";
 import RecentActivity from "./RecentActivity";
 import QAPending from "./QAPending";
 import WeeklyTaskGraph from "./WeeklyTaskGraph";
-import EditSprintModal from "./EditSprintModal";
 import TaskForm from "./TaskForm";
 import { updateTask } from "../api/tasks";
 import toast from "react-hot-toast";
@@ -28,17 +27,11 @@ export default function PMDashboard() {
   const [statsData, setStatsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [allProjects, setAllProjects] = useState([]);
-  const [editingSprint, setEditingSprint] = useState(null);
-  const [isEditSprintModalOpen, setIsEditSprintModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
 
   const userData = JSON.parse(localStorage.getItem("userData") || "{}");
 
-  const handleEditSprint = (s) => {
-    setEditingSprint(s);
-    setIsEditSprintModalOpen(true);
-  };
 
   const handleEditTask = (t) => {
     setEditingTask(t);
@@ -252,14 +245,6 @@ export default function PMDashboard() {
         </aside>
       </div>
 
-      {isEditSprintModalOpen && (
-        <EditSprintModal
-          isOpen={isEditSprintModalOpen}
-          onClose={() => setIsEditSprintModalOpen(false)}
-          sprint={editingSprint}
-          onSprintUpdated={() => window.location.reload()}
-        />
-      )}
 
       {isEditTaskModalOpen && (
         <div style={styles.modalOverlay}>

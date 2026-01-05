@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { format } from "date-fns";
-import { Download, FileSpreadsheet, Printer, Save, Trash2, Plus } from "lucide-react";
+import { FileSpreadsheet, Printer, Save, Trash2, Plus } from "lucide-react";
 import ExcelJS from "exceljs";
 
 export default function TimesheetPreview({ data, onSave, isHistory = false }) {
@@ -13,7 +13,7 @@ export default function TimesheetPreview({ data, onSave, isHistory = false }) {
 
     if (!data || !editableData) return null;
 
-    const { employee, project, start_date, end_date, total_hours, supervisor_name } = data;
+    const { employee, project, start_date, end_date } = data;
 
     const handleCellChange = (idx, field, val) => {
         const newData = [...editableData];

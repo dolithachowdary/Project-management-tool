@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { getProjects, getProjectMembers } from "../api/projects";
 import { getSupervisors } from "../api/users";
 import { generatePreview } from "../api/timesheets";
@@ -53,7 +54,7 @@ export default function TimesheetGenerator({ onPreview }) {
 
     const handleGenerate = async () => {
         if (!selectedMemberId || !startDate || !endDate) {
-            alert("Please fill all required fields");
+            toast.error("Please fill all required fields");
             return;
         }
 
@@ -72,7 +73,7 @@ export default function TimesheetGenerator({ onPreview }) {
             onPreview({ ...previewData, supervisor_id: selectedSupervisorId, supervisor_name: supervisor?.full_name });
         } catch (err) {
             console.error("Failed to generate preview", err);
-            alert(err.response?.data?.error || "Generation failed");
+            toast.error(err.response?.data?.error || "Generation failed");
         } finally {
             setLoading(false);
         }

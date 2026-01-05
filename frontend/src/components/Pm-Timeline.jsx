@@ -361,7 +361,6 @@ const styles = {
     position: "absolute",
     height: 48,
     borderRadius: "8px",
-    padding: "0 12px",
     display: "flex",
     flexDirection: "row",
     alignItems: "center",

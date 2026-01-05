@@ -166,7 +166,7 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
         });
 
         return list;
-    }, [type, data, project, modules, sprints, tasks, sprint.id, sprint.name]);
+    }, [type, data, project, modules, sprints, tasks, sprint]);
 
     useEffect(() => {
         if (nodes.length > 0 && viewportRef.current) {
@@ -272,7 +272,7 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
         }
 
         return p;
-    }, [nodes, modules, sprints, tasks, type, project.id, sprint.id]);
+    }, [nodes, modules, tasks, type, project.id, sprint.id]);
 
     const icon = (type) => {
         const size = 16;

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import toast from "react-hot-toast";
 import { createProject } from "../api/projects";
 import { getAssignableUsers } from "../api/users";
 import { ChevronDown, Plus, Trash2 } from "lucide-react";
@@ -38,7 +39,6 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [showMembers, setShowMembers] = useState(false);
 
-  const [projectDoc, setProjectDoc] = useState(null); // Document upload state (removed from UI)
 
   const [modules, setModules] = useState([{ name: "", description: "" }]);
 
@@ -129,16 +129,11 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
     }
   };
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setProjectDoc(e.target.files[0]);
-    }
-  };
 
   /* ---------------- SUBMIT ---------------- */
 
   const submit = async () => {
-    if (!projectName.trim()) return alert("Project name required");
+    if (!projectName.trim()) return toast.error("Project name required");
 
     // Use FormData for file upload
     const formData = new FormData();
@@ -150,16 +145,13 @@ export default function AddProject({ isOpen, onClose, usedColors = [] }) {
     formData.append("members", JSON.stringify(selectedMembers));
     formData.append("modules", JSON.stringify(modules.filter((m) => m.name.trim())));
 
-    if (projectDoc) {
-      formData.append("document", projectDoc);
-    }
 
     try {
       await createProject(formData);
       onClose();
     } catch (err) {
       console.error("Failed to create project", err);
-      alert(err.response?.data?.message || "Failed to create project");
+      toast.error(err.response?.data?.message || "Failed to create project");
     }
   };
 
