@@ -37,11 +37,14 @@ const SprintDetails = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
   const role = userData.role || "Project Manager";
+  const isDev = role.toLowerCase() === "developer";
   const [activeTab, setActiveTab] = useState("overview");
   const [collapsedSections, setCollapsedSections] = useState({});
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [newTaskStartDate, setNewTaskStartDate] = useState("");
+  const [newTaskEndDate, setNewTaskEndDate] = useState("");
   const [inlineAddingTo, setInlineAddingTo] = useState(null); // sectionKey
   const [allModules, setAllModules] = useState([]);
   const [projectMembers, setProjectMembers] = useState([]);
@@ -89,9 +92,22 @@ const SprintDetails = () => {
     }
 
     try {
-      const moduleId = selectedModule || allModules[0]?.id;
-      if (!moduleId) {
-        alert("Please ensure there are modules in this project.");
+      const moduleId = selectedModule || (allModules.length > 0 ? allModules[0].id : null);
+      const assigneeId = isDev ? userData.id : selectedAssignee;
+      const goalIdx = selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null;
+
+      const isMissingField = !newTaskTitle.trim() ||
+        !newTaskDescription.trim() ||
+        !moduleId ||
+        !assigneeId ||
+        !selectedPriority ||
+        !selectedPotential ||
+        !newTaskStartDate ||
+        !newTaskEndDate ||
+        goalIdx === null;
+
+      if (isMissingField) {
+        alert("Please fill in all mandatory fields: Title, Description, Module, Assignee, Dates, Priority, Goal, and Potential.");
         return;
       }
 
@@ -100,7 +116,10 @@ const SprintDetails = () => {
         project_id: sprint.project_id,
         sprint_id: sprint.id,
         module_id: moduleId,
-        assignee_id: selectedAssignee || null,
+        assignee_id: assigneeId,
+        description: newTaskDescription,
+        start_date: newTaskStartDate,
+        end_date: newTaskEndDate,
         status: sectionKey === 'planned' ? 'todo' : sectionKey,
         priority: selectedPriority || 'Medium',
         goal_index: selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null,
@@ -109,6 +128,9 @@ const SprintDetails = () => {
 
       await createTask(payload);
       setNewTaskTitle("");
+      setNewTaskDescription("");
+      setNewTaskStartDate("");
+      setNewTaskEndDate("");
       setSelectedModule("");
       setSelectedAssignee("");
       setSelectedPriority("Medium");
@@ -200,10 +222,16 @@ const SprintDetails = () => {
   const recalculatedGoals = React.useMemo(() => {
     return sprintGoals.map(goal => {
       const goalTasks = (modules || []).flatMap(m => (m.tasks || [])).filter(t => t.goal_index === goal.index);
-      const completed = goalTasks.filter(t => t.status?.toLowerCase() === 'done').length;
-      const total = goalTasks.length;
-      const calcProgress = total > 0 ? Math.round((completed / total) * 100) : 0;
-      return { ...goal, progress: calcProgress, taskCount: total, completedCount: completed };
+      const totalCount = goalTasks.length;
+      const completedCount = goalTasks.filter(t => t.status?.toLowerCase() === 'done').length;
+      const calcProgress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+      return {
+        ...goal,
+        progress: calcProgress,
+        taskCount: totalCount,
+        completedCount
+      };
     });
   }, [sprintGoals, modules]);
 
@@ -237,6 +265,7 @@ const SprintDetails = () => {
 
   const totalTasks = activeTasks.length;
   const completedTasks = activeTasks.filter(t => t.status?.toLowerCase() === 'done').length;
+
   const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   // SVG Circle constants
@@ -496,13 +525,13 @@ const SprintDetails = () => {
                           <table style={styles.taskTable}>
                             <thead>
                               <tr>
-                                <th style={{ ...styles.th, width: '25%' }}>Task name</th>
-                                <th style={{ ...styles.th, width: '12%' }}>Module</th>
-                                {goalFilter === 'all' && <th style={{ ...styles.th, width: '15%' }}>Goal</th>}
-                                <th style={{ ...styles.th, width: '16%' }}>Assignee</th>
-                                <th style={{ ...styles.th, width: '11%' }}>Priority</th>
-                                <th style={{ ...styles.th, width: '11%' }}>Dates</th>
-                                <th style={{ ...styles.th, width: '10%' }}>Status</th>
+                                <th style={{ ...styles.th, width: '35%' }}>Task name *</th>
+                                <th style={styles.th}>Module *</th>
+                                {goalFilter === 'all' && <th style={styles.th}>Goal *</th>}
+                                <th style={styles.th}>Assignee *</th>
+                                <th style={styles.th}>Priority *</th>
+                                <th style={styles.th}>Dates *</th>
+                                <th style={styles.th}>Status</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -575,21 +604,28 @@ const SprintDetails = () => {
                                     if (inlineAddingTo !== group.key) {
                                       setInlineAddingTo(group.key);
                                       setNewTaskTitle("");
+                                      setNewTaskDescription("");
+                                      const today = new Date().toISOString().split('T')[0];
+                                      setNewTaskStartDate(sprint.start_date ? sprint.start_date.split('T')[0] : today);
+                                      setNewTaskEndDate(sprint.end_date ? sprint.end_date.split('T')[0] : today);
                                       setSelectedModule(allModules[0]?.id || "");
-                                      setSelectedAssignee("");
+                                      setSelectedAssignee(isDev ? userData.id : "");
                                       setSelectedPriority("Medium");
+                                      setSelectedPotential("");
+                                      setSelectedGoalIndex("");
                                     }
                                   }}
                                 >
                                   <td colSpan="6" style={styles.addTableCell}>
                                     {inlineAddingTo === group.key ? (
                                       <div style={styles.inlineForm}>
-                                        <div style={{ flex: 4, marginRight: '10px' }}>
+                                        <div style={{ flex: 3, marginRight: '10px' }}>
                                           <input
                                             autoFocus
                                             style={styles.inlineInput}
-                                            placeholder="Task name"
+                                            placeholder="Task title *"
                                             value={newTaskTitle}
+                                            required
                                             onChange={(e) => setNewTaskTitle(e.target.value)}
                                             onKeyDown={(e) => {
                                               if (e.key === 'Enter') handleAddTask(group.key);
@@ -597,34 +633,70 @@ const SprintDetails = () => {
                                             }}
                                           />
                                         </div>
+                                        <div style={{ flex: 3, marginRight: '10px' }}>
+                                          <input
+                                            style={styles.inlineInput}
+                                            placeholder="Description *"
+                                            value={newTaskDescription}
+                                            required
+                                            onChange={(e) => setNewTaskDescription(e.target.value)}
+                                          />
+                                        </div>
+                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
+                                          <input
+                                            type="date"
+                                            style={styles.inlineInput}
+                                            value={newTaskStartDate}
+                                            required
+                                            onChange={(e) => setNewTaskStartDate(e.target.value)}
+                                          />
+                                        </div>
+                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
+                                          <input
+                                            type="date"
+                                            style={styles.inlineInput}
+                                            value={newTaskEndDate}
+                                            required
+                                            onChange={(e) => setNewTaskEndDate(e.target.value)}
+                                          />
+                                        </div>
                                         <div style={{ flex: 1.5, marginRight: '10px' }}>
                                           <select
                                             style={styles.inlineSelect}
                                             value={selectedModule}
+                                            required
                                             onChange={(e) => setSelectedModule(e.target.value)}
                                           >
-                                            <option value="">Module</option>
+                                            <option value="">Module *</option>
                                             {allModules.map(m => (
                                               <option key={m.id} value={m.id}>{m.name}</option>
                                             ))}
                                           </select>
                                         </div>
                                         <div style={{ flex: 1.5, marginRight: '10px' }}>
-                                          <select
-                                            style={styles.inlineSelect}
-                                            value={selectedAssignee}
-                                            onChange={(e) => setSelectedAssignee(e.target.value)}
-                                          >
-                                            <option value="">Assignee</option>
-                                            {projectMembers.map(m => (
-                                              <option key={m.id} value={m.id}>{m.full_name}</option>
-                                            ))}
-                                          </select>
+                                          {isDev ? (
+                                            <div style={{ ...styles.inlineInput, backgroundColor: '#f8fafc', fontSize: '12px', height: '31px', display: 'flex', alignItems: 'center' }}>
+                                              {userData.full_name || "You"}
+                                            </div>
+                                          ) : (
+                                            <select
+                                              style={styles.inlineSelect}
+                                              value={selectedAssignee}
+                                              required
+                                              onChange={(e) => setSelectedAssignee(e.target.value)}
+                                            >
+                                              <option value="">Assignee *</option>
+                                              {projectMembers.map(m => (
+                                                <option key={m.id} value={m.id}>{m.full_name}</option>
+                                              ))}
+                                            </select>
+                                          )}
                                         </div>
                                         <div style={{ flex: 1, marginRight: '10px' }}>
                                           <select
                                             style={styles.inlineSelect}
                                             value={selectedPriority}
+                                            required
                                             onChange={(e) => setSelectedPriority(e.target.value)}
                                           >
                                             <option value="Low">Low</option>
@@ -636,9 +708,10 @@ const SprintDetails = () => {
                                           <select
                                             style={styles.inlineSelect}
                                             value={selectedGoalIndex}
+                                            required
                                             onChange={(e) => setSelectedGoalIndex(e.target.value)}
                                           >
-                                            <option value="">Goal</option>
+                                            <option value="">Goal *</option>
                                             {recalculatedGoals.map((g, idx) => (
                                               <option key={idx} value={idx}>{g.text}</option>
                                             ))}
@@ -648,9 +721,10 @@ const SprintDetails = () => {
                                           <select
                                             style={styles.inlineSelect}
                                             value={selectedPotential}
+                                            required
                                             onChange={(e) => setSelectedPotential(e.target.value)}
                                           >
-                                            <option value="">Potential</option>
+                                            <option value="">Potential *</option>
                                             {["Very Small", "Small", "Medium", "Large", "Very Large"].map(p => (
                                               <option key={p} value={p}>{p}</option>
                                             ))}
@@ -896,12 +970,16 @@ const styles = {
   },
   mainContent: {
     flex: 1,
-    overflowY: "auto",
+    display: "flex",
+    flexDirection: "column",
     height: "100vh",
+    overflow: "hidden",
   },
   pageInner: {
+    flex: 1,
+    overflowY: "auto",
     padding: "10px",
-    maxWidth: "1400px",
+    maxWidth: "100%",
     margin: "0",
   },
   topBar: {

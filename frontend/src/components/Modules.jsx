@@ -68,6 +68,7 @@ export default function Modules({ projectId, projectColor, onTaskClick }) {
           const completedCount = moduleTasks.filter(t => t.status?.toLowerCase() === "done").length;
           const inProgressCount = moduleTasks.filter(t => t.status?.toLowerCase() === "in_progress").length;
           const todoCount = moduleTasks.length - completedCount - inProgressCount;
+
           const progress = moduleTasks.length > 0 ? (completedCount / moduleTasks.length) * 100 : 0;
 
           return (

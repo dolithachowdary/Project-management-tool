@@ -1,12 +1,12 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { X, Box, ClipboardList, User, Zap, Layers, GitGraph, Workflow } from 'lucide-react';
+import { X, Box, ClipboardList, User, Zap, Layers, GitGraph, Workflow, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Avatar from './Avatar';
 
 /* -------------------- Layout constants -------------------- */
 const NODE_WIDTH = 210;
 const NODE_HEIGHT = 64;
-const COL_WIDTH = 330;
+const COL_WIDTH = 280;
 const ROW_GAP = 30;
 
 /* -------------------- Pastel palette -------------------- */
@@ -14,6 +14,7 @@ const flowBg = {
     project: 'rgba(79,125,255,0.08)',
     module: 'rgba(139,92,246,0.08)',
     sprint: 'rgba(236,72,153,0.08)',
+    goal: 'rgba(16,185,129,0.08)',
     task: 'rgba(249,115,22,0.08)',
     person: 'rgba(168, 85, 247, 0.1)',
 };
@@ -22,8 +23,40 @@ const flowBorder = {
     project: '#4F7DFF',
     module: '#8b5cf6',
     sprint: '#ec4899',
+    goal: '#10b981',
     task: '#f97316',
     person: '#a855f7',
+};
+
+/* -------------------- Data Helper -------------------- */
+const extractGoals = (sprintOrSprints) => {
+    const goalsList = [];
+    const items = Array.isArray(sprintOrSprints) ? sprintOrSprints : [sprintOrSprints];
+
+    items.forEach(s => {
+        if (!s || !s.goal) return;
+        let parsed = [];
+        try {
+            const raw = typeof s.goal === 'string' ? JSON.parse(s.goal) : s.goal;
+            parsed = Array.isArray(raw) ? raw : [raw];
+        } catch (e) {
+            parsed = s.goal.split("\n").filter(g => g.trim());
+        }
+
+        parsed.forEach((g, i) => {
+            const text = typeof g === 'string' ? g : (g.text || '');
+            if (text) {
+                goalsList.push({
+                    id: `goal_${s.id}_${i}`,
+                    sprint_id: s.id,
+                    goal_index: i,
+                    name: text,
+                    type: 'goal'
+                });
+            }
+        });
+    });
+    return goalsList;
 };
 
 /* ========================================================= */
@@ -90,19 +123,25 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
         const list = [];
 
         if (type === 'project') {
+            // Project Details Flow: project -> modules -> sprints -> goals -> tasks
             cols[0] = [{ id: project.id, name: project.name, type: 'project' }];
             cols[1] = modules.map(m => ({ id: m.id, name: m.name, type: 'module' }));
             cols[2] = sprints.map(s => ({ id: s.id, name: `Sprint ${s.sprint_number}`, type: 'sprint' }));
-            cols[3] = tasks.slice(0, 20).map(t => ({ id: t.id, name: t.title, type: 'task' }));
+            cols[3] = extractGoals(sprints);
+            cols[4] = tasks.slice(0, 30).map(t => ({ id: t.id, name: t.title, type: 'task' }));
         } else {
+            // Sprint Details Flow: sprint -> goals -> modules -> tasks -> persons
             cols[0] = [{ id: sprint.id, name: sprint.name, type: 'sprint' }];
+
+            const sprintGoals = extractGoals(sprint);
+            cols[1] = sprintGoals;
 
             const mods = modules.map(m => ({ id: m.id, name: m.name, type: 'module' }));
             if (tasks.some(t => !t.module_id)) {
                 mods.push({ id: 'orphans', name: 'General Tasks', type: 'module' });
             }
-            cols[1] = mods;
-            cols[2] = tasks.slice(0, 15).map(t => ({ id: t.id, name: t.title, type: 'task' }));
+            cols[2] = mods;
+            cols[3] = tasks.slice(0, 20).map(t => ({ id: t.id, name: t.title, type: 'task' }));
 
             const people = [];
             const seen = new Set();
@@ -112,15 +151,15 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
                     people.push({ id: t.assignee_id, name: t.assignee_name, type: 'person' });
                 }
             });
-            cols[3] = people;
+            cols[4] = people;
         }
 
         cols.forEach((col, c) => {
+            if (!col) return;
             const totalHeight = col.length * (NODE_HEIGHT + ROW_GAP);
-            // Limit the start position to prevent nodes from going off the top
             const startY = Math.max(50, (800 - totalHeight) / 2);
             col.forEach((n, r) => {
-                n.x = c * COL_WIDTH + 80;
+                n.x = c * COL_WIDTH + 60;
                 n.y = startY + r * (NODE_HEIGHT + ROW_GAP);
                 list.push(n);
             });
@@ -156,62 +195,84 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
 
     /* -------------------- Paths -------------------- */
     const paths = useMemo(() => {
-        const get = (id) => nodes.find(n => n.id === id);
+        const getNodeById = (id) => nodes.find(n => n.id === id);
         const p = [];
 
         if (type === 'project') {
-            const proj = nodes.find(n => n.type === 'project');
+            const projNode = getNodeById(project.id);
 
+            // Project -> Modules
             modules.forEach(m => {
-                const mNode = get(m.id);
-                if (proj && mNode) p.push({ from: proj, to: mNode });
+                const mNode = getNodeById(m.id);
+                if (projNode && mNode) p.push({ from: projNode, to: mNode });
             });
 
+            // Modules -> Sprints (if module has task in that sprint)
             modules.forEach(m => {
-                const mNode = get(m.id);
+                const mNode = getNodeById(m.id);
                 const sprintIds = new Set(tasks.filter(t => t.module_id === m.id).map(t => t.sprint_id));
                 sprintIds.forEach(sid => {
-                    const sNode = get(sid);
+                    const sNode = getNodeById(sid);
                     if (mNode && sNode) p.push({ from: mNode, to: sNode });
                 });
             });
 
-            sprints.forEach(s => {
-                const sNode = get(s.id);
-                tasks.filter(t => t.sprint_id === s.id).slice(0, 20).forEach(t => {
-                    const tNode = get(t.id);
+            // Sprints -> Goals
+            const projectGoals = nodes.filter(n => n.type === 'goal');
+            projectGoals.forEach(g => {
+                const sNode = getNodeById(g.sprint_id);
+                if (sNode) p.push({ from: sNode, to: g });
+            });
+
+            // Goals -> Tasks
+            tasks.slice(0, 30).forEach(t => {
+                if (t.goal_index !== null && t.goal_index !== undefined) {
+                    const gNode = getNodeById(`goal_${t.sprint_id}_${t.goal_index}`);
+                    const tNode = getNodeById(t.id);
+                    if (gNode && tNode) p.push({ from: gNode, to: tNode });
+                } else {
+                    const sNode = getNodeById(t.sprint_id);
+                    const tNode = getNodeById(t.id);
                     if (sNode && tNode) p.push({ from: sNode, to: tNode });
-                });
+                }
             });
         } else {
-            // Sprint Details Flow: sprint -> modules -> tasks -> persons
-            const sNode = nodes.find(n => n.type === 'sprint');
+            const sNode = getNodeById(sprint.id);
 
-            // Sprint -> Modules
-            modules.forEach(m => {
-                const mNode = get(m.id);
-                if (sNode && mNode) p.push({ from: sNode, to: mNode });
+            // Sprint -> Goals
+            const sprintGoals = nodes.filter(n => n.type === 'goal');
+            sprintGoals.forEach(g => {
+                if (sNode) p.push({ from: sNode, to: g });
+            });
+
+            // Goals -> Modules (linked via tasks)
+            sprintGoals.forEach(g => {
+                const moduleIds = new Set(tasks.filter(t => t.goal_index === g.goal_index).map(t => t.module_id || 'orphans'));
+                moduleIds.forEach(mid => {
+                    const mNode = getNodeById(mid);
+                    if (mNode) p.push({ from: g, to: mNode });
+                });
             });
 
             // Modules -> Tasks
-            tasks.forEach(t => {
-                const mNode = t.module_id ? get(t.module_id) : get('orphans');
-                const tNode = get(t.id);
+            tasks.slice(0, 20).forEach(t => {
+                const mNode = t.module_id ? getNodeById(t.module_id) : getNodeById('orphans');
+                const tNode = getNodeById(t.id);
                 if (mNode && tNode) p.push({ from: mNode, to: tNode });
             });
 
             // Tasks -> Persons
             tasks.forEach(t => {
                 if (t.assignee_id) {
-                    const tNode = get(t.id);
-                    const pNode = get(t.assignee_id);
+                    const tNode = getNodeById(t.id);
+                    const pNode = getNodeById(t.assignee_id);
                     if (tNode && pNode) p.push({ from: tNode, to: pNode });
                 }
             });
         }
 
         return p;
-    }, [nodes, modules, sprints, tasks, type]);
+    }, [nodes, modules, sprints, tasks, type, project.id, sprint.id]);
 
     const icon = (type) => {
         const size = 16;
@@ -219,6 +280,7 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
             project: <Zap size={size} color="#fff" />,
             module: <Box size={size} color="#fff" />,
             sprint: <Layers size={size} color="#fff" />,
+            goal: <Target size={size} color="#fff" />,
             task: <ClipboardList size={size} color="#fff" />,
             person: <User size={size} color="#fff" />,
         }[type];
