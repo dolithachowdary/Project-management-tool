@@ -53,6 +53,7 @@ const SprintDetails = () => {
   }, []);
 
   const role = userData.role || "Project Manager";
+  const isDev = role.toLowerCase() === "developer";
   const [activeTab, setActiveTab] = useState("overview");
   const [collapsedSections, setCollapsedSections] = useState({});
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -122,9 +123,9 @@ const SprintDetails = () => {
         sprint_id: sprint.id,
         module_id: moduleId,
         assignee_id: assigneeId,
-        description: newTaskDescription || "",
-        start_date: newTaskStartDate || sprint.start_date.split('T')[0],
-        end_date: newTaskEndDate || sprint.end_date.split('T')[0],
+        description: "",
+        start_date: sprint.start_date.split('T')[0],
+        end_date: sprint.end_date.split('T')[0],
         status: sectionKey === 'planned' ? 'todo' : sectionKey,
         priority: selectedPriority || 'Medium',
         goal_index: selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null,
@@ -133,11 +134,8 @@ const SprintDetails = () => {
 
       await createTask(payload);
       setNewTaskTitle("");
-      setNewTaskDescription("");
-      setNewTaskStartDate("");
-      setNewTaskEndDate("");
       setSelectedModule(allModules[0]?.id || "");
-      setSelectedAssignee(isDev ? userData.id : "");
+      setSelectedAssignee("");
       setSelectedPriority("Medium");
       setSelectedGoalIndex(sprintGoals.length > 0 ? "0" : "");
       setSelectedPotential("");
