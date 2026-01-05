@@ -4,12 +4,22 @@ import {
     LineChart, Line, PieChart, Pie, Cell
 } from 'recharts';
 import { format, eachDayOfInterval, startOfWeek, endOfWeek, isSameDay, parseISO } from 'date-fns';
+import { getSprintBurndown } from '../api/sprints';
 import RecentActivity from './RecentActivity';
 import Avatar from './Avatar';
 
 const SprintOverview = ({ data, styles }) => {
     const sprint = data?.sprint;
     const projectColor = sprint?.project_color || '#0d9488';
+    const [burndownChartData, setBurndownChartData] = React.useState([]);
+
+    React.useEffect(() => {
+        if (sprint?.id) {
+            getSprintBurndown(sprint.id).then(res => {
+                setBurndownChartData(res.data?.data || res.data || []);
+            }).catch(err => console.error("Burndown fetch error:", err));
+        }
+    }, [sprint?.id]);
 
     // Extract all tasks from modules
     const allTasks = useMemo(() => {
@@ -52,41 +62,7 @@ const SprintOverview = ({ data, styles }) => {
     };
 
     // 2. Burndown Chart Data
-    const burndownData = useMemo(() => {
-        if (!sprint?.start_date || !sprint?.end_date) return [];
-
-        let start, end;
-        try {
-            start = parseISO(sprint.start_date);
-            end = parseISO(sprint.end_date);
-            if (isNaN(start) || isNaN(end) || start > end) return [];
-        } catch (e) {
-            return [];
-        }
-
-        const days = eachDayOfInterval({ start, end });
-        const totalEst = allTasks.reduce((sum, t) => sum + (Number(t.est_hours) || 0), 0);
-
-        const step = totalEst / (days.length - 1 || 1);
-
-        return days.map((day, index) => {
-            // Find tasks completed ON OR BEFORE this day
-            const completedUntilNow = allTasks.filter(t => {
-                if (getStatusLabel(t.status) !== 'Done' || !t.completed_at) return false;
-                return parseISO(t.completed_at) <= day;
-            });
-            const completedEst = completedUntilNow.reduce((sum, t) => sum + (Number(t.est_hours) || 0), 0);
-
-            const actualRemaining = totalEst - completedEst;
-            const idealRemaining = Math.max(0, totalEst - (step * index));
-
-            return {
-                day: format(day, 'MMM d'),
-                ideal: Number(idealRemaining.toFixed(1)),
-                actual: actualRemaining > 0 ? Number(actualRemaining.toFixed(1)) : 0
-            };
-        });
-    }, [allTasks, sprint]);
+    // Burndown data is now fetched from API
 
     // 3. Task Status (Donut) Data
     const statusData = useMemo(() => {
@@ -225,9 +201,9 @@ const SprintOverview = ({ data, styles }) => {
                 </div>
                 <div style={dashboardStyles.chartContainer}>
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={burndownData} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
+                        <LineChart data={burndownChartData} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9 }} dy={5} />
+                            <XAxis dataKey="displayDate" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9 }} dy={5} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
                             <Tooltip
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', fontSize: '12px' }}
@@ -236,20 +212,31 @@ const SprintOverview = ({ data, styles }) => {
                             <Line
                                 type="monotone"
                                 dataKey="ideal"
-                                name="Estimated Task Completion"
-                                stroke={`${projectColor}88`}
+                                name="Ideal Burn"
+                                stroke="#94a3b8"
                                 strokeWidth={1.5}
                                 dot={false}
                                 strokeDasharray="5 5"
                             />
                             <Line
                                 type="monotone"
-                                dataKey="actual"
-                                name="Actual Task Completion"
+                                dataKey="remainingEst"
+                                name="Work Remaining (Est)"
                                 stroke={projectColor}
-                                strokeWidth={2}
+                                strokeWidth={2.5}
                                 dot={{ r: 3, fill: projectColor, strokeWidth: 1.5, stroke: '#fff' }}
                                 activeDot={{ r: 5 }}
+                                connectNulls
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="remainingActual"
+                                name="Effort Remaining (Actual)"
+                                stroke="#3b82f6"
+                                strokeWidth={2}
+                                dot={{ r: 2, fill: '#3b82f6' }}
+                                strokeDasharray="3 3"
+                                connectNulls
                             />
                         </LineChart>
                     </ResponsiveContainer>

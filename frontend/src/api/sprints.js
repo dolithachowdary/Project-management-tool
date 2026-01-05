@@ -20,3 +20,6 @@ export const getNextSprintNumber = (projectId) =>
 
 export const getSprintHierarchy = (id) =>
     api.get(`/sprints/${id}/hierarchy`);
+
+export const getSprintBurndown = (id) =>
+    api.get(`/sprints/${id}/burndown`);
