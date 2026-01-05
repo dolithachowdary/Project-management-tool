@@ -14,7 +14,7 @@ export default function Upcoming({ tasks = [], onTaskClick }) {
     date: new Date(t.end_date || t.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
     time: t.end_time || "End of day",
     project: t.project_name || t.projectName || "General",
-    color: t.priority === "High" ? "#ef4444" : t.priority === "Low" ? "#10b981" : "#f59e0b",
+    color: t.priority === "High" ? "#b91c1c" : t.priority === "Low" ? "#15803d" : "#92400e",
     raw: t
   }));
 

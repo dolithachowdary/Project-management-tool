@@ -11,6 +11,8 @@ import Loader from "../components/Loader";
 import SprintOverview from "../components/SprintOverview";
 import TaskForm from "../components/TaskForm";
 import Avatar from "../components/Avatar";
+import PriorityBadge from "../components/PriorityBadge";
+import StatusBadge from "../components/StatusBadge";
 import {
   Box,
   CheckCircle2,
@@ -494,13 +496,13 @@ const SprintDetails = () => {
                           <table style={styles.taskTable}>
                             <thead>
                               <tr>
-                                <th style={{ ...styles.th, width: '35%' }}>Task name</th>
-                                <th style={styles.th}>Module</th>
-                                {goalFilter === 'all' && <th style={styles.th}>Goal</th>}
-                                <th style={styles.th}>Assignee</th>
-                                <th style={styles.th}>Priority</th>
-                                <th style={styles.th}>Dates</th>
-                                <th style={styles.th}>Status</th>
+                                <th style={{ ...styles.th, width: '25%' }}>Task name</th>
+                                <th style={{ ...styles.th, width: '12%' }}>Module</th>
+                                {goalFilter === 'all' && <th style={{ ...styles.th, width: '15%' }}>Goal</th>}
+                                <th style={{ ...styles.th, width: '16%' }}>Assignee</th>
+                                <th style={{ ...styles.th, width: '11%' }}>Priority</th>
+                                <th style={{ ...styles.th, width: '11%' }}>Dates</th>
+                                <th style={{ ...styles.th, width: '10%' }}>Status</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -512,15 +514,16 @@ const SprintDetails = () => {
                                   onClick={() => handleEditTask(task)}
                                 >
                                   <td style={styles.td}>
-                                    <div style={styles.taskNameCell}>
+                                    <div style={{ ...styles.taskNameCell, overflow: 'hidden' }}>
                                       <div style={{
                                         ...styles.checkCircle,
                                         borderColor: group.color,
-                                        backgroundColor: task.status === 'done' ? group.color : 'transparent'
+                                        backgroundColor: task.status === 'done' ? group.color : 'transparent',
+                                        flexShrink: 0
                                       }}>
                                         {task.status === 'done' && <CheckCircle2 size={12} color="#fff" />}
                                       </div>
-                                      <span>{task.title}</span>
+                                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.title}</span>
                                     </div>
                                   </td>
                                   <td style={styles.td}>
@@ -547,13 +550,7 @@ const SprintDetails = () => {
                                     </div>
                                   </td>
                                   <td style={styles.td}>
-                                    <span style={{
-                                      ...styles.priorityBadge,
-                                      backgroundColor: task.priority === 'High' ? '#fee2e2' : '#f1f5f9',
-                                      color: task.priority === 'High' ? '#ef4444' : '#64748b'
-                                    }}>
-                                      {task.priority || 'Medium'}
-                                    </span>
+                                    <PriorityBadge priority={task.priority} />
                                   </td>
                                   <td style={styles.td}>
                                     <div style={styles.dateCell}>
@@ -562,13 +559,7 @@ const SprintDetails = () => {
                                     </div>
                                   </td>
                                   <td style={styles.td}>
-                                    <span style={{
-                                      ...styles.statusBadge,
-                                      backgroundColor: group.color + '10',
-                                      color: group.color
-                                    }}>
-                                      {group.label}
-                                    </span>
+                                    <StatusBadge status={group.label} />
                                   </td>
                                 </tr>
                               ))}
@@ -777,14 +768,7 @@ const SprintDetails = () => {
 
                                       <div style={styles.cardFooter}>
                                         <div style={styles.cardMeta}>
-                                          <span style={{
-                                            ...styles.priorityBadge,
-                                            fontSize: '10px',
-                                            backgroundColor: task.priority === 'High' ? '#fee2e2' : '#f1f5f9',
-                                            color: task.priority === 'High' ? '#ef4444' : '#64748b'
-                                          }}>
-                                            {task.priority || 'Medium'}
-                                          </span>
+                                          <PriorityBadge priority={task.priority} style={{ fontSize: '10px' }} />
                                           {task.end_date && (
                                             <span style={styles.cardDate}>
                                               <Calendar size={10} />
@@ -1339,6 +1323,7 @@ const styles = {
     borderRadius: "12px",
     overflow: "hidden",
     border: "1px solid #f1f5f9",
+    tableLayout: "fixed",
   },
   th: {
     textAlign: "left",
@@ -1348,6 +1333,9 @@ const styles = {
     color: "#64748b",
     borderBottom: "1px solid #f1f5f9",
     backgroundColor: "#fcfdfe",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   tr: {
     borderBottom: "1px solid #f1f5f9",
@@ -1361,6 +1349,9 @@ const styles = {
     fontSize: "14px",
     color: "#334155",
     verticalAlign: "middle",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   taskNameCell: {
     display: "flex",
