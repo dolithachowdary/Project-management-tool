@@ -1,7 +1,10 @@
 import React from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { AvatarGroup } from "./Avatar";
+import Avatar from "./Avatar";
 import { formatStatus, toApiStatus } from "../utils/helpers";
+import { getStatusStyles } from "./StatusBadge";
+import PriorityBadge from "./PriorityBadge";
+import { Calendar } from "lucide-react";
 
 export default function TaskBoardView({
   tasks,
@@ -11,60 +14,6 @@ export default function TaskBoardView({
   formatShortDate,
 }) {
 
-  const getStatusStyles = (status) => {
-    switch (status?.toLowerCase()) {
-      case "to do":
-      case "todo":
-        return {
-          accent: "#3b82f6",
-          bg: "#eff6ff",
-          title: "#2563eb",
-          meta: "#60a5fa",
-          border: "#dbeafe"
-        };
-      case "in progress":
-      case "in_progress":
-        return {
-          accent: "#ca8a04",
-          bg: "#fefce8",
-          title: "#a16207",
-          meta: "#eab308",
-          border: "#fef9c3"
-        };
-      case "review":
-        return {
-          accent: "#7c3aed",
-          bg: "#f5f3ff",
-          title: "#6d28d9",
-          meta: "#a78bfa",
-          border: "#ede9fe"
-        };
-      case "done":
-        return {
-          accent: "#16a34a",
-          bg: "#f0fdf4",
-          title: "#15803d",
-          meta: "#4ade80",
-          border: "#dcfce7"
-        };
-      case "blocked":
-        return {
-          accent: "#dc2626",
-          bg: "#fef2f2",
-          title: "#b91c1c",
-          meta: "#f87171",
-          border: "#fee2e2"
-        };
-      default:
-        return {
-          accent: "#64748b",
-          bg: "#f8fafc",
-          title: "#475569",
-          meta: "#94a3b8",
-          border: "#f1f5f9"
-        };
-    }
-  };
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -77,78 +26,106 @@ export default function TaskBoardView({
     { label: "To Do", value: "todo" },
     { label: "In Progress", value: "in_progress" },
     { label: "Review", value: "review" },
-    { label: "Done", value: "done" }
+    { label: "Completed", value: "done" },
+    { label: "Blocked", value: "blocked" }
   ];
 
   const styles = {
     board: {
       display: "flex",
-      gap: 24,
-      overflowX: "auto",
+      gap: 12,
       paddingBottom: 24,
       alignItems: "flex-start",
-      minHeight: "calc(100vh - 250px)"
+      minHeight: "calc(100vh - 250px)",
+      width: "100%"
     },
     column: {
-      minWidth: 320,
-      width: 320,
-      background: "#fff",
+      flex: 1,
+      minWidth: 0,
+      background: "transparent",
       borderRadius: 24,
-      padding: 20,
-      border: "1px solid #f1f5f9",
-      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)"
+      padding: 0,
+      display: "flex",
+      flexDirection: "column",
+      gap: 16
     },
     colHeader: {
       display: "flex",
       alignItems: "center",
       gap: 8,
-      marginBottom: 20,
-      padding: "0 4px"
+      padding: "8px 4px",
+      marginBottom: 4
     },
     colTitle: {
-      fontSize: 18,
-      fontWeight: 800,
-      color: "#B91C1C",
-      margin: 0
+      fontSize: 13,
+      fontWeight: 700,
+      color: "#475569",
+      margin: 0,
+      textTransform: "uppercase",
+      letterSpacing: "0.5px"
     },
     colCount: {
       background: "#f1f5f9",
       color: "#64748b",
-      padding: "2px 10px",
-      borderRadius: "10px",
-      fontSize: 13,
-      fontWeight: 800
+      padding: "1px 6px",
+      borderRadius: "999px",
+      fontSize: 10,
+      fontWeight: 700
     },
     card: {
-      borderRadius: 20,
-      padding: "24px",
-      marginBottom: 20,
-      border: "1px solid",
+      background: "#fff",
+      borderRadius: 14,
+      padding: "10px",
+      marginBottom: 12,
+      border: "1px solid #f1f5f9",
       cursor: "grab",
       transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
       position: "relative",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.02)"
+      boxShadow: "0 2px 4px -1px rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04)"
     },
     taskName: {
-      fontSize: 15,
-      fontWeight: 800,
-      marginBottom: 8,
+      fontSize: 13,
+      fontWeight: 700,
+      color: "#1e293b",
+      marginBottom: 6,
       lineHeight: 1.4
     },
     taskMeta: {
       fontSize: 12,
       fontWeight: 600,
-      marginBottom: 16,
-      opacity: 0.8
+      marginBottom: 12,
+      color: "#64748b"
+    },
+    projectPill: {
+      display: "inline-block",
+      fontSize: 10,
+      fontWeight: 700,
+      padding: "3px 10px",
+      borderRadius: "999px",
+      marginBottom: 12,
+      color: "#fff",
+      textTransform: "uppercase"
     },
     dateRow: {
       fontSize: 11,
       fontWeight: 600,
-      color: "#64748b",
+      color: "#94a3b8",
       marginBottom: 16,
       display: "flex",
-      flexDirection: "column",
-      gap: 4
+      alignItems: "center",
+      gap: 6
+    },
+    moduleBadge: {
+      fontSize: "10px",
+      padding: "3px 8px",
+      borderRadius: "6px",
+      backgroundColor: "#f1f5f9",
+      color: "#64748b",
+      fontWeight: "700",
+      textTransform: "uppercase",
+      letterSpacing: "0.3px",
+      display: "inline-block",
+      marginBottom: "8px",
     },
     footer: {
       display: "flex",
@@ -183,17 +160,31 @@ export default function TaskBoardView({
           return (
             <div key={col.value} style={styles.column}>
               <div style={styles.colHeader}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: getStatusStyles(col.value).color }} />
                 <h3 style={styles.colTitle}>{col.label}</h3>
                 <span style={styles.colCount}>{colTasks.length}</span>
               </div>
 
               <Droppable droppableId={col.value}>
-                {(provided) => (
+                {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    style={{ minHeight: 100 }}
+                    className="hide-scrollbar"
+                    style={{
+                      maxHeight: "680px",
+                      overflowY: "auto",
+                      paddingRight: "4px",
+                      backgroundColor: snapshot.isDraggingOver ? "rgba(241, 245, 249, 0.5)" : "transparent",
+                      borderRadius: 12,
+                      transition: "background-color 0.2s",
+                      msOverflowStyle: "none",
+                      scrollbarWidth: "none",
+                    }}
                   >
+                    <style>{`
+                      .hide-scrollbar::-webkit-scrollbar { display: none; }
+                    `}</style>
                     {colTasks.length === 0 ? (
                       <div style={styles.empty}>No tasks in this column</div>
                     ) : (
@@ -215,41 +206,38 @@ export default function TaskBoardView({
                                 style={{
                                   ...styles.card,
                                   ...provided.draggableProps.style,
-                                  background: sStyle.bg,
-                                  borderColor: sStyle.border,
+                                  opacity: snapshot.isDragging ? 0.9 : 1,
                                   boxShadow: snapshot.isDragging
                                     ? "0 20px 25px -5px rgba(0,0,0,0.1)"
-                                    : "none",
-                                  transform: snapshot.isDragging
-                                    ? provided.draggableProps.style?.transform + " rotate(2deg)"
-                                    : provided.draggableProps.style?.transform
+                                    : styles.card.boxShadow
                                 }}
                                 onClick={() => canEdit(t) && onEdit && onEdit(t)}
                               >
-                                <div style={{ ...styles.taskName, color: sStyle.title }}>
+                                <div style={styles.moduleBadge}>
+                                  {t.module_name || "General"}
+                                </div>
+                                <div style={styles.taskName}>
                                   {t.title || t.taskName}
                                 </div>
-                                <div style={{ ...styles.taskMeta, color: sStyle.title }}>
-                                  {t.module_name || "General"} • {t.project_name || "Project"}
-                                </div>
+
+                                {t.project_name && (
+                                  <div style={{ ...styles.projectPill, background: t.project_color || "#3b82f6" }}>
+                                    {t.project_name}
+                                  </div>
+                                )}
 
                                 <div style={styles.dateRow}>
-                                  <div>Start: {formatShortDate(t.start_date || t.start_datetime)}</div>
-                                  <div>End: {formatShortDate(t.end_date || t.end_datetime)}</div>
+                                  <Calendar size={12} />
+                                  <span>{formatShortDate(t.end_date || t.end_datetime || t.start_date || t.start_datetime)}</span>
                                 </div>
 
                                 <div style={styles.footer}>
-                                  <AvatarGroup
-                                    members={[
-                                      { id: t.assignee_id, name: t.assignee_name },
-                                      ...(t.collaborators || []).map(c => ({
-                                        id: c.id || c.user_id || c,
-                                        name: c.name || c.full_name
-                                      }))
-                                    ].slice(0, 3)}
+                                  <PriorityBadge priority={t.priority} style={{ fontSize: '10px' }} />
+                                  <Avatar
+                                    name={t.assignee_name || t.assignedTo?.full_name || "Unassigned"}
+                                    id={t.assignee_id}
                                     size={24}
                                   />
-                                  <div style={styles.taskSerial}>{displaySerial}</div>
                                 </div>
                               </div>
                             )}

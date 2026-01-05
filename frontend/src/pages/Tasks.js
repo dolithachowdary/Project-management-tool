@@ -6,10 +6,9 @@ import TaskListView from "../components/TaskListView";
 import TaskBoardView from "../components/TaskBoardView";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
-import { FaPlus, FaSearch } from "react-icons/fa";
+import { Search, Calendar, Plus } from "lucide-react";
 import gridIcon from "../assets/icons/grid.svg";
 import dashboardIcon from "../assets/icons/dashboard.svg";
-
 import { getTasks, createTask, updateTask } from "../api/tasks";
 import { getProjects } from "../api/projects";
 import { getAssignableUsers } from "../api/users";
@@ -266,60 +265,67 @@ export default function Tasks() {
 
     searchFilterContainer: {
       display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      background: "#fff",
-      borderRadius: 12,
-      boxShadow: "0 4px 14px rgba(15,23,42,0.05)",
-      padding: "16px 20px",
-      marginBottom: 14,
+      flexDirection: "column",
       gap: 16,
-      flexWrap: "nowrap",
-      overflowX: "auto",
+      marginBottom: 24,
+    },
+    toolbarRow: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      flexWrap: "wrap",
     },
     searchBox: {
       position: "relative",
-      flex: "0 0 300px",
-      minWidth: 280,
+      flex: 1,
+      Width: 100,
     },
     searchIcon: {
       position: "absolute",
-      left: 14,
+      left: 12,
       top: "50%",
       transform: "translateY(-50%)",
-      color: "#B91C1C",
-      fontSize: 14,
+      color: "#b91c1c",
     },
     searchInput: {
-      width: "100%",
-      padding: "12px 16px 12px 42px",
-      borderRadius: 10,
-      border: "1px solid #E6E9EE",
+      width: "70%",
+      padding: "10px 12px 10px 36px",
+      borderRadius: 12,
+      border: "1px solid #f1f5f9",
       fontSize: 14,
       outline: "none",
       backgroundColor: "#fff",
+      color: "#1e293b",
+      fontWeight: 500
     },
     toolbarControl: {
-      flex: "0 0 auto",
-      minWidth: 140,
+      display: "flex",
+      alignItems: "center",
+      background: "#fff",
+      borderRadius: 12,
+      border: "1px solid #f1f5f9",
+      padding: "0 8px",
+      height: 40,
+      minWidth: 120,
     },
     dateInput: {
-      width: "100%",
-      padding: "12px 14px",
-      borderRadius: 10,
-      border: "1px solid #E6E9EE",
-      fontSize: 14,
+      border: "none",
+      fontSize: 13,
       outline: "none",
-      backgroundColor: "#fff",
+      background: "transparent",
+      color: "#64748b",
+      fontWeight: 600,
+      width: "100%",
     },
     selectInput: {
-      width: "100%",
-      padding: "12px 14px",
-      borderRadius: 10,
-      border: "1px solid #E6E9EE",
-      fontSize: 14,
+      border: "none",
+      fontSize: 13,
       outline: "none",
-      background: "#fff",
+      background: "transparent",
+      color: "#64748b",
+      fontWeight: 600,
+      width: "100%",
+      cursor: "pointer"
     },
     toggleWrapper: {
       flex: "0 0 auto",
@@ -329,39 +335,44 @@ export default function Tasks() {
       background: "#b91c1c",
       color: "#fff",
       border: "none",
-      padding: "12px 24px",
+      padding: "0 20px",
       borderRadius: 12,
       cursor: "pointer",
       fontWeight: 700,
       display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
-      boxShadow: "0 8px 20px -6px rgba(185,28,28,0.4)",
       fontSize: 14,
+      height: 40,
       whiteSpace: "nowrap",
       transition: "all 0.2s ease",
+      gap: 8,
+      boxShadow: "0 4px 12px rgba(185,28,28,0.2)"
     },
     iconToggle: {
       display: "flex",
       background: "#f1f5f9",
       padding: 4,
-      borderRadius: 14,
+      borderRadius: 12,
       gap: 4,
-      border: "1px solid #e2e8f0",
+      height: 40,
+      alignItems: "center"
     },
     iconButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 10,
+      width: 32,
+      height: 32,
+      borderRadius: 8,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       cursor: "pointer",
       transition: "all 0.2s ease",
+      color: "#64748b"
     },
     activeToggle: {
-      background: "#fee2e2",
-      boxShadow: "0 2px 8px rgba(220, 38, 38, 0.08)",
+      background: "#fff",
+      color: "#b91c1c",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
     },
     toggleIcon: {
       width: 18,
@@ -373,45 +384,38 @@ export default function Tasks() {
       display: "flex",
       alignItems: "center",
       gap: 12,
-      flexWrap: "wrap",
-      background: "#fff",
-      borderRadius: 12,
-      boxShadow: "0 4px 14px rgba(15,23,42,0.05)",
-      padding: "12px 16px",
-      marginBottom: 18,
+      padding: "0 8px",
+      marginBottom: 24,
+      overflowX: "auto"
     },
     statusChip: {
       display: "flex",
       alignItems: "center",
-      gap: 10,
-      borderRadius: 999,
+      gap: 8,
+      borderRadius: 12,
       background: "#f8fafc",
-      color: "#475569",
-      border: "none",
+      color: "#64748b",
+      border: "1px solid #f1f5f9",
       cursor: "pointer",
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: 700,
-      padding: "10px 20px",
-      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+      padding: "8px 16px",
+      transition: "all 0.2s ease",
       whiteSpace: "nowrap",
     },
     activeChip: {
       background: "#fee2e2",
-      color: "#dc2626",
-      boxShadow: "0 4px 12px rgba(220, 38, 38, 0.08)",
+      color: "#b91c1c",
+      borderColor: "#fecaca"
     },
     chipCount: {
       background: "#fff",
-      color: "#dc2626",
-      borderRadius: 999,
-      minWidth: 24,
-      height: 24,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: 12,
+      color: "inherit",
+      borderRadius: 8,
+      padding: "2px 8px",
+      fontSize: 11,
       fontWeight: 800,
-      boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
     },
     clearDateBtn: {
       background: "#fff",
@@ -437,51 +441,59 @@ export default function Tasks() {
 
         // Top Toolbar
         React.createElement("div", { style: styles.searchFilterContainer },
-          React.createElement("div", { style: styles.searchBox },
-            React.createElement(FaSearch, { style: styles.searchIcon }),
-            React.createElement("input", {
-              type: "text",
-              style: styles.searchInput,
-              placeholder: "Search tasks, module or project...",
-              value: searchQuery,
-              onChange: (e) => setSearchQuery(e.target.value)
-            })
-          ),
+          React.createElement("div", { style: styles.toolbarRow }, // First row: Search & Filters
+            React.createElement("div", { style: styles.searchBox },
+              React.createElement(Search, { style: styles.searchIcon, size: 16 }),
+              React.createElement("input", {
+                type: "text",
+                style: styles.searchInput,
+                placeholder: "Search tasks, module or project...",
+                value: searchQuery,
+                onChange: (e) => setSearchQuery(e.target.value)
+              })
+            ),
 
-          React.createElement("div", { style: styles.toolbarControl },
-            React.createElement("input", {
-              type: "date",
-              style: styles.dateInput,
-              value: selectedDate,
-              onChange: (e) => setSelectedDate(e.target.value)
-            })
-          ),
+            React.createElement("div", { style: styles.toolbarControl },
+              React.createElement(Calendar, { size: 14, color: "#b91c1c", style: { marginRight: 8 } }),
+              React.createElement("input", {
+                type: "date",
+                style: styles.dateInput,
+                value: selectedDate,
+                onChange: (e) => setSelectedDate(e.target.value)
+              })
+            ),
 
-          React.createElement("div", { style: styles.toolbarControl },
-            React.createElement("select", {
-              style: styles.selectInput,
-              value: selectedProject,
-              onChange: (e) => setSelectedProject(e.target.value)
-            },
-              projectList.map((p) =>
-                React.createElement("option", { key: p, value: p }, p)
+            React.createElement("div", { style: styles.toolbarControl },
+              React.createElement("select", {
+                style: styles.selectInput,
+                value: selectedProject,
+                onChange: (e) => setSelectedProject(e.target.value)
+              },
+                projectList.map((p) =>
+                  React.createElement("option", { key: p, value: p }, p === "All" ? "All Projects" : p)
+                )
               )
-            )
-          ),
+            ),
 
-          React.createElement("div", { style: styles.toolbarControl },
-            React.createElement("select", {
-              style: styles.selectInput,
-              value: selectedPerson,
-              onChange: (e) => setSelectedPerson(e.target.value)
-            },
-              peopleList.map((p) =>
-                React.createElement("option", { key: p, value: p }, p)
+            React.createElement("div", { style: styles.toolbarControl },
+              React.createElement("select", {
+                style: styles.selectInput,
+                value: selectedPerson,
+                onChange: (e) => setSelectedPerson(e.target.value)
+              },
+                peopleList.map((p) =>
+                  React.createElement("option", { key: p, value: p }, p === "All" ? "All Members" : p)
+                )
               )
-            )
-          ),
+            ),
 
-          React.createElement("div", { style: styles.toggleWrapper },
+            // ViewToggle & Add Task now on the same row as filters in the provided image (based on second image)
+            // But actually the 2nd image shows Search, Date, Proj, Members, Toggle, Add Task in ONE row? 
+            // Wait, looking closer at image 2:
+            // Input ... Date ... All Projects ... All Members ... [Toggle] ... [Add Task]
+            // And then a SECOND container below it with All, To Do, etc.
+            // Okay, let me re-align to exactly ONE row for tools, and ONE row for status chips.
+
             React.createElement("div", { style: styles.iconToggle },
               React.createElement("div", {
                 style: {
@@ -519,15 +531,13 @@ export default function Tasks() {
                   }
                 })
               )
-            )
-          ),
+            ),
 
-          React.createElement("div", { style: styles.toolbarControl },
             React.createElement("button", {
               style: styles.addTaskBtn,
               onClick: () => setShowAddTask(true)
             },
-              React.createElement(FaPlus, { style: { marginRight: 8 } }),
+              React.createElement(Plus, { size: 18 }),
               "Add Task"
             )
           )

@@ -133,13 +133,6 @@ export default function Modules({ projectId, projectColor, onTaskClick }) {
                       </div>
 
                       <div style={styles.taskRight}>
-                        <span style={{
-                          ...styles.taskStatus,
-                          color: t.status?.toLowerCase() === "done" ? "#16a34a" :
-                            t.status?.toLowerCase() === "in_progress" ? "#2563eb" : "#94a3b8"
-                        }}>
-                          {(t.status || "To Do").toUpperCase()}
-                        </span>
                         <Avatar
                           name={t.assignee_name || t.assignedTo?.full_name || "Unassigned"}
                           id={t.assignee_id}

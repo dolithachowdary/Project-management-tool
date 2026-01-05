@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Edit2, UserPlus } from "lucide-react";
 import Avatar, { AvatarGroup } from "./Avatar";
 import { formatStatus } from "../utils/helpers";
+import PriorityBadge from "./PriorityBadge";
+import { getStatusStyles } from "./StatusBadge";
 
 const RED = "#C62828";
 
@@ -15,33 +17,7 @@ export default function TaskListView({
 }) {
   const [hoveredRow, setHoveredRow] = useState(null);
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "todo":
-      case "to do":
-        return { bg: "#f3f4f6", text: "#475569", border: "#e2e8f0" };
-      case "in_progress":
-      case "in progress":
-        return { bg: "#fef9c3", text: "#854d0e", border: "#fde047" };
-      case "review":
-        return { bg: "#ede9fe", text: "#5b21b6", border: "#ddd6fe" };
-      case "done":
-        return { bg: "#dcfce7", text: "#166534", border: "#bbf7d0" };
-      case "blocked":
-        return { bg: "#fee2e2", text: "#991b1b", border: "#fecaca" };
-      default:
-        return { bg: "#f3f4f6", text: "#475569", border: "#e2e8f0" };
-    }
-  };
 
-  const getPriorityColor = (priority) => {
-    switch (priority?.toLowerCase()) {
-      case "high": return { bg: "#fee2e2", text: "#b91c1c", border: "#fecaca" };
-      case "medium": return { bg: "#fef3c7", text: "#92400e", border: "#fde68a" };
-      case "low": return { bg: "#dcfce7", text: "#15803d", border: "#bbf7d0" };
-      default: return { bg: "#f3f4f6", text: "#475569", border: "#e2e8f0" };
-    }
-  };
 
   const statusOptions = ["To Do", "In Progress", "Review", "Done", "Blocked"];
 
@@ -57,7 +33,7 @@ export default function TaskListView({
     projectText: { color: "#64748b", fontSize: 13, fontWeight: 500 },
     badge: { padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, border: "1px solid", textTransform: "capitalize", display: "inline-block" },
     select: { border: "1px solid transparent", borderRadius: 10, padding: "6px 12px", fontWeight: 700, cursor: "pointer", outline: "none", fontSize: 11, width: "100%", minWidth: 110 },
-    actionBtn: { background: "#fff", border: "1px solid #e2e8f0", color: "#64748b", cursor: "pointer", padding: 8, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" },
+    actionBtn: { background: "none", border: "1px solid transparent", color: "#64748b", cursor: "pointer", padding: 6, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" },
     indicator: { position: "absolute", left: 0, top: 0, bottom: 0, width: 4, transition: "height 0.2s" },
   };
 
@@ -79,14 +55,13 @@ export default function TaskListView({
             <th style={styles.th}>Status</th>
             <th style={styles.th}>Start Date</th>
             <th style={styles.th}>End Date</th>
-            <th style={{ ...styles.th, textAlign: "right", paddingRight: 24 }}>Actions</th>
+            <th style={{ ...styles.th, textAlign: "right", paddingRight: 24 }}></th>
           </tr>
         </thead>
         <tbody>
           {tasks.map((t) => {
             const isHovered = hoveredRow === t.id;
-            const sColors = getStatusColor(t.status);
-            const pColors = getPriorityColor(t.priority);
+            const sColors = getStatusStyles(t.status);
 
             const startDate = t.start_date || t.start_datetime;
             const endDate = t.end_date || t.end_datetime;
@@ -154,16 +129,19 @@ export default function TaskListView({
                 </td>
 
                 <td style={styles.td}>
-                  <span style={{ ...styles.badge, background: pColors.bg, color: pColors.text, borderColor: pColors.border }}>
-                    {t.priority || "Medium"}
-                  </span>
+                  <PriorityBadge priority={t.priority} />
                 </td>
 
                 <td style={styles.td}>
                   <select
                     value={formatStatus(t.status)}
                     onChange={(e) => onStatusChange(t.id, e.target.value)}
-                    style={{ ...styles.select, background: sColors.bg, color: sColors.text }}
+                    style={{
+                      ...styles.select,
+                      backgroundColor: sColors.backgroundColor,
+                      color: sColors.color,
+                      borderColor: sColors.borderColor
+                    }}
                   >
                     {statusOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
@@ -180,14 +158,12 @@ export default function TaskListView({
                 <td style={{ ...styles.td, paddingRight: 24 }}>
                   <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                     <button
-                      style={{ ...styles.actionBtn, borderColor: isHovered ? RED : "#e2e8f0" }}
+                      style={{ ...styles.actionBtn, borderColor: isHovered ? RED : "transparent" }}
                       onClick={() => onEdit && onEdit(t)}
                       disabled={!canEdit(t)}
+                      title="Edit Task"
                     >
-                      <Edit2 size={14} color={isHovered ? RED : "#64748b"} />
-                    </button>
-                    <button style={styles.actionBtn}>
-                      <UserPlus size={14} />
+                      <Edit2 size={12} color={isHovered ? RED : "#64748b"} />
                     </button>
                   </div>
                 </td>
