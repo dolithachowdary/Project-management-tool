@@ -61,9 +61,8 @@ function Dashboard() {
 
         {/* ---------- TABS ---------- */}
         <div style={styles.tabsRow}>
-
           <button
-            style={activeTab === "Overview" ? styles.activeTab : styles.tab}
+            style={activeTab === "Overview" ? styles.tabActive : styles.tab}
             onClick={() => setActiveTab("Overview")}
           >
             Overview
@@ -72,7 +71,7 @@ function Dashboard() {
           {/* ✅ Calendar ONLY for Developer */}
           {role !== "Project Manager" && (
             <button
-              style={activeTab === "Calendar" ? styles.activeTab : styles.tab}
+              style={activeTab === "Calendar" ? styles.tabActive : styles.tab}
               onClick={() => setActiveTab("Calendar")}
             >
               Calendar
@@ -81,13 +80,13 @@ function Dashboard() {
 
           {/* ✅ Timeline for BOTH, component switches by role */}
           <button
-            style={activeTab === "Timeline" ? styles.activeTab : styles.tab}
+            style={activeTab === "Timeline" ? styles.tabActive : styles.tab}
             onClick={() => setActiveTab("Timeline")}
           >
             Timeline
           </button>
-
         </div>
+        <div style={styles.tabsDivider}></div>
 
         {/* ---------- SCROLL AREA ---------- */}
         <div style={styles.scrollArea}>
@@ -118,31 +117,45 @@ const styles = {
 
   tabsRow: {
     display: "flex",
-    gap: 20,
-    padding: "15px 20px",
-    borderBottom: "1px solid #f0f0f0",
+    gap: 24,
+    padding: "0 20px",
     background: "#fff",
     flexShrink: 0,
   },
 
-  tab: {
-    background: "transparent",
-    border: "none",
-    fontSize: 16,
-    cursor: "pointer",
-    color: "#666",
-    paddingBottom: 5,
+  tabsDivider: {
+    height: "1px",
+    background: "#f1f5f9",
+    width: "100%",
   },
 
-  activeTab: {
-    background: "transparent",
+  tab: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "12px 0",
+    background: "none",
     border: "none",
-    fontSize: 16,
+    borderBottom: "2px solid transparent",
+    color: "#64748b",
+    fontSize: "14px",
+    fontWeight: "500",
     cursor: "pointer",
-    borderBottom: "3px solid #c62828",
-    color: "#111",
-    paddingBottom: 5,
-    fontWeight: 600,
+    transition: "all 0.2s",
+  },
+
+  tabActive: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "12px 0",
+    background: "none",
+    border: "none",
+    borderBottom: "2.5px solid #C62828",
+    color: "#C62828",
+    fontSize: "14px",
+    fontWeight: "700",
+    cursor: "pointer",
   },
 
   scrollArea: {

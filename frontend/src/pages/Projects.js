@@ -143,7 +143,7 @@ const styles = {
     bottom: 24,
     right: 24,
     padding: "14px 18px",
-    background: "#4F7DFF",
+    background: "#C62828",
     color: "#fff",
     border: "none",
     borderRadius: "999px",

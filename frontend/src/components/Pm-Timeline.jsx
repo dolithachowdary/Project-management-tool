@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { getTasks } from "../api/tasks";
 import { getAssignableUsers } from "../api/users";
+import { getProjects } from "../api/projects";
 import Loader from "./Loader";
 import Avatar from "./Avatar";
 import DatePicker from "./DatePicker";
-import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
-import { ChevronDown } from "lucide-react";
+import { format, isWithinInterval, startOfDay, endOfDay, parseISO, addDays, subDays } from "date-fns";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function PMTimeline() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [projects, setProjects] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [selectedProject, setSelectedProject] = useState("all");
+  const [selectedMember, setSelectedMember] = useState("all");
 
   // Time in timeline starts from 10 am to 6 pm
   const hours = [
@@ -25,13 +30,18 @@ export default function PMTimeline() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [tasksRes, usersRes] = await Promise.all([
+        const [tasksRes, usersRes, projectsRes] = await Promise.all([
           getTasks(),
-          getAssignableUsers().catch(() => ({ data: [] }))
+          getAssignableUsers().catch(() => ({ data: [] })),
+          getProjects().catch(() => ({ data: [] }))
         ]);
 
         const tasksData = tasksRes.data?.data || tasksRes.data || [];
         const usersData = resDataToArray(usersRes);
+        const projectsData = projectsRes.data?.data || projectsRes.data || [];
+
+        setUsers(usersData);
+        setProjects(projectsData);
 
         const currentDay = parseISO(selectedDate);
         const dayStart = startOfDay(currentDay);
@@ -65,6 +75,9 @@ export default function PMTimeline() {
               (taskStart >= dayStart && taskEnd <= dayEnd);
 
             if (isToday) {
+              // Apply Project Filter
+              if (selectedProject !== "all" && String(t.project_id) !== String(selectedProject)) return;
+
               // Deduce a dummy time for visualization within the day
               const h = taskStart.getHours();
               const start = (h >= startHour && h < endHour) ? h : (10 + (Math.random() * 3));
@@ -82,7 +95,14 @@ export default function PMTimeline() {
           }
         });
 
-        setData(Object.values(userMap)); // Show all members even if 0 tasks
+        let finalData = Object.values(userMap);
+
+        // Apply Member Filter
+        if (selectedMember !== "all") {
+          finalData = finalData.filter(m => String(m.id) === String(selectedMember));
+        }
+
+        setData(finalData);
 
       } catch (err) {
         console.error("Timeline error", err);
@@ -91,7 +111,15 @@ export default function PMTimeline() {
       }
     };
     fetchData();
-  }, [selectedDate]);
+  }, [selectedDate, selectedProject, selectedMember]);
+
+  const handlePrevDate = () => {
+    setSelectedDate(prev => format(subDays(parseISO(prev), 1), "yyyy-MM-dd"));
+  };
+
+  const handleNextDate = () => {
+    setSelectedDate(prev => format(addDays(parseISO(prev), 1), "yyyy-MM-dd"));
+  };
 
   const resDataToArray = (res) => {
     const d = res.data?.data || res.data || [];
@@ -131,12 +159,46 @@ export default function PMTimeline() {
   return (
     <div style={styles.container}>
       <div style={styles.topRow}>
-        <div style={styles.dateSelectorWrapper}>
-          <DatePicker
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            placeholder="Select Date"
-          />
+        <div style={styles.filterGroup}>
+          <select
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            style={styles.selectInput}
+          >
+            <option value="all">All Projects</option>
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedMember}
+            onChange={(e) => setSelectedMember(e.target.value)}
+            style={styles.selectInput}
+          >
+            <option value="all">All Members</option>
+            {users.map(u => (
+              <option key={u.id} value={u.id}>{u.full_name || u.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={styles.navGroup}>
+          <button style={styles.navBtn} onClick={handlePrevDate} title="Previous Day">
+            <ChevronLeft size={18} />
+          </button>
+
+          <div style={styles.dateSelectorWrapper}>
+            <DatePicker
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              placeholder="Select Date"
+            />
+          </div>
+
+          <button style={styles.navBtn} onClick={handleNextDate} title="Next Day">
+            <ChevronRight size={18} />
+          </button>
         </div>
       </div>
 
@@ -209,26 +271,92 @@ const styles = {
   },
   topRow: {
     display: "flex",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 24,
   },
-  dateSelectorWrapper: {
-    width: 220,
+  filterGroup: {
+    display: "flex",
+    gap: 12,
   },
-  header: { display: "flex", marginBottom: 16, borderBottom: "1px solid #f1f5f9", paddingBottom: 16 },
-  memberHeader: { width: 220, fontWeight: 700, fontSize: 14, color: "#1e293b", paddingLeft: 8 },
+  selectInput: {
+    padding: "10px 16px",
+    borderRadius: "12px",
+    border: "1px solid #e2e8f0",
+    background: "#fff",
+    fontSize: "14px",
+    fontWeight: "700",
+    color: "#475569",
+    cursor: "pointer",
+    outline: "none",
+    minWidth: 160,
+    transition: "border-color 0.2s",
+    "&:hover": { borderColor: "#C62828" }
+  },
+  navGroup: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  navBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: "10px",
+    background: "#fff",
+    border: "1px solid #e2e8f0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#64748b",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    "&:hover": {
+      borderColor: "#C62828",
+      color: "#C62828",
+      background: "#fff1f1",
+    }
+  },
+  dateSelectorWrapper: {
+    width: 180,
+  },
+  header: {
+    display: "flex",
+    background: "#fcfdfe",
+    borderTop: "1px solid #f1f5f9",
+    borderBottom: "1px solid #e2e8f0",
+    marginTop: 8,
+  },
+  memberHeader: {
+    width: 220,
+    fontWeight: 700,
+    fontSize: 14,
+    color: "#1e293b",
+    padding: "12px 24px",
+    borderRight: "1px solid #e2e8f0",
+    boxSizing: "border-box",
+  },
   hours: { flex: 1, display: "grid", gridTemplateColumns: "repeat(9, 1fr)" },
-  hour: { textAlign: "center", fontSize: 12, fontWeight: 700, color: "#64748b" },
+  hour: {
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#64748b",
+    borderRight: "1px solid #e2e8f0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "12px 0",
+  },
   body: { display: "flex", position: "relative" },
   membersCol: { width: 220, borderRight: "1px solid #f1f5f9" },
-  memberRow: { height: 90, display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: "1px solid #f8fafc", paddingRight: 16 },
+  memberRow: { height: 70, display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: "1px solid #f1f5f9", paddingRight: 16 },
   memberInfo: { display: "flex", alignItems: "center", gap: 12 },
   memberName: { fontWeight: 700, fontSize: 14, color: "#1e293b" },
   memberMeta: { fontSize: 12, color: "#94a3b8", marginTop: 4, paddingLeft: 44 },
   timeline: { flex: 1, position: "relative", minHeight: 450 },
   grid: { position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "repeat(9, 1fr)" },
   gridLine: { borderRight: "1px solid #e2e8f0" },
-  timelineRow: { position: "relative", height: 90, borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "center" },
+  timelineRow: { position: "relative", height: 70, borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center" },
   task: {
     position: "absolute",
     height: 48,

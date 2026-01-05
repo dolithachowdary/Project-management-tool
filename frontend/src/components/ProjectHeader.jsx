@@ -73,7 +73,7 @@ const ProjectHeader = ({
             </div>
 
             <div style={styles.metaRow}>
-              <AvatarGroup members={members} size={28} />
+              <AvatarGroup members={members} size={28} max={2} />
               <div style={{ ...styles.daysBadge, color: color, background: `${color}15` }}>{timeLeft || daysLeft}</div>
             </div>
           </div>

@@ -57,31 +57,7 @@ const Card = ({
       {/* FOOTER */}
       <div style={styles.footer}>
         <div style={styles.membersWrapper}>
-          <AvatarGroup members={members} size={28} max={3} />
-
-          <div
-            style={styles.addAvatar}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowDropdown(!showDropdown);
-            }}
-          >
-            +
-          </div>
-
-          {showDropdown && (
-            <div style={styles.dropdown}>
-              {availableMembers.map(m => (
-                <div key={m.id} style={styles.dropdownItem}>
-                  <Avatar name={m.name} id={m.id} color={m.color} size={22} />
-                  <span>{m.name}</span>
-                </div>
-              ))}
-              {availableMembers.length === 0 && (
-                <div style={styles.dropdownItem}>No available members</div>
-              )}
-            </div>
-          )}
+          <AvatarGroup members={members} size={28} max={2} />
         </div>
 
         <span style={{ ...styles.badge, background: color }}>
@@ -168,44 +144,6 @@ const styles = {
   membersWrapper: {
     display: "flex",
     alignItems: "center",
-    position: "relative",
-  },
-  addAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: "50%",
-    background: "#f8fafc",
-    border: "1px dashed #cbd5e1",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 18,
-    color: "#64748b",
-    marginLeft: 6,
-    cursor: "pointer",
-  },
-  dropdown: {
-    position: "absolute",
-    bottom: 36,
-    left: 0,
-    background: "#fff",
-    borderRadius: 12,
-    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-    border: "1px solid #f1f5f9",
-    padding: 8,
-    width: 180,
-    zIndex: 100,
-  },
-  dropdownItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    padding: "8px",
-    fontSize: 13,
-    borderRadius: 8,
-    cursor: "pointer",
-    transition: "background 0.2s",
-    "&:hover": { background: "#f8fafc" },
   },
   badge: {
     padding: "6px 14px",
