@@ -15,7 +15,8 @@ const Sprints = () => {
   const [loading, setLoading] = useState(true);
   const [editingSprint, setEditingSprint] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const role = localStorage.getItem("role") || "Project Manager";
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const role = userData.role || "Developer";
 
   useEffect(() => {
     loadSprints();

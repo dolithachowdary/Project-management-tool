@@ -5,7 +5,6 @@ import Loader from "./Loader";
 import Avatar from "./Avatar";
 import DatePicker from "./DatePicker";
 import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
-import { ChevronDown } from "lucide-react";
 
 export default function PMTimeline() {
   const [loading, setLoading] = useState(true);
@@ -233,7 +232,6 @@ const styles = {
     position: "absolute",
     height: 48,
     borderRadius: "8px",
-    padding: "0 12px",
     display: "flex",
     flexDirection: "row",
     alignItems: "center",

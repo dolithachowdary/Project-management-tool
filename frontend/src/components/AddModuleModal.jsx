@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import { createModule } from "../api/modules";
 
 const AddModuleModal = ({ isOpen, onClose, projectId, onModuleAdded }) => {
@@ -10,7 +11,7 @@ const AddModuleModal = ({ isOpen, onClose, projectId, onModuleAdded }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!name.trim()) return alert("Module name is required");
+        if (!name.trim()) return toast.error("Module name is required");
 
         setLoading(true);
         try {
@@ -25,7 +26,7 @@ const AddModuleModal = ({ isOpen, onClose, projectId, onModuleAdded }) => {
             onClose();
         } catch (err) {
             console.error("Failed to create module:", err);
-            alert(err.response?.data?.message || "Failed to create module");
+            toast.error(err.response?.data?.message || "Failed to create module");
         } finally {
             setLoading(false);
         }

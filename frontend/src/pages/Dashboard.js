@@ -15,11 +15,13 @@ import DevTimeline from "../components/Dev-Timeline";
 function Dashboard() {
   const [role, setRole] = useState(null);
   const [activeTab, setActiveTab] = useState("Overview");
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
     if (userData?.role) {
       setRole(userData.role);
+      setUserName(userData.full_name || userData.name || "User");
     } else {
       window.location.href = "/login";
     }
@@ -87,6 +89,10 @@ function Dashboard() {
             Timeline
           </button>
 
+          <div style={styles.welcome}>
+            Welcome back, <span style={styles.name}>{userName}</span>
+          </div>
+
         </div>
 
         {/* ---------- SCROLL AREA ---------- */}
@@ -143,6 +149,15 @@ const styles = {
     color: "#111",
     paddingBottom: 5,
     fontWeight: 600,
+  },
+  welcome: {
+    marginLeft: "auto",
+    fontSize: 14,
+    color: "#64748b",
+  },
+  name: {
+    fontWeight: 700,
+    color: "#4f46e5",
   },
 
   scrollArea: {

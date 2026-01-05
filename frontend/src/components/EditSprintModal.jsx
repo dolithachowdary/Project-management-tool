@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { updateSprint, deleteSprint } from "../api/sprints";
 import { Plus, Trash2, X } from "lucide-react";
 import DatePicker from "./DatePicker";
@@ -95,7 +96,7 @@ export default function EditSprintModal({ isOpen, onClose, sprint, onSprintUpdat
             onClose();
         } catch (err) {
             console.error("Failed to update sprint", err);
-            alert("Failed to update sprint");
+            toast.error("Failed to update sprint");
         } finally {
             setLoading(false);
         }
@@ -112,7 +113,7 @@ export default function EditSprintModal({ isOpen, onClose, sprint, onSprintUpdat
             onClose();
         } catch (err) {
             console.error("Failed to delete sprint", err);
-            alert("Failed to delete sprint");
+            toast.error("Failed to delete sprint");
         } finally {
             setLoading(false);
             setShowConfirmDelete(false);

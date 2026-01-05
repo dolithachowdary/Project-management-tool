@@ -12,7 +12,8 @@ const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [showAddProject, setShowAddProject] = useState(false);
   const [loading, setLoading] = useState(true);
-  const role = localStorage.getItem("role") || "Project Manager";
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const role = userData.role || "Project Manager";
 
   useEffect(() => {
     loadProjects();

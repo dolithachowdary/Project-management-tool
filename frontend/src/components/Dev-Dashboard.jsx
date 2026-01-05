@@ -104,11 +104,6 @@ const DevDashboard = ({ role }) => {
   return (
     <div style={styles.page}>
 
-      {/* HEADER */}
-      <div style={styles.headerRow}>
-        <h2 style={styles.title}>Developer Overview</h2>
-        <div style={styles.welcome}>Welcome back, <span style={styles.name}>{userName}</span></div>
-      </div>
 
       {/* ================= TOP ROW ================= */}
       <div style={styles.topRow}>
@@ -169,28 +164,6 @@ const styles = {
     gap: 24,
   },
 
-  headerRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  title: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: "#1e293b",
-    margin: 0,
-  },
-
-  welcome: {
-    fontSize: 14,
-    color: "#64748b",
-  },
-
-  name: {
-    fontWeight: 700,
-    color: "#4f46e5",
-  },
 
   topRow: {
     display: "grid",

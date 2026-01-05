@@ -15,7 +15,8 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
   const [sprints, setSprints] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
 
-  const role = localStorage.getItem("role") || "";
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const role = userData.role || "Developer";
   const isDev = role.toLowerCase() === "developer";
 
   const [formData, setFormData] = useState({
@@ -24,13 +25,13 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
     module_id: "",
     project_id: initialProjectId || "",
     sprint_id: "",
-    assignee_id: isDev ? (currentUserId || localStorage.getItem("userId")) : "",
+    assignee_id: isDev ? (currentUserId || userData.id) : "",
     status: "To Do",
     start_date: "",
     end_date: "",
     priority: "Medium",
     est_hours: "",
-    created_by: currentUserId || localStorage.getItem("userId") || "",
+    created_by: currentUserId || userData.id || "",
     collaborators: [],
     goal_index: "",
     potential: ""
@@ -60,13 +61,13 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
         module_id: initialData.module_id || initialData.module?._id || "",
         project_id: initialData.project_id || initialData.project?._id || initialData.project?.[0]?.id || "",
         sprint_id: initialData.sprint_id || initialData.sprint?._id || "",
-        assignee_id: isDev ? (currentUserId || localStorage.getItem("userId")) : (initialData.assignee_id || initialData.assignedTo?._id || initialData.assignedTo || ""),
+        assignee_id: isDev ? (currentUserId || userData.id) : (initialData.assignee_id || initialData.assignedTo?._id || initialData.assignedTo || ""),
         status: formatStatus(initialData.status) || "To Do",
         start_date: initialData.start_date ? initialData.start_date.split('T')[0] : (initialData.startDate ? initialData.startDate.split('T')[0] : ""),
         end_date: initialData.end_date ? initialData.end_date.split('T')[0] : (initialData.endDate ? initialData.endDate.split('T')[0] : ""),
         priority: initialData.priority || "Medium",
         est_hours: initialData.est_hours || "",
-        created_by: initialData.created_by || currentUserId || localStorage.getItem("userId") || "",
+        created_by: initialData.created_by || currentUserId || userData.id || "",
         collaborators: initialData.collaborators || [],
         goal_index: initialData.goal_index !== undefined && initialData.goal_index !== null ? initialData.goal_index.toString() : "",
         potential: initialData.potential || ""
@@ -422,7 +423,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
           React.createElement("label", { style: styles.label }, "Assigned To", React.createElement("span", { style: styles.required }, " *")),
           isDev ? (
             React.createElement("div", { style: styles.staticText },
-              members.find(m => (m.id || m._id) === formData.assignee_id)?.full_name || localStorage.getItem("userName") || "You"
+              members.find(m => (m.id || m._id) === formData.assignee_id)?.full_name || userData.name || "You"
             )
           ) : (
             React.createElement("select", {

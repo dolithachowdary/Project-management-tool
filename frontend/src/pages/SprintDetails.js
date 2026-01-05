@@ -29,12 +29,27 @@ import {
 import EditSprintModal from "../components/EditSprintModal";
 import FlowGraph from "../components/FlowGraph";
 import { AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 const SprintDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState({ name: "", role: "", id: "", full_name: "" });
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData"));
+    if (storedUser) {
+      setUserData({
+        name: storedUser.name || "",
+        role: storedUser.role || "",
+        id: storedUser.id || "",
+        full_name: storedUser.full_name || storedUser.name || ""
+      });
+    }
+  }, []);
+
   const role = userData.role || "Project Manager";
   const isDev = role.toLowerCase() === "developer";
   const [activeTab, setActiveTab] = useState("overview");
@@ -72,7 +87,7 @@ const SprintDetails = () => {
       loadHierarchy();
     } catch (err) {
       console.error("Failed to update task:", err);
-      alert("Failed to update task.");
+      toast.error("Failed to update task.");
     }
   };
 
@@ -95,17 +110,11 @@ const SprintDetails = () => {
       const goalIdx = selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null;
 
       const isMissingField = !newTaskTitle.trim() ||
-        !newTaskDescription.trim() ||
         !moduleId ||
-        !assigneeId ||
-        !selectedPriority ||
-        !selectedPotential ||
-        !newTaskStartDate ||
-        !newTaskEndDate ||
-        goalIdx === null;
+        !assigneeId;
 
       if (isMissingField) {
-        alert("Please fill in all mandatory fields: Title, Description, Module, Assignee, Dates, Priority, Goal, and Potential.");
+        toast.error("Please provide at least a Title, Module, and Assignee.");
         return;
       }
 
@@ -115,9 +124,9 @@ const SprintDetails = () => {
         sprint_id: sprint.id,
         module_id: moduleId,
         assignee_id: assigneeId,
-        description: newTaskDescription,
-        start_date: newTaskStartDate,
-        end_date: newTaskEndDate,
+        description: newTaskDescription || "",
+        start_date: newTaskStartDate || sprint.start_date.split('T')[0],
+        end_date: newTaskEndDate || sprint.end_date.split('T')[0],
         status: sectionKey === 'planned' ? 'todo' : sectionKey,
         priority: selectedPriority || 'Medium',
         goal_index: selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null,
@@ -129,16 +138,16 @@ const SprintDetails = () => {
       setNewTaskDescription("");
       setNewTaskStartDate("");
       setNewTaskEndDate("");
-      setSelectedModule("");
-      setSelectedAssignee("");
+      setSelectedModule(allModules[0]?.id || "");
+      setSelectedAssignee(isDev ? userData.id : "");
       setSelectedPriority("Medium");
-      setSelectedGoalIndex("");
+      setSelectedGoalIndex(sprintGoals.length > 0 ? "0" : "");
       setSelectedPotential("");
       setInlineAddingTo(null);
       loadHierarchy(); // Refresh the list
     } catch (err) {
       console.error("Failed to add task:", err);
-      alert("Failed to add task. Please try again.");
+      toast.error("Failed to add task. Please try again.");
     }
   };
 
@@ -150,6 +159,16 @@ const SprintDetails = () => {
       ]);
       setAllModules(modulesRes.data?.data || modulesRes.data || []);
       setProjectMembers(membersRes.data?.data || membersRes.data || []);
+
+      const mods = modulesRes.data?.data || modulesRes.data || [];
+      if (mods.length > 0) {
+        setSelectedModule(mods[0].id || mods[0]._id);
+      }
+
+      const mems = membersRes.data?.data || membersRes.data || [];
+      if (!isDev && mems.length > 0) {
+        // Don't auto-select assignee for PM, let them pick
+      }
     } catch (err) {
       console.error("Failed to fetch project data:", err);
     }
@@ -164,6 +183,20 @@ const SprintDetails = () => {
 
       if (sprintData?.sprint?.project_id) {
         fetchProjectData(sprintData.sprint.project_id);
+      }
+
+      // Default Goal Index if goals exist
+      if (sprintData?.sprint?.goal) {
+        try {
+          const parsed = JSON.parse(sprintData.sprint.goal);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setSelectedGoalIndex("0");
+          }
+        } catch (e) {
+          if (sprintData.sprint.goal.trim()) {
+            setSelectedGoalIndex("0");
+          }
+        }
       }
     } catch (err) {
       console.error("Failed to load sprint hierarchy:", err);
@@ -202,7 +235,7 @@ const SprintDetails = () => {
       loadHierarchy(); // Refresh to get correct ordering/metadata
     } catch (err) {
       console.error("Failed to update task status:", err);
-      alert("Failed to move task. Please try again.");
+      toast.error("Failed to move task. Please try again.");
       loadHierarchy(); // Revert on failure
     }
   }, [data, modules, loadHierarchy]);
@@ -1211,12 +1244,6 @@ const styles = {
     fontSize: "14px",
     fontWeight: "500",
   },
-  headerRight: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingRight: "20px",
-  },
   progressContainer: {
     position: "relative",
     display: "flex",
@@ -1820,18 +1847,6 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.2s",
   },
-  goalNumberSmall: {
-    width: "18px",
-    height: "18px",
-    borderRadius: "50%",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "11px",
-    fontWeight: "700",
-    flexShrink: 0,
-  }
 };
 
 export default SprintDetails;
