@@ -9,6 +9,7 @@ import DevDashboard from "../components/Dev-Dashboard";
 import DevCalendar from "../components/Dev-Calendar";
 import PMTimeline from "../components/Pm-Timeline";
 import DevTimeline from "../components/Dev-Timeline";
+import { color } from "framer-motion";
 
 
 
@@ -123,6 +124,7 @@ const styles = {
 
   tabsRow: {
     display: "flex",
+    alignItems: "center",
     gap: 24,
     padding: "0 20px",
     background: "#fff",
@@ -169,8 +171,8 @@ const styles = {
     color: "#64748b",
   },
   name: {
-    fontWeight: 700,
-    color: "#4f46e5",
+    fontWeight: 500,
+    color: "black",
   },
 
   scrollArea: {
