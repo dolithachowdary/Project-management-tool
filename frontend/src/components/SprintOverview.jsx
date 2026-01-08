@@ -232,9 +232,9 @@ const SprintOverview = ({ data, styles }) => {
                                 type="monotone"
                                 dataKey="remainingActual"
                                 name="Effort Remaining (Actual)"
-                                stroke="#3b82f6"
+                                stroke="#C62828"
                                 strokeWidth={2}
-                                dot={{ r: 2, fill: '#3b82f6' }}
+                                dot={{ r: 2, fill: '#C62828' }}
                                 strokeDasharray="3 3"
                                 connectNulls
                             />
@@ -269,7 +269,7 @@ const SprintOverview = ({ data, styles }) => {
                                 {statusData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={
                                         entry.name === 'Done' ? projectColor :
-                                            entry.name === 'In Progress' ? '#3b82f6' :
+                                            entry.name === 'In Progress' ? '#C62828' :
                                                 entry.name === 'Late' ? '#ef4444' : '#e2e8f0'
                                     } />
                                 ))}
@@ -299,7 +299,7 @@ const SprintOverview = ({ data, styles }) => {
                             <Tooltip cursor={false} contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
                             <Legend verticalAlign="top" align="right" iconSize={8} wrapperStyle={{ top: 0, right: 0, fontSize: '10px' }} />
                             <Bar dataKey="To Do" stackId="a" fill="#e2e8f0" radius={[0, 0, 0, 0]} barSize={20} />
-                            <Bar dataKey="In Progress" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} barSize={20} />
+                            <Bar dataKey="In Progress" stackId="a" fill="#C62828" radius={[0, 0, 0, 0]} barSize={20} />
                             <Bar dataKey="Done" stackId="a" fill={projectColor} radius={[4, 4, 0, 0]} barSize={20} />
                         </BarChart>
                     </ResponsiveContainer>
@@ -321,7 +321,7 @@ const SprintOverview = ({ data, styles }) => {
                             />
                             <Legend verticalAlign="top" align="right" iconSize={8} wrapperStyle={{ top: 0, right: 0, fontSize: '10px' }} />
                             <Bar dataKey="To Do" stackId="a" fill="#e2e8f0" barSize={20} />
-                            <Bar dataKey="In Progress" stackId="a" fill="#3b82f6" barSize={20} />
+                            <Bar dataKey="In Progress" stackId="a" fill="#C62828" barSize={20} />
                             <Bar dataKey="Done" stackId="a" fill={projectColor} radius={[4, 4, 0, 0]} barSize={20} />
                         </BarChart>
                     </ResponsiveContainer>

@@ -14,9 +14,10 @@ import { getProjects } from "../api/projects";
 import { getAssignableUsers } from "../api/users";
 import { toApiStatus, formatStatus } from "../utils/helpers";
 
-const role = localStorage.getItem("role") || "Project Manager";
-const currentUser = localStorage.getItem("userName") || "A";
-const currentUserId = localStorage.getItem("userId");
+const storedUser = JSON.parse(localStorage.getItem("userData") || "{}");
+const role = storedUser.role || "Developer";
+const currentUser = storedUser.full_name || storedUser.name || "User";
+const currentUserId = storedUser.id || storedUser.userId;
 
 // Remove mock userData and moduleList
 
@@ -285,7 +286,7 @@ export default function Tasks() {
       left: 12,
       top: "50%",
       transform: "translateY(-50%)",
-      color: "#b91c1c",
+      color: "#C62828",
     },
     searchInput: {
       width: "70%",
@@ -332,7 +333,7 @@ export default function Tasks() {
       marginLeft: 0,
     },
     addTaskBtn: {
-      background: "#b91c1c",
+      background: "#C62828",
       color: "#fff",
       border: "none",
       padding: "0 20px",
@@ -347,7 +348,7 @@ export default function Tasks() {
       whiteSpace: "nowrap",
       transition: "all 0.2s ease",
       gap: 8,
-      boxShadow: "0 4px 12px rgba(185,28,28,0.2)"
+      boxShadow: "0 4px 12px rgba(198,40,40,0.2)"
     },
     iconToggle: {
       display: "flex",
@@ -371,7 +372,7 @@ export default function Tasks() {
     },
     activeToggle: {
       background: "#fff",
-      color: "#b91c1c",
+      color: "#C62828",
       boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
     },
     toggleIcon: {
@@ -405,7 +406,7 @@ export default function Tasks() {
     },
     activeChip: {
       background: "#fee2e2",
-      color: "#b91c1c",
+      color: "#C62828",
       borderColor: "#fecaca"
     },
     chipCount: {
@@ -454,7 +455,7 @@ export default function Tasks() {
             ),
 
             React.createElement("div", { style: styles.toolbarControl },
-              React.createElement(Calendar, { size: 14, color: "#b91c1c", style: { marginRight: 8 } }),
+              React.createElement(Calendar, { size: 14, color: "#C62828", style: { marginRight: 8 } }),
               React.createElement("input", {
                 type: "date",
                 style: styles.dateInput,

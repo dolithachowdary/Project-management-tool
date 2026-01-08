@@ -469,7 +469,7 @@ const styles = {
   clearAllBtn: {
     background: "none",
     border: "none",
-    color: "#3b82f6",
+    color: "#C62828",
     fontSize: "12px",
     fontWeight: "600",
     cursor: "pointer",

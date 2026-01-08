@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Edit2, UserPlus } from "lucide-react";
+import { Edit2 } from "lucide-react";
 import Avatar, { AvatarGroup } from "./Avatar";
 import { formatStatus } from "../utils/helpers";
 import PriorityBadge from "./PriorityBadge";

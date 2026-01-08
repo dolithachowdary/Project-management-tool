@@ -4,8 +4,7 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { getSprintHierarchy } from "../api/sprints";
 import { createTask, updateTask } from "../api/tasks";
-import { getModules } from "../api/modules";
-import { getProjectMembers, getProjects } from "../api/projects";
+import { getProjects } from "../api/projects";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Loader from "../components/Loader";
 import SprintOverview from "../components/SprintOverview";
@@ -53,23 +52,14 @@ const SprintDetails = () => {
   }, []);
 
   const role = userData.role || "Project Manager";
-  const isDev = role.toLowerCase() === "developer";
   const [activeTab, setActiveTab] = useState("overview");
   const [collapsedSections, setCollapsedSections] = useState({});
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [inlineAddingTo, setInlineAddingTo] = useState(null); // sectionKey
-  const [allModules, setAllModules] = useState([]);
-  const [projectMembers, setProjectMembers] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
-  const [selectedModule, setSelectedModule] = useState("");
-  const [selectedAssignee, setSelectedAssignee] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState("Medium");
-  const [selectedGoalIndex, setSelectedGoalIndex] = useState("");
-  const [selectedPotential, setSelectedPotential] = useState("");
   const [goalFilter, setGoalFilter] = useState("all");
   const [showFlowGraph, setShowFlowGraph] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const { sprint, modules } = data || { sprint: {}, modules: [] };
 
@@ -90,6 +80,18 @@ const SprintDetails = () => {
     }
   };
 
+  const handleTaskCreate = async (taskData) => {
+    try {
+      await createTask(taskData);
+      setIsAddTaskModalOpen(false);
+      loadHierarchy();
+      toast.success("Task created successfully");
+    } catch (err) {
+      console.error("Failed to create task:", err);
+      toast.error("Failed to create task.");
+    }
+  };
+
   const toggleSection = (key) => {
     setCollapsedSections(prev => ({
       ...prev,
@@ -97,78 +99,7 @@ const SprintDetails = () => {
     }));
   };
 
-  const handleAddTask = async (sectionKey) => {
-    if (!newTaskTitle.trim()) {
-      setInlineAddingTo(null);
-      return;
-    }
-
-    try {
-      const moduleId = selectedModule || (allModules.length > 0 ? allModules[0].id : null);
-      const assigneeId = isDev ? userData.id : selectedAssignee;
-      const goalIdx = selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null;
-
-      const isMissingField = !newTaskTitle.trim() ||
-        !moduleId ||
-        !assigneeId;
-
-      if (isMissingField) {
-        toast.error("Please provide at least a Title, Module, and Assignee.");
-        return;
-      }
-
-      const payload = {
-        title: newTaskTitle,
-        project_id: sprint.project_id,
-        sprint_id: sprint.id,
-        module_id: moduleId,
-        assignee_id: assigneeId,
-        description: "",
-        start_date: sprint.start_date.split('T')[0],
-        end_date: sprint.end_date.split('T')[0],
-        status: sectionKey === 'planned' ? 'todo' : sectionKey,
-        priority: selectedPriority || 'Medium',
-        goal_index: selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null,
-        potential: selectedPotential || null,
-      };
-
-      await createTask(payload);
-      setNewTaskTitle("");
-      setSelectedModule(allModules[0]?.id || "");
-      setSelectedAssignee("");
-      setSelectedPriority("Medium");
-      setSelectedGoalIndex(sprintGoals.length > 0 ? "0" : "");
-      setSelectedPotential("");
-      setInlineAddingTo(null);
-      loadHierarchy(); // Refresh the list
-    } catch (err) {
-      console.error("Failed to add task:", err);
-      toast.error("Failed to add task. Please try again.");
-    }
-  };
-
-  const fetchProjectData = useCallback(async (projectId) => {
-    try {
-      const [modulesRes, membersRes] = await Promise.all([
-        getModules(projectId),
-        getProjectMembers(projectId)
-      ]);
-      setAllModules(modulesRes.data?.data || modulesRes.data || []);
-      setProjectMembers(membersRes.data?.data || membersRes.data || []);
-
-      const mods = modulesRes.data?.data || modulesRes.data || [];
-      if (mods.length > 0) {
-        setSelectedModule(mods[0].id || mods[0]._id);
-      }
-
-      const mems = membersRes.data?.data || membersRes.data || [];
-      if (!isDev && mems.length > 0) {
-        // Don't auto-select assignee for PM, let them pick
-      }
-    } catch (err) {
-      console.error("Failed to fetch project data:", err);
-    }
-  }, []);
+  /* Removed fetchProjectData as it was for inline form */
 
   const loadHierarchy = useCallback(async () => {
     try {
@@ -177,29 +108,13 @@ const SprintDetails = () => {
       const sprintData = res.data?.data || res.data;
       setData(sprintData);
 
-      if (sprintData?.sprint?.project_id) {
-        fetchProjectData(sprintData.sprint.project_id);
-      }
-
-      // Default Goal Index if goals exist
-      if (sprintData?.sprint?.goal) {
-        try {
-          const parsed = JSON.parse(sprintData.sprint.goal);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setSelectedGoalIndex("0");
-          }
-        } catch (e) {
-          if (sprintData.sprint.goal.trim()) {
-            setSelectedGoalIndex("0");
-          }
-        }
-      }
+      // Default Goal Index logic removed as state was unused
     } catch (err) {
       console.error("Failed to load sprint hierarchy:", err);
     } finally {
       setLoading(false);
     }
-  }, [id, fetchProjectData]);
+  }, [id]);
 
   useEffect(() => {
     loadHierarchy();
@@ -500,10 +415,7 @@ const SprintDetails = () => {
                   <div style={styles.leftActions}>
                     <button
                       style={styles.addTaskBtn}
-                      onClick={() => {
-                        setInlineAddingTo('planned');
-                        setNewTaskTitle("");
-                      }}
+                      onClick={() => setIsAddTaskModalOpen(true)}
                     >
                       <Plus size={16} />
                       Add task
@@ -620,111 +532,10 @@ const SprintDetails = () => {
                               {group.key === 'planned' && (
                                 <tr
                                   style={styles.addTableRow}
-                                  onClick={() => {
-                                    if (inlineAddingTo !== group.key) {
-                                      setInlineAddingTo(group.key);
-                                      setNewTaskTitle("");
-                                      setSelectedModule(allModules[0]?.id || "");
-                                      setSelectedAssignee("");
-                                      setSelectedPriority("Medium");
-                                    }
-                                  }}
+                                  onClick={() => setIsAddTaskModalOpen(true)}
                                 >
                                   <td colSpan="6" style={styles.addTableCell}>
-                                    {inlineAddingTo === group.key ? (
-                                      <div style={styles.inlineForm}>
-                                        <div style={{ flex: 4, marginRight: '10px' }}>
-                                          <input
-                                            autoFocus
-                                            style={styles.inlineInput}
-                                            placeholder="Task name"
-                                            value={newTaskTitle}
-                                            onChange={(e) => setNewTaskTitle(e.target.value)}
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter') handleAddTask(group.key);
-                                              if (e.key === 'Escape') setInlineAddingTo(null);
-                                            }}
-                                          />
-                                        </div>
-                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
-                                          <select
-                                            style={styles.inlineSelect}
-                                            value={selectedModule}
-                                            onChange={(e) => setSelectedModule(e.target.value)}
-                                          >
-                                            <option value="">Module</option>
-                                            {allModules.map(m => (
-                                              <option key={m.id} value={m.id}>{m.name}</option>
-                                            ))}
-                                          </select>
-                                        </div>
-                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
-                                          <select
-                                            style={styles.inlineSelect}
-                                            value={selectedAssignee}
-                                            onChange={(e) => setSelectedAssignee(e.target.value)}
-                                          >
-                                            <option value="">Assignee</option>
-                                            {projectMembers.map(m => (
-                                              <option key={m.id} value={m.id}>{m.full_name}</option>
-                                            ))}
-                                          </select>
-                                        </div>
-                                        <div style={{ flex: 1, marginRight: '10px' }}>
-                                          <select
-                                            style={styles.inlineSelect}
-                                            value={selectedPriority}
-                                            onChange={(e) => setSelectedPriority(e.target.value)}
-                                          >
-                                            <option value="Low">Low</option>
-                                            <option value="Medium">Medium</option>
-                                            <option value="High">High</option>
-                                          </select>
-                                        </div>
-                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
-                                          <select
-                                            style={styles.inlineSelect}
-                                            value={selectedGoalIndex}
-                                            onChange={(e) => setSelectedGoalIndex(e.target.value)}
-                                          >
-                                            <option value="">Goal</option>
-                                            {recalculatedGoals.map((g, idx) => (
-                                              <option key={idx} value={idx}>{g.text}</option>
-                                            ))}
-                                          </select>
-                                        </div>
-                                        <div style={{ flex: 1.5, marginRight: '10px' }}>
-                                          <select
-                                            style={styles.inlineSelect}
-                                            value={selectedPotential}
-                                            onChange={(e) => setSelectedPotential(e.target.value)}
-                                          >
-                                            <option value="">Potential</option>
-                                            {["Very Small", "Small", "Medium", "Large", "Very Large"].map(p => (
-                                              <option key={p} value={p}>{p}</option>
-                                            ))}
-                                          </select>
-                                        </div>
-                                        <div style={styles.inlineActions}>
-                                          <button
-                                            style={styles.saveBtn}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleAddTask(group.key);
-                                            }}
-                                          >Save</button>
-                                          <button
-                                            style={styles.cancelBtn}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setInlineAddingTo(null);
-                                            }}
-                                          >Cancel</button>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <span style={styles.addTaskText}>+ Add task...</span>
-                                    )}
+                                    <span style={styles.addTaskText}>+ Add task...</span>
                                   </td>
                                 </tr>
                               )}
@@ -764,7 +575,7 @@ const SprintDetails = () => {
                           {group.key === 'planned' && (
                             <button
                               style={styles.colHeaderAddBtn}
-                              onClick={() => setInlineAddingTo(group.key)}
+                              onClick={() => setIsAddTaskModalOpen(true)}
                             >
                               <Plus size={16} />
                             </button>
@@ -833,47 +644,6 @@ const SprintDetails = () => {
                               ))}
                               {provided.placeholder}
 
-                              {inlineAddingTo === group.key && (
-                                <div style={styles.boardInlineForm}>
-                                  <input
-                                    autoFocus
-                                    style={styles.boardInlineInput}
-                                    placeholder="Task name"
-                                    value={newTaskTitle}
-                                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') handleAddTask(group.key);
-                                      if (e.key === 'Escape') setInlineAddingTo(null);
-                                    }}
-                                  />
-                                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                    <select
-                                      style={{ ...styles.inlineSelect, fontSize: '11px', padding: '4px' }}
-                                      value={selectedModule}
-                                      onChange={(e) => setSelectedModule(e.target.value)}
-                                    >
-                                      <option value="">Module</option>
-                                      {allModules.map(m => (
-                                        <option key={m.id} value={m.id}>{m.name}</option>
-                                      ))}
-                                    </select>
-                                    <select
-                                      style={{ ...styles.inlineSelect, fontSize: '11px', padding: '4px' }}
-                                      value={selectedGoalIndex}
-                                      onChange={(e) => setSelectedGoalIndex(e.target.value)}
-                                    >
-                                      <option value="">Goal</option>
-                                      {recalculatedGoals.map((g, idx) => (
-                                        <option key={idx} value={idx}>{g.text}</option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div style={styles.boardInlineActions}>
-                                    <button style={styles.boardSaveBtn} onClick={() => handleAddTask(group.key)}>Add</button>
-                                    <button style={styles.boardCancelBtn} onClick={() => setInlineAddingTo(null)}>Cancel</button>
-                                  </div>
-                                </div>
-                              )}
 
                             </div>
                           )}
@@ -929,6 +699,26 @@ const SprintDetails = () => {
               currentUserId={userData?.id}
               initialData={editingTask}
               initialProjectId={sprint.project_id}
+            />
+          </div>
+        </div>
+      )}
+
+      {isAddTaskModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent} className="hide-scrollbar">
+            <TaskForm
+              onSave={handleTaskCreate}
+              onCancel={() => setIsAddTaskModalOpen(false)}
+              projects={allProjects}
+              currentUserId={userData?.id}
+              initialProjectId={sprint.project_id}
+              initialData={{
+                project_id: sprint.project_id,
+                sprint_id: sprint.id,
+                start_date: sprint.start_date,
+                end_date: sprint.end_date
+              }}
             />
           </div>
         </div>

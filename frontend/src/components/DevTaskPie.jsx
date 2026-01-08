@@ -22,7 +22,6 @@ function describeArc(cx, cy, r, startAngle, endAngle) {
 }
 
 export default function DevTaskPie({ data }) {
-  const [mode, setMode] = useState("pie");
   const [tooltip, setTooltip] = useState(null);
 
   const total = data.reduce((s, d) => s + d.total, 0);
@@ -33,21 +32,13 @@ export default function DevTaskPie({ data }) {
       {/* HEADER */}
       <div style={styles.header}>
         <h3 style={styles.title}>Tasks by Project</h3>
-        <div>
-          <button
-            style={mode === "pie" ? styles.activeBtn : styles.btn}
-            onClick={() => setMode("pie")}
-          >
-            Pie
-          </button>
-          <button
-            style={mode === "doughnut" ? styles.activeBtn : styles.btn}
-            onClick={() => setMode("doughnut")}
-          >
-            Doughnut
-          </button>
-        </div>
       </div>
+
+      {total === 0 && (
+        <div style={{ color: "#64748b", fontSize: "14px", padding: "40px 0" }}>
+          No tasks assigned yet
+        </div>
+      )}
 
       {/* TOOLTIP */}
       {tooltip && (
@@ -66,9 +57,9 @@ export default function DevTaskPie({ data }) {
       )}
 
       {/* CHART */}
-      <svg viewBox="0 0 200 200" width="200" height="200">
-        {mode === "pie" &&
-          data.map((d, i) => {
+      {total > 0 && (
+        <svg viewBox="0 0 200 200" width="200" height="150" style={{ display: "block", margin: "0 auto" }}>
+          {data.map((d, i) => {
             const sliceAngle = (d.total / total) * 360;
             const path = describeArc(
               100,
@@ -92,43 +83,12 @@ export default function DevTaskPie({ data }) {
                   })
                 }
                 onMouseLeave={() => setTooltip(null)}
+                style={{ cursor: "pointer", transition: "all 0.2s" }}
               />
             );
           })}
-
-        {mode === "doughnut" &&
-          (() => {
-            let acc = 0;
-            return data.map((d, i) => {
-              const value = (d.total / total) * 100;
-              const dash = `${value} ${100 - value}`;
-              const offset = -acc;
-              acc += value;
-
-              return (
-                <circle
-                  key={i}
-                  cx="100"
-                  cy="100"
-                  r="70"
-                  fill="transparent"
-                  stroke={d.color}
-                  strokeWidth="18"
-                  strokeDasharray={dash}
-                  strokeDashoffset={offset}
-                  onMouseMove={e =>
-                    setTooltip({
-                      ...d,
-                      x: e.clientX,
-                      y: e.clientY,
-                    })
-                  }
-                  onMouseLeave={() => setTooltip(null)}
-                />
-              );
-            });
-          })()}
-      </svg>
+        </svg>
+      )}
     </div>
   );
 }
@@ -170,7 +130,7 @@ const styles = {
     marginLeft: 6,
     borderRadius: 6,
     border: "none",
-    background: "#d32f2f",
+    background: "#C62828",
     color: "#fff",
     cursor: "pointer",
   },

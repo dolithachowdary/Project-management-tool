@@ -59,9 +59,16 @@ const DevDashboard = ({ role }) => {
 
         // Filter tasks for current dev
         const myTasks = tasksData.filter(t => {
-          const assignedId = t.assignee_id || t.assigned_to_id || t.assignedTo;
-          if (Array.isArray(assignedId)) return assignedId.includes(currentUserId) || assignedId.includes(userName);
-          if (typeof assignedId === 'object' && assignedId !== null) return assignedId.id === currentUserId || assignedId.name === userName;
+          const assignedId = t.assignee_id || t.assigned_to_id || t.assignedTo || t.assignee;
+          if (Array.isArray(assignedId)) {
+            return assignedId.some(id =>
+              (typeof id === 'string' && (id === currentUserId || id === userName)) ||
+              (typeof id === 'object' && id !== null && (id.id === currentUserId || id._id === currentUserId || id.name === userName))
+            );
+          }
+          if (typeof assignedId === 'object' && assignedId !== null) {
+            return assignedId.id === currentUserId || assignedId._id === currentUserId || assignedId.name === userName;
+          }
           return assignedId === currentUserId || assignedId === userName;
         });
 
