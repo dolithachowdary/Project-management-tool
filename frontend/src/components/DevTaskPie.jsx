@@ -22,7 +22,6 @@ function describeArc(cx, cy, r, startAngle, endAngle) {
 }
 
 export default function DevTaskPie({ data }) {
-  const [mode, setMode] = useState("pie");
   const [tooltip, setTooltip] = useState(null);
 
   const total = data.reduce((s, d) => s + d.total, 0);
@@ -69,7 +68,6 @@ export default function DevTaskPie({ data }) {
               angle,
               angle + sliceAngle
             );
-            const currentAngle = angle;
             angle += sliceAngle;
 
             return (

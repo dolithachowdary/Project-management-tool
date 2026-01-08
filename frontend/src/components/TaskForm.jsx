@@ -79,7 +79,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
     } else if (initialProjectId) {
       fetchProjectDetails(initialProjectId);
     }
-  }, [initialData, currentUserId, fetchProjectDetails, isDev, initialProjectId]);
+  }, [initialData, currentUserId, fetchProjectDetails, isDev, initialProjectId, userData.id]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
