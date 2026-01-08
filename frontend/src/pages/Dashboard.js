@@ -170,7 +170,7 @@ const styles = {
   },
   name: {
     fontWeight: 700,
-    color: "#4f46e5",
+    color: "#C62828",
   },
 
   scrollArea: {

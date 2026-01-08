@@ -170,7 +170,7 @@ const styles = {
     marginLeft: 6,
     borderRadius: 6,
     border: "none",
-    background: "#d32f2f",
+    background: "#C62828",
     color: "#fff",
     cursor: "pointer",
   },

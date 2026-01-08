@@ -296,35 +296,6 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
     React.createElement("form", { onSubmit: handleSubmit },
       React.createElement("div", { style: styles.formGrid },
-        React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },
-          React.createElement("label", { style: styles.label },
-            "Title",
-            React.createElement("span", { style: styles.required }, " *")
-          ),
-          React.createElement("input", {
-            type: "text",
-            name: "title",
-            value: formData.title,
-            onChange: handleChange,
-            placeholder: "Enter task title",
-            style: styles.input,
-            required: true,
-            autoFocus: true
-          })
-        ),
-
-        React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },
-          React.createElement("label", { style: styles.label }, "Description", React.createElement("span", { style: styles.required }, " *")),
-          React.createElement("textarea", {
-            name: "description",
-            value: formData.description,
-            onChange: handleChange,
-            placeholder: "Enter task description",
-            style: styles.textarea,
-            required: true
-          })
-        ),
-
         // Project
         !initialProjectId ? (
           React.createElement("div", { style: styles.formGroup },
@@ -416,6 +387,35 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
               React.createElement("option", { key: module.id || module._id, value: module.id || module._id }, module.name)
             )
           )
+        ),
+
+        React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },
+          React.createElement("label", { style: styles.label },
+            "Title",
+            React.createElement("span", { style: styles.required }, " *")
+          ),
+          React.createElement("input", {
+            type: "text",
+            name: "title",
+            value: formData.title,
+            onChange: handleChange,
+            placeholder: "Enter task title",
+            style: styles.input,
+            required: true,
+            autoFocus: true
+          })
+        ),
+
+        React.createElement("div", { style: { ...styles.formGroup, ...styles.fullWidth } },
+          React.createElement("label", { style: styles.label }, "Description", React.createElement("span", { style: styles.required }, " *")),
+          React.createElement("textarea", {
+            name: "description",
+            value: formData.description,
+            onChange: handleChange,
+            placeholder: "Enter task description",
+            style: styles.textarea,
+            required: true
+          })
         ),
 
         // Assigned To

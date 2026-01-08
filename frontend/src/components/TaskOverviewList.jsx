@@ -182,7 +182,7 @@ const styles = {
   },
   project: {
     fontWeight: 700,
-    color: "#6366f1",
+    color: "#C62828",
     fontSize: 12,
     marginBottom: 8,
     paddingLeft: 4,
