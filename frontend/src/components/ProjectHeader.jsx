@@ -31,7 +31,7 @@ const ProjectHeader = ({
   const handleDownload = () => {
     if (!projectId) return;
     const token = JSON.parse(localStorage.getItem("userData"))?.accessToken;
-    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+    const baseUrl = process.env.REACT_APP_API_URL || "https://ptas-api.vercel.app/api";
     window.open(`${baseUrl}/projects/${projectId}/document?token=${token}`, "_blank");
   };
 
