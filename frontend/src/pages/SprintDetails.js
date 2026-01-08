@@ -457,10 +457,11 @@ const SprintDetails = () => {
                           <table style={styles.taskTable}>
                             <thead>
                               <tr>
-                                <th style={{ ...styles.th, width: '25%' }}>Task name</th>
-                                <th style={{ ...styles.th, width: '12%' }}>Module</th>
-                                {goalFilter === 'all' && <th style={{ ...styles.th, width: '15%' }}>Goal</th>}
-                                <th style={{ ...styles.th, width: '16%' }}>Assignee</th>
+                                <th style={{ ...styles.th, width: '8%', whiteSpace: 'nowrap' }}>ID</th>
+                                <th style={{ ...styles.th, width: '22%' }}>Task name</th>
+                                <th style={{ ...styles.th, width: '10%' }}>Module</th>
+                                {goalFilter === 'all' && <th style={{ ...styles.th, width: '12%' }}>Goal</th>}
+                                <th style={{ ...styles.th, width: '14%' }}>Assignee</th>
                                 <th style={{ ...styles.th, width: '11%' }}>Priority</th>
                                 <th style={{ ...styles.th, width: '11%' }}>Dates</th>
                                 <th style={{ ...styles.th, width: '10%' }}>Status</th>
@@ -474,6 +475,11 @@ const SprintDetails = () => {
                                   className="task-row"
                                   onClick={() => handleEditTask(task)}
                                 >
+                                  <td style={styles.td}>
+                                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', display: 'block', whiteSpace: 'nowrap', marginRight: '8px' }}>
+                                      {task.task_code || task.task_serial}
+                                    </span>
+                                  </td>
                                   <td style={styles.td}>
                                     <div style={{ ...styles.taskNameCell, overflow: 'hidden' }}>
                                       <div style={{
@@ -526,7 +532,7 @@ const SprintDetails = () => {
                               ))}
                               {groupTasks.length === 0 && (
                                 <tr>
-                                  <td colSpan="6" style={styles.emptyRow}>No tasks in this section</td>
+                                  <td colSpan="7" style={styles.emptyRow}>No tasks in this section</td>
                                 </tr>
                               )}
                               {group.key === 'planned' && (
@@ -534,7 +540,7 @@ const SprintDetails = () => {
                                   style={styles.addTableRow}
                                   onClick={() => setIsAddTaskModalOpen(true)}
                                 >
-                                  <td colSpan="6" style={styles.addTableCell}>
+                                  <td colSpan="7" style={styles.addTableCell}>
                                     <span style={styles.addTaskText}>+ Add task...</span>
                                   </td>
                                 </tr>

@@ -6,12 +6,11 @@ import Loader from "./Loader";
 import Avatar from "./Avatar";
 import AddModuleModal from "./AddModuleModal";
 
-export default function Modules({ projectId, projectColor, onTaskClick }) {
+export default function Modules({ projectId, projectColor, onTaskClick, isAddModalOpen, setIsAddModalOpen }) {
   const [modules, setModules] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [expandedModules, setExpandedModules] = useState({});
   const [loading, setLoading] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const role = JSON.parse(localStorage.getItem("userData"))?.role || "";
   const canModify = ["admin", "Project Manager"].includes(role);
@@ -53,11 +52,6 @@ export default function Modules({ projectId, projectColor, onTaskClick }) {
     <div style={styles.container}>
       <div style={styles.headerRow}>
         <h3 style={styles.sectionTitle}>Modules & Tasks</h3>
-        {canModify && (
-          <button style={styles.addBtn} onClick={() => setIsAddModalOpen(true)}>
-            <Plus size={16} /> Add Module
-          </button>
-        )}
       </div>
 
       <div style={styles.moduleList}>

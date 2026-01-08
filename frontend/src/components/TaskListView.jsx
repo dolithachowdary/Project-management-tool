@@ -26,7 +26,7 @@ export default function TaskListView({
     table: { width: "100%", borderCollapse: "separate", borderSpacing: 0 },
     th: { textAlign: "left", padding: "16px 14px", fontSize: 13, fontWeight: 800, color: "#475569", borderBottom: "1px solid #f1f5f9", background: "#fcfdfe", whiteSpace: "nowrap" },
     tr: { transition: "all 0.2s" },
-    td: { padding: "14px", fontSize: 13, color: "#1e293b", borderBottom: "1px solid #f8fafc", verticalAlign: "middle" },
+    td: { padding: "14px", fontSize: 13, color: "#1e293b", borderBottom: "1px solid #f8fafc", verticalAlign: "middle", whiteSpace: "nowrap" },
     taskSerial: { fontWeight: 700, color: "#64748b", cursor: "help" },
     taskName: { fontWeight: 600, color: "#1e293b", fontSize: 14 },
     moduleText: { color: "#64748b", fontSize: 13, fontWeight: 500 },
@@ -40,7 +40,7 @@ export default function TaskListView({
   if (tasks.length === 0) return <div style={{ padding: 60, textAlign: "center", color: "#94a3b8", fontWeight: 600 }}>No tasks available.</div>;
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="hide-scrollbar">
       <table style={styles.table}>
         <thead>
           <tr>
@@ -66,9 +66,8 @@ export default function TaskListView({
             const startDate = t.start_date || t.start_datetime;
             const endDate = t.end_date || t.end_datetime;
 
-            const displaySerial = t.task_serial
-              ? String(t.task_serial).padStart(3, "0")
-              : (t.task_code?.split('/').pop() || t.taskCode?.split('-').pop() || "000");
+            // Show full ID e.g. "PRJ-123"
+            const displaySerial = t.task_code || t.taskCode || t.id;
 
             return (
               <tr
@@ -84,7 +83,7 @@ export default function TaskListView({
                     background: t.project_color || "#e0e7ff",
                     opacity: isHovered ? 1 : 0.6
                   }} />
-                  <span style={styles.taskSerial} title={t.task_code || t.taskCode}>
+                  <span style={styles.taskSerial} title={displaySerial}>
                     {displaySerial}
                   </span>
                 </td>

@@ -161,7 +161,7 @@ export default function AddSprint({ isOpen, onClose, onSprintAdded, initialProje
           <div style={styles.staticField}>
             {projectId && nextSprintNum
               ? `Sprint ${nextSprintNum}`
-              : <span style={styles.placeholderText}>Select a project to see sprint number</span>}
+              : <span style={styles.placeholderText}>Auto-generated (e.g. Sprint 1)</span>}
           </div>
         </div>
 

@@ -20,13 +20,21 @@ const ProjectHeader = ({
   onEdit,
   onShowFlow,
   onAddSprint,
-  onAddTask
+  onAddTask,
+  onAddModule,
+  sprintCount = 0
 }) => {
   if (!title) return null;
 
   const roleData = JSON.parse(localStorage.getItem("userData"));
   const role = roleData?.role || "";
-  const canEdit = ["admin", "Project Manager"].includes(role);
+  const roleLower = role.toLowerCase();
+
+  const isPM = ["admin", "project manager"].includes(roleLower);
+  const isDev = roleLower === "developer";
+  // Developer can add tasks, but not modules or sprints
+  const canAddTasks = isPM || isDev;
+  const canModifyStructure = isPM;
 
   const handleDownload = () => {
     if (!projectId) return;
@@ -48,7 +56,7 @@ const ProjectHeader = ({
           <div style={styles.titleRow}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <h2 style={styles.title}>{title}</h2>
-              {canEdit && (
+              {canModifyStructure && (
                 <button style={styles.editBtn} onClick={onEdit} title="Edit Project">
                   <Pencil size={18} color="#94a3b8" />
                 </button>
@@ -88,14 +96,15 @@ const ProjectHeader = ({
                 <div style={{ ...styles.iconBox, background: "#fff" }}>
                   <Clock3 size={16} color="#3b82f6" />
                 </div>
-                {canEdit && (
+                {canModifyStructure && (
                   <button style={styles.cardAddBtn} className="card-add-btn" onClick={onAddSprint} title="Add Sprint">
                     <Plus size={14} color="#3b82f6" />
                   </button>
                 )}
               </div>
               <div style={styles.cardText}>
-                <div style={styles.cardLabel}>{currentSprintName}</div>
+                <div style={styles.cardLabel}>Sprints {sprintCount > 0 && `(${sprintCount})`}</div>
+                <div style={styles.cardVal}>{currentSprintName}</div>
                 <div style={styles.cardProgressTrack}>
                   <div style={{ ...styles.cardProgressFill, width: `${sprintProgress}%`, background: "#3b82f6" }} />
                 </div>
@@ -106,8 +115,15 @@ const ProjectHeader = ({
           {/* MODULES CARD */}
           <div style={{ ...styles.statCard, background: "#f5f3ff" }}>
             <div style={styles.cardInfo}>
-              <div style={{ ...styles.iconBox, background: "#fff" }}>
-                <Box size={16} color="#8b5cf6" />
+              <div style={{ ...styles.cardHeaderArea }}>
+                <div style={{ ...styles.iconBox, background: "#fff" }}>
+                  <Box size={16} color="#8b5cf6" />
+                </div>
+                {canModifyStructure && (
+                  <button style={styles.cardAddBtn} className="card-add-btn" onClick={onAddModule} title="Add Module">
+                    <Plus size={14} color="#8b5cf6" />
+                  </button>
+                )}
               </div>
               <div style={styles.cardText}>
                 <div style={styles.cardLabel}>Modules</div>
@@ -123,7 +139,7 @@ const ProjectHeader = ({
                 <div style={{ ...styles.iconBox, background: "#fff" }}>
                   <ClipboardList size={16} color="#f97316" />
                 </div>
-                {canEdit && (
+                {canAddTasks && (
                   <button style={styles.cardAddBtn} className="card-add-btn" onClick={onAddTask} title="Create Task">
                     <Plus size={14} color="#f97316" />
                   </button>

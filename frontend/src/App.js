@@ -14,12 +14,15 @@ import Notes from "./pages/Notes";
 import SprintDetails from "./pages/SprintDetails";
 import ToastManager from "./components/ToastManager";
 
+import ChatBot from "./components/ChatBot";
+
 function App() {
   return (
     <>
       <ToastManager />
 
       <Router>
+        <ChatBot />
         <Routes>
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/login" />} />

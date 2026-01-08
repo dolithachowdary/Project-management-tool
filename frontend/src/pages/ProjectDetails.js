@@ -35,6 +35,8 @@ const ProjectDetails = () => {
   const [allProjects, setAllProjects] = useState([]);
   const [showFlowGraph, setShowFlowGraph] = useState(false);
   const [hierarchyData, setHierarchyData] = useState(null);
+  // Add helper for module modal
+  const [isAddModuleModalOpen, setIsAddModuleModalOpen] = useState(false);
 
   const handleShowFlow = async () => {
     try {
@@ -88,6 +90,8 @@ const ProjectDetails = () => {
   const completedTasks = summary?.tasks?.completed || 0;
   const activeTasks = totalTasks - completedTasks;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  // Calculate sprint count from summary if available, otherwise just rely on currentSprint
+  const sprintCount = summary?.sprints?.total || 0;
 
   const handleAddTask = async (taskData) => {
     try {
@@ -140,6 +144,7 @@ const ProjectDetails = () => {
             timeLeft={project.status === "active" ? "Active" : formatStatus(project.status)}
             currentSprintName={summary?.currentSprint?.name || "No active sprint"}
             sprintProgress={summary?.currentSprint?.progress || 0}
+            sprintCount={sprintCount}
             modulesSummary={`${summary?.modules?.active || 0} active · ${summary?.modules?.total || 0} total`}
             tasksSummary={`${activeTasks} active · ${totalTasks} total`}
             color={project.color}
@@ -147,6 +152,7 @@ const ProjectDetails = () => {
             onEdit={() => setIsEditModalOpen(true)}
             onShowFlow={handleShowFlow}
             onAddSprint={() => setIsAddSprintModalOpen(true)}
+            onAddModule={() => setIsAddModuleModalOpen(true)}
             onAddTask={() => setIsAddTaskModalOpen(true)}
           />
 
@@ -157,6 +163,8 @@ const ProjectDetails = () => {
                 projectId={id}
                 projectColor={project.color}
                 onTaskClick={handleEditTask}
+                isAddModalOpen={isAddModuleModalOpen}
+                setIsAddModalOpen={setIsAddModuleModalOpen}
               />
             </div>
 
