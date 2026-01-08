@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import Avatar, { AvatarGroup } from "./Avatar";
+import React from "react";
+import { AvatarGroup } from "./Avatar";
 import { Pencil } from "lucide-react";
 
 const Card = ({
@@ -13,7 +13,6 @@ const Card = ({
   color = "#4F7DFF",
   onEdit,
 }) => {
-  const [showDropdown, setShowDropdown] = useState(false);
 
   return (
     <div style={styles.card}>
@@ -43,7 +42,7 @@ const Card = ({
         <div
           style={{
             ...styles.progressFill,
-            width: `${progress}%`,
+            width: `${progress}% `,
             background: color,
           }}
         />

@@ -9,7 +9,6 @@ import DevDashboard from "../components/Dev-Dashboard";
 import DevCalendar from "../components/Dev-Calendar";
 import PMTimeline from "../components/Pm-Timeline";
 import DevTimeline from "../components/Dev-Timeline";
-import { color } from "framer-motion";
 
 
 

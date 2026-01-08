@@ -52,7 +52,6 @@ const SprintDetails = () => {
   }, []);
 
   const role = userData.role || "Project Manager";
-  const isDev = role.toLowerCase() === "developer";
   const [activeTab, setActiveTab] = useState("overview");
   const [collapsedSections, setCollapsedSections] = useState({});
   const [allProjects, setAllProjects] = useState([]);

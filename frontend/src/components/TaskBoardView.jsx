@@ -189,12 +189,7 @@ export default function TaskBoardView({
                       <div style={styles.empty}>No tasks in this column</div>
                     ) : (
                       colTasks.map((t, idx) => {
-                        const sStyle = getStatusStyles(t.status);
-
-                        // Extract serial for bottom right
-                        const displaySerial = t.task_serial
-                          ? `TASK ${String(t.task_serial).padStart(3, "0")}`
-                          : (t.task_code?.split('/').pop() || t.taskCode?.split('-').pop() || "TASK 000");
+                        // sStyle and displaySerial were unused
 
                         return (
                           <Draggable key={t.id} draggableId={String(t.id)} index={idx}>

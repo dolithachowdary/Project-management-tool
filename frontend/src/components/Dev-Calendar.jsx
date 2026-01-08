@@ -31,12 +31,10 @@ const hexToRGBA = (hex, opacity) => {
 export default function Calendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMyTasks = async () => {
       try {
-        setLoading(true);
         const userData = JSON.parse(localStorage.getItem("userData") || "{}");
         const myId = userData.id || userData._id;
 
@@ -52,8 +50,6 @@ export default function Calendar() {
         setTasks(filtered);
       } catch (err) {
         console.error("Failed to fetch calendar tasks:", err);
-      } finally {
-        setLoading(false);
       }
     };
 
