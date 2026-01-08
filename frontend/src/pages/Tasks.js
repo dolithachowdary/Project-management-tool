@@ -14,9 +14,10 @@ import { getProjects } from "../api/projects";
 import { getAssignableUsers } from "../api/users";
 import { toApiStatus, formatStatus } from "../utils/helpers";
 
-const role = localStorage.getItem("role") || "Project Manager";
-const currentUser = localStorage.getItem("userName") || "A";
-const currentUserId = localStorage.getItem("userId");
+const storedUser = JSON.parse(localStorage.getItem("userData") || "{}");
+const role = storedUser.role || "Developer";
+const currentUser = storedUser.full_name || storedUser.name || "User";
+const currentUserId = storedUser.id || storedUser.userId;
 
 // Remove mock userData and moduleList
 

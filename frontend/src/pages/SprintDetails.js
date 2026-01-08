@@ -70,6 +70,7 @@ const SprintDetails = () => {
   const [showFlowGraph, setShowFlowGraph] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const { sprint, modules } = data || { sprint: {}, modules: [] };
 
@@ -90,61 +91,23 @@ const SprintDetails = () => {
     }
   };
 
+  const handleTaskCreate = async (taskData) => {
+    try {
+      await createTask(taskData);
+      setIsAddTaskModalOpen(false);
+      loadHierarchy();
+      toast.success("Task created successfully");
+    } catch (err) {
+      console.error("Failed to create task:", err);
+      toast.error("Failed to create task.");
+    }
+  };
+
   const toggleSection = (key) => {
     setCollapsedSections(prev => ({
       ...prev,
       [key]: !prev[key]
     }));
-  };
-
-  const handleAddTask = async (sectionKey) => {
-    if (!newTaskTitle.trim()) {
-      setInlineAddingTo(null);
-      return;
-    }
-
-    try {
-      const moduleId = selectedModule || (allModules.length > 0 ? allModules[0].id : null);
-      const assigneeId = isDev ? userData.id : selectedAssignee;
-      const goalIdx = selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null;
-
-      const isMissingField = !newTaskTitle.trim() ||
-        !moduleId ||
-        !assigneeId;
-
-      if (isMissingField) {
-        toast.error("Please provide at least a Title, Module, and Assignee.");
-        return;
-      }
-
-      const payload = {
-        title: newTaskTitle,
-        project_id: sprint.project_id,
-        sprint_id: sprint.id,
-        module_id: moduleId,
-        assignee_id: assigneeId,
-        description: "",
-        start_date: sprint.start_date.split('T')[0],
-        end_date: sprint.end_date.split('T')[0],
-        status: sectionKey === 'planned' ? 'todo' : sectionKey,
-        priority: selectedPriority || 'Medium',
-        goal_index: selectedGoalIndex !== "" ? parseInt(selectedGoalIndex) : null,
-        potential: selectedPotential || null,
-      };
-
-      await createTask(payload);
-      setNewTaskTitle("");
-      setSelectedModule(allModules[0]?.id || "");
-      setSelectedAssignee("");
-      setSelectedPriority("Medium");
-      setSelectedGoalIndex(sprintGoals.length > 0 ? "0" : "");
-      setSelectedPotential("");
-      setInlineAddingTo(null);
-      loadHierarchy(); // Refresh the list
-    } catch (err) {
-      console.error("Failed to add task:", err);
-      toast.error("Failed to add task. Please try again.");
-    }
   };
 
   const fetchProjectData = useCallback(async (projectId) => {
@@ -500,10 +463,7 @@ const SprintDetails = () => {
                   <div style={styles.leftActions}>
                     <button
                       style={styles.addTaskBtn}
-                      onClick={() => {
-                        setInlineAddingTo('planned');
-                        setNewTaskTitle("");
-                      }}
+                      onClick={() => setIsAddTaskModalOpen(true)}
                     >
                       <Plus size={16} />
                       Add task
@@ -620,15 +580,7 @@ const SprintDetails = () => {
                               {group.key === 'planned' && (
                                 <tr
                                   style={styles.addTableRow}
-                                  onClick={() => {
-                                    if (inlineAddingTo !== group.key) {
-                                      setInlineAddingTo(group.key);
-                                      setNewTaskTitle("");
-                                      setSelectedModule(allModules[0]?.id || "");
-                                      setSelectedAssignee("");
-                                      setSelectedPriority("Medium");
-                                    }
-                                  }}
+                                  onClick={() => setIsAddTaskModalOpen(true)}
                                 >
                                   <td colSpan="6" style={styles.addTableCell}>
                                     {inlineAddingTo === group.key ? (
@@ -764,7 +716,7 @@ const SprintDetails = () => {
                           {group.key === 'planned' && (
                             <button
                               style={styles.colHeaderAddBtn}
-                              onClick={() => setInlineAddingTo(group.key)}
+                              onClick={() => setIsAddTaskModalOpen(true)}
                             >
                               <Plus size={16} />
                             </button>
@@ -929,6 +881,26 @@ const SprintDetails = () => {
               currentUserId={userData?.id}
               initialData={editingTask}
               initialProjectId={sprint.project_id}
+            />
+          </div>
+        </div>
+      )}
+
+      {isAddTaskModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent} className="hide-scrollbar">
+            <TaskForm
+              onSave={handleTaskCreate}
+              onCancel={() => setIsAddTaskModalOpen(false)}
+              projects={allProjects}
+              currentUserId={userData?.id}
+              initialProjectId={sprint.project_id}
+              initialData={{
+                project_id: sprint.project_id,
+                sprint_id: sprint.id,
+                start_date: sprint.start_date,
+                end_date: sprint.end_date
+              }}
             />
           </div>
         </div>

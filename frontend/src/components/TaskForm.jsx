@@ -107,7 +107,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       project_id: pid,
       module_id: "",
       sprint_id: "",
-      assignee_id: "",
+      assignee_id: isDev ? (currentUserId || userData.id) : "",
       goal_index: ""
     }));
 
