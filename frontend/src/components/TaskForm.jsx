@@ -478,7 +478,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
         // Potential
         React.createElement("div", { style: styles.formGroup },
-          React.createElement("label", { style: styles.label }, "Potential (Size)", React.createElement("span", { style: styles.required }, " *")),
+          React.createElement("label", { style: styles.label }, "Task Potential (Size)", React.createElement("span", { style: styles.required }, " *")),
           React.createElement("select", {
             name: "potential",
             value: formData.potential,

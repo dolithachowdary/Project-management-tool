@@ -259,7 +259,10 @@ export default function Tasks() {
     pageInner: {
       flex: 1,
       overflowY: "auto",
-      padding: "20px 10px"
+      padding: "20px 10px",
+      scrollbarWidth: "none", // Firefox
+      msOverflowStyle: "none", // IE and Edge
+      WebkitScrollbar: { display: "none" } // Chrome, Safari, Opera
     },
 
     // Remove pageTitle since it's in Header
@@ -599,6 +602,26 @@ export default function Tasks() {
             formatFullDate: formatFullDate
           })
       )
-    )
+    ),
+    // Add CSS to hide scrollbar for webkit browsers
+    React.createElement("style", null, `
+      .pageInner::-webkit-scrollbar {
+        display: none;
+      }
+    `)
   );
+}
+
+// Add class to pageInner for CSS targeting
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = `
+    div[style*="overflowY"][style*="auto"]::-webkit-scrollbar {
+      display: none;
+    }
+  `;
+  if (!document.head.querySelector('style[data-tasks-scrollbar]')) {
+    styleSheet.setAttribute('data-tasks-scrollbar', 'true');
+    document.head.appendChild(styleSheet);
+  }
 }

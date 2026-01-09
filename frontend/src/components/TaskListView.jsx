@@ -48,9 +48,9 @@ export default function TaskListView({
             <th style={styles.th}>Task Name</th>
             <th style={styles.th}>Module</th>
             <th style={styles.th}>Project</th>
-            <th style={styles.th}>Assigned To</th>
-            <th style={styles.th}>Collaborators</th>
-            <th style={styles.th}>Created By</th>
+            <th style={{ ...styles.th, textAlign: "center" }}>Assigned To</th>
+            <th style={{ ...styles.th, textAlign: "center" }}>Collaborators</th>
+            <th style={{ ...styles.th, textAlign: "center" }}>Created By</th>
             <th style={styles.th}>Priority</th>
             <th style={styles.th}>Status</th>
             <th style={styles.th}>Start Date</th>
@@ -100,31 +100,37 @@ export default function TaskListView({
                   <div style={styles.projectText}>{t.project_name || t.projectName || t.project?.name || "—"}</div>
                 </td>
 
-                <td style={styles.td}>
-                  <Avatar
-                    name={t.assignee_name || "Unassigned"}
-                    id={t.assignee_id}
-                    size={28}
-                  />
+                <td style={{ ...styles.td, textAlign: "center" }}>
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <Avatar
+                      name={t.assignee_name || "Unassigned"}
+                      id={t.assignee_id}
+                      size={28}
+                    />
+                  </div>
                 </td>
 
-                <td style={styles.td}>
-                  <AvatarGroup
-                    members={(t.collaborators || []).map(c => ({
-                      id: c.id || c.user_id || c,
-                      name: c.name || c.full_name || "Collab"
-                    }))}
-                    size={24}
-                    max={2}
-                  />
+                <td style={{ ...styles.td, textAlign: "center" }}>
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <AvatarGroup
+                      members={(t.collaborators || []).map(c => ({
+                        id: c.id || c.user_id || c,
+                        name: c.name || c.full_name || "Collab"
+                      }))}
+                      size={24}
+                      max={2}
+                    />
+                  </div>
                 </td>
 
-                <td style={styles.td}>
-                  <Avatar
-                    name={t.created_by_name || "System"}
-                    id={t.created_by}
-                    size={28}
-                  />
+                <td style={{ ...styles.td, textAlign: "center" }}>
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <Avatar
+                      name={t.created_by_name || "System"}
+                      id={t.created_by}
+                      size={28}
+                    />
+                  </div>
                 </td>
 
                 <td style={styles.td}>
