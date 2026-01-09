@@ -21,8 +21,10 @@ const Reports = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetchWorkloadData();
-    },);
+        if (token) {
+            fetchWorkloadData();
+        }
+    }, [token]);
 
     const fetchWorkloadData = async () => {
         try {
