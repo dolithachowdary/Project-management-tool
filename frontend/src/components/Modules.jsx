@@ -97,7 +97,7 @@ export default function Modules({ projectId, projectColor, onTaskClick, isAddMod
                     </div>
                     <span style={styles.progressText}>{Math.round(progress)}%</span>
                   </div>
-                  {isExpanded ? <ChevronUp size={20} color="#94a3b8" /> : <ChevronDown size={20} color="#94a3b8" />}
+                  {isExpanded ? <ChevronUp size={30} color="#121315ff" /> : <ChevronDown size={30} color="#121315ff" />}
                 </div>
               </div>
 
