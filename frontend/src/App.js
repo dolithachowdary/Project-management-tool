@@ -15,39 +15,48 @@ import SprintDetails from "./pages/SprintDetails";
 import ToastManager from "./components/ToastManager";
 
 import ChatBot from "./components/ChatBot";
+import { useLocation } from "react-router-dom";
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/login" || location.pathname === "/";
+
   return (
     <>
       <ToastManager />
+      {!isLoginPage && <ChatBot />}
+      <Routes>
+        {/* Default redirect */}
+        <Route path="/" element={<Navigate to="/login" />} />
 
-      <Router>
-        <ChatBot />
-        <Routes>
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/login" />} />
+        {/* Auth */}
+        <Route path="/login" element={<LoginPage />} />
 
-          {/* Auth */}
-          <Route path="/login" element={<LoginPage />} />
+        {/* Main pages */}
+        <Route path="/dashboard" element={<Dashboard />} />
 
-          {/* Main pages */}
-          <Route path="/dashboard" element={<Dashboard />} />
+        {/* Projects */}
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/projects/:id" element={<ProjectDetails />} />
 
-          {/* Projects */}
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id" element={<ProjectDetails />} />
-
-          {/* Sprints */}
-          <Route path="/sprints" element={<Sprints />} />
-          <Route path="/sprints/:id" element={<SprintDetails />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/timesheets" element={<Timesheets />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/notes" element={<Notes />} />
-        </Routes>
-      </Router>
+        {/* Sprints */}
+        <Route path="/sprints" element={<Sprints />} />
+        <Route path="/sprints/:id" element={<SprintDetails />} />
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/timesheets" element={<Timesheets />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/notes" element={<Notes />} />
+      </Routes>
     </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 
