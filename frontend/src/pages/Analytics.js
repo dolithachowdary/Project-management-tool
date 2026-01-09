@@ -5,8 +5,9 @@ import Loader from "../components/Loader";
 import ProjectGantt from "../components/ProjectGantt";
 import MemberWorkloadGraph from "../components/MemberWorkloadGraph";
 import ProjectDistributionChart from "../components/ProjectDistributionChart";
-import MemberPriorityGraph from "../components/MemberPriorityGraph";
+import PriorityDistributionGraph from "../components/PriorityDistributionGraph";
 import MemberEfficiencyGraph from "../components/MemberEfficiencyGraph";
+import MemberTaskStatusGraph from "../components/MemberTaskStatusGraph";
 import { getTasks } from "../api/tasks";
 import { getAssignableUsers } from "../api/users";
 import { getProjects } from "../api/projects";
@@ -19,10 +20,18 @@ function Analytics() {
     const [priorityData, setPriorityData] = useState([]);
     const [efficiencyData, setEfficiencyData] = useState([]);
     const [projectDistData, setProjectDistData] = useState([]);
+    const [memberStatusData, setMemberStatusData] = useState([]);
     const [loadingOverview, setLoadingOverview] = useState(false);
 
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem("userData"));
+        const userRole = (userData?.role || "").toLowerCase();
+
+        if (userRole === "developer") {
+            window.location.href = "/dashboard";
+            return;
+        }
+
         if (userData?.role) {
             setRole(userData.role);
         } else {
@@ -59,20 +68,21 @@ function Analytics() {
                     });
                     setWorkloadData(workload.filter(w => w.total > 0));
 
-                    // Member Priority
-                    const priorityDist = users.map(user => {
-                        const userTasks = tasks.filter(t =>
-                            String(t.assignee_id || t.assigned_to_id || t.assignedTo) === String(user.id || user._id)
-                        );
-                        return {
-                            id: user.id || user._id,
-                            name: user.full_name || user.name || "Unknown",
-                            High: userTasks.filter(t => (t.priority || "").toLowerCase() === "high").length,
-                            Medium: userTasks.filter(t => (t.priority || "").toLowerCase() === "medium").length,
-                            Low: userTasks.filter(t => (t.priority || "").toLowerCase() === "low").length
-                        };
+                    // Aggregate Priority Distribution
+                    const priorityCounts = { High: 0, Medium: 0, Low: 0 };
+                    tasks.forEach(t => {
+                        const p = (t.priority || "").toLowerCase();
+                        if (p === "high") priorityCounts.High++;
+                        else if (p === "medium") priorityCounts.Medium++;
+                        else if (p === "low") priorityCounts.Low++;
                     });
-                    setPriorityData(priorityDist.filter(p => (p.High + p.Medium + p.Low) > 0));
+
+                    const priorityDist = [
+                        { name: "Low", count: priorityCounts.Low },
+                        { name: "Medium", count: priorityCounts.Medium },
+                        { name: "High", count: priorityCounts.High },
+                    ];
+                    setPriorityData(priorityDist);
 
                     // Time Efficiency
                     const efficiency = users.map(user => {
@@ -129,6 +139,34 @@ function Analytics() {
                     });
                     setProjectDistData(dist.filter(d => d.count > 0));
 
+                    // Member Task Status Distribution
+                    const statusDist = users.map(user => {
+                        const userTasks = tasks.filter(t =>
+                            String(t.assignee_id || t.assigned_to_id || t.assignedTo) === String(user.id || user._id)
+                        );
+
+                        const todo = userTasks.filter(t => {
+                            const s = (t.status || "").toLowerCase();
+                            return s === "todo" || s === "to do";
+                        }).length;
+
+                        const inprogress = userTasks.filter(t => {
+                            const s = (t.status || "").toLowerCase();
+                            return s === "in_progress" || s === "in progress" || s === "review";
+                        }).length;
+
+                        const done = userTasks.filter(t => (t.status || "").toLowerCase() === "done").length;
+
+                        return {
+                            name: user.full_name || user.name || "Unknown",
+                            todo,
+                            inprogress,
+                            done,
+                            total: todo + inprogress + done
+                        };
+                    });
+                    setMemberStatusData(statusDist.filter(d => d.total > 0));
+
                 } catch (err) {
                     console.error("Failed to fetch overview data", err);
                 } finally {
@@ -172,7 +210,7 @@ function Analytics() {
                     {activeTab === "overview" ? (
                         <div style={styles.overviewSection}>
                             <div style={styles.topGrid}>
-                                <div style={styles.chartCard}>
+                                <div style={styles.chartCardLarge}>
                                     <div style={styles.chartHeader}>
                                         <BarChart3 size={20} color="#c53030" />
                                         <h3 style={styles.chartTitle}>Workload Balance</h3>
@@ -183,12 +221,23 @@ function Analytics() {
                                     </div>
                                 </div>
 
-                                <div style={styles.chartCard}>
+                                <div style={styles.chartCardSmall}>
+                                    <div style={styles.chartHeader}>
+                                        <Activity size={20} color="#c53030" />
+                                        <h3 style={styles.chartTitle}>Priority Distribution</h3>
+                                    </div>
+                                    <p style={styles.chartSubtitle}>Total breakdown of task priorities.</p>
+                                    <div style={styles.chartContent}>
+                                        {loadingOverview ? <Loader /> : <PriorityDistributionGraph data={priorityData} />}
+                                    </div>
+                                </div>
+
+                                <div style={styles.chartCardSmall}>
                                     <div style={styles.chartHeader}>
                                         <PieChart size={20} color="#c53030" />
                                         <h3 style={styles.chartTitle}>Project Distribution</h3>
                                     </div>
-                                    <p style={styles.chartSubtitle}>Tasks distributed across active projects.</p>
+                                    <p style={styles.chartSubtitle}>Active projects task load.</p>
                                     <div style={styles.chartContent}>
                                         {loadingOverview ? <Loader /> : <ProjectDistributionChart data={projectDistData} />}
                                     </div>
@@ -196,7 +245,7 @@ function Analytics() {
                             </div>
 
                             <div style={styles.bottomGrid}>
-                                <div style={styles.chartCard}>
+                                <div style={styles.chartCardFull}>
                                     <div style={styles.chartHeader}>
                                         <Activity size={20} color="#c53030" />
                                         <h3 style={styles.chartTitle}>Time Efficiency</h3>
@@ -207,14 +256,14 @@ function Analytics() {
                                     </div>
                                 </div>
 
-                                <div style={styles.chartCard}>
+                                <div style={styles.chartCardFull}>
                                     <div style={styles.chartHeader}>
                                         <Activity size={20} color="#c53030" />
-                                        <h3 style={styles.chartTitle}>Priority Distribution</h3>
+                                        <h3 style={styles.chartTitle}>Member Task Status</h3>
                                     </div>
-                                    <p style={styles.chartSubtitle}>Member-wise breakdown of task priorities.</p>
+                                    <p style={styles.chartSubtitle}>Status breakdown of current tasks per member.</p>
                                     <div style={styles.chartContent}>
-                                        {loadingOverview ? <Loader /> : <MemberPriorityGraph data={priorityData} />}
+                                        {loadingOverview ? <Loader /> : <MemberTaskStatusGraph data={memberStatusData} />}
                                     </div>
                                 </div>
                             </div>
@@ -309,7 +358,7 @@ const styles = {
     },
     topGrid: {
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
+        gridTemplateColumns: "1.5fr 1fr 1fr",
         gap: "24px",
     },
     bottomGrid: {
@@ -317,11 +366,29 @@ const styles = {
         gridTemplateColumns: "1fr 1fr",
         gap: "24px",
     },
-    chartCard: {
+    chartCardLarge: {
         background: "#fff",
         borderRadius: "20px",
         border: "1px solid #f1f5f9",
-        padding: "24px",
+        padding: "16px",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        display: "flex",
+        flexDirection: "column",
+    },
+    chartCardSmall: {
+        background: "#fff",
+        borderRadius: "20px",
+        border: "1px solid #f1f5f9",
+        padding: "12px",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        display: "flex",
+        flexDirection: "column",
+    },
+    chartCardFull: {
+        background: "#fff",
+        borderRadius: "20px",
+        border: "1px solid #f1f5f9",
+        padding: "16px",
         boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
         display: "flex",
         flexDirection: "column",

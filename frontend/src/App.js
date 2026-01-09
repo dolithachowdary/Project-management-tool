@@ -10,6 +10,7 @@ import Tasks from "./pages/Tasks";
 import Timesheets from "./pages/Timesheets";
 import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
+import Logs from "./pages/Logs";
 import Notes from "./pages/Notes";
 import SprintDetails from "./pages/SprintDetails";
 import ToastManager from "./components/ToastManager";
@@ -19,6 +20,9 @@ import { useLocation } from "react-router-dom";
 
 function AppContent() {
   const location = useLocation();
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const normalizedRole = (userData.role || "").toLowerCase();
+
   const isLoginPage = location.pathname === "/login" || location.pathname === "/";
 
   return (
@@ -44,8 +48,37 @@ function AppContent() {
         <Route path="/sprints/:id" element={<SprintDetails />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/timesheets" element={<Timesheets />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/reports" element={<Reports />} />
+        {/* Protected routes for non-developers */}
+        <Route
+          path="/analytics"
+          element={
+            normalizedRole === "admin" || normalizedRole === "project manager" ? (
+              <Analytics />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            normalizedRole === "admin" || normalizedRole === "project manager" ? (
+              <Reports />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
+        <Route
+          path="/logs"
+          element={
+            normalizedRole === "admin" || normalizedRole === "project manager" ? (
+              <Logs />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
         <Route path="/notes" element={<Notes />} />
       </Routes>
     </>

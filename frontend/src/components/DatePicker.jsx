@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const RED = "#C62828";
 
-const DatePicker = ({ value, onChange, label, placeholder = "Select date", required, name }) => {
+const DatePicker = ({ value, onChange, label, placeholder = "Select date", required, name, style, showInput = true }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const containerRef = useRef(null);
@@ -107,7 +107,7 @@ const DatePicker = ({ value, onChange, label, placeholder = "Select date", requi
     };
 
     return (
-        <div style={styles.container} ref={containerRef}>
+        <div style={{ ...styles.container, ...style }} ref={containerRef}>
             <style>
                 {`
           .datepicker-cell:hover {
@@ -125,18 +125,28 @@ const DatePicker = ({ value, onChange, label, placeholder = "Select date", requi
             {label && <label style={styles.label}>{label} {required && <span style={styles.required}>*</span>}</label>}
 
             <div
-                style={styles.inputWrapper}
+                style={{
+                    ...styles.inputWrapper,
+                    opacity: showInput ? 1 : 0,
+                    height: showInput ? 'auto' : '100%',
+                    position: showInput ? 'relative' : 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0
+                }}
                 onClick={() => setIsOpen(!isOpen)}
                 className="datepicker-input-wrapper"
             >
-                <input
-                    type="text"
-                    readOnly
-                    placeholder={placeholder}
-                    value={value && isValid(parseISO(value)) ? format(parseISO(value), "MMM dd, yyyy") : ""}
-                    style={styles.input}
-                />
-                <CalendarIcon size={16} color="#94a3b8" style={styles.icon} />
+                {showInput && (
+                    <>
+                        <input
+                            type="text"
+                            readOnly
+                            placeholder={placeholder}
+                            value={value && isValid(parseISO(value)) ? format(parseISO(value), "MMM dd, yyyy") : ""}
+                            style={styles.input}
+                        />
+                        <CalendarIcon size={16} color="#94a3b8" style={styles.icon} />
+                    </>
+                )}
             </div>
 
             <AnimatePresence>

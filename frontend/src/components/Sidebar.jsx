@@ -1,5 +1,5 @@
 import React from "react";
-import { StickyNote, LogOut } from "lucide-react";
+import { StickyNote, LogOut, Logs } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import DashboardIcon from "../assets/icons/dashboard.svg";
@@ -15,7 +15,7 @@ const Sidebar = () => {
   const location = useLocation();
 
   const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-  const role = userData.role; // "Project Manager" | "Developer"
+  const role = (userData.role || "").toLowerCase(); // Normalized role
 
 
   const menuItems = [
@@ -25,12 +25,18 @@ const Sidebar = () => {
     { name: "Tasks", path: "/tasks", icon: TasksIcon },
 
     //  Hide Timesheets for DEV
-    ...(role === "Project Manager" || role === "admin"
+    ...(role === "project manager" || role === "admin"
       ? [{ name: "Timesheets", path: "/timesheets", icon: TimesheetsIcon }]
       : []),
 
-    { name: "Analytics", path: "/analytics", icon: analyticsIcon },
-    { name: "Reports", path: "/reports", icon: reportsicon },
+    // Hide Analytics and Reports for DEV
+    ...(role === "project manager" || role === "admin"
+      ? [
+        { name: "Analytics", path: "/analytics", icon: analyticsIcon },
+        { name: "Reports", path: "/reports", icon: reportsicon },
+        { name: "Logs", path: "/logs", icon: Logs }, // Using analyticsIcon as fallback if logsIcon not found
+      ]
+      : []),
   ];
 
   const handleSignOut = () => {
@@ -52,6 +58,7 @@ const Sidebar = () => {
         <nav style={styles.nav}>
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
+            const isComponentIcon = typeof item.icon !== "string";
 
             return (
               <button
@@ -62,16 +69,29 @@ const Sidebar = () => {
                 }}
                 onClick={() => navigate(item.path)}
               >
-                <img
-                  src={item.icon}
-                  alt={item.name}
-                  style={{
-                    ...styles.icon,
-                    filter: isActive
-                      ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
-                      : "invert(0%) brightness(0%)",
-                  }}
-                />
+                {isComponentIcon ? (
+                  <item.icon
+                    size={20}
+                    strokeWidth={2}
+                    style={{
+                      opacity: 0.85,
+                      filter: isActive
+                        ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
+                        : "invert(0%) brightness(0%)",
+                    }}
+                  />
+                ) : (
+                  <img
+                    src={item.icon}
+                    alt={item.name}
+                    style={{
+                      ...styles.icon,
+                      filter: isActive
+                        ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
+                        : "invert(0%) brightness(0%)",
+                    }}
+                  />
+                )}
                 {item.name}
               </button>
             );

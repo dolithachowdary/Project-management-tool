@@ -7,7 +7,13 @@ import { Construction, ArrowLeft, Lock } from 'lucide-react';
 const Reports = () => {
     const navigate = useNavigate();
     const userData = JSON.parse(localStorage.getItem('userData'));
-    const role = userData?.role || '';
+    const role = (userData?.role || '').toLowerCase();
+
+    React.useEffect(() => {
+        if (role === 'developer') {
+            navigate('/dashboard');
+        }
+    }, [role, navigate]);
 
     return (
         <div style={styles.pageContainer}>

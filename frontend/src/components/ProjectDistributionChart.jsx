@@ -114,12 +114,6 @@ export default function ProjectDistributionChart({ data = [] }) {
                                     <span style={styles.legendName}>{item.name}</span>
                                     <span style={styles.legendCount}>{item.count}</span>
                                 </div>
-                                <div style={styles.progressRow}>
-                                    <div style={styles.progressContainer}>
-                                        <div style={{ ...styles.progressBar, width: `${item.progress}%`, background: item.color }} />
-                                    </div>
-                                    <span style={styles.progressLabel}>{item.progress}%</span>
-                                </div>
                             </div>
                         </div>
                     ))}
@@ -139,15 +133,16 @@ const styles = {
     },
     chartContainer: {
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        gap: "32px",
+        justifyContent: "flex-start",
+        gap: "16px",
         height: "100%",
-        padding: "10px 0"
+        padding: "5px 0"
     },
     svgWrapper: {
-        width: "200px",
-        height: "200px",
+        width: "170px",
+        height: "170px",
         flexShrink: 0
     },
     svg: {
@@ -164,13 +159,13 @@ const styles = {
         }
     },
     totalLabel: {
-        fontSize: "0.2px",
+        fontSize: "0.22px",
         fill: "#94a3b8",
         fontWeight: "500",
         transform: "rotate(90deg)", // Counter-rotate text
     },
     totalValue: {
-        fontSize: "0.35px",
+        fontSize: "0.4px",
         fill: "#1e293b",
         fontWeight: "800",
         transform: "rotate(90deg)", // Counter-rotate text
@@ -178,11 +173,11 @@ const styles = {
     legend: {
         display: "flex",
         flexDirection: "column",
-        gap: "16px",
-        flex: 1,
-        maxHeight: "220px",
+        gap: "8px",
+        width: "100%",
+        maxHeight: "150px",
         overflowY: "auto",
-        paddingRight: "8px"
+        paddingRight: "4px"
     },
     legendItem: {
         display: "flex",
