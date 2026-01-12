@@ -295,7 +295,7 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
                 <div style={styles.header}>
                     <div style={styles.headerTitle}>
                         {type === 'project' ? <GitGraph size={20} /> : <Workflow size={20} />}
-                        <span>{type === 'project' ? 'Project' : 'Sprint'} Automation Flow</span>
+                        <span>{type === 'project' ? 'Project' : 'Sprint'} Flow</span>
                     </div>
                     <button onClick={onClose} style={styles.close}><X /></button>
                 </div>

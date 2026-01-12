@@ -64,15 +64,12 @@ const Header = () => {
     }
 
     fetchNotifs();
-    const interval = setInterval(() => fetchNotifs(true), 30000); // Poll every 30s
 
     if (isPM) {
       getAssignableUsers().then(res => {
         setAllUsers(res.data?.data || []);
       });
     }
-
-    return () => clearInterval(interval);
   }, [fetchNotifs, isPM]);
 
   const showFreshNotification = (notif) => {

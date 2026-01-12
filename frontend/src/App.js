@@ -15,6 +15,8 @@ import Notes from "./pages/Notes";
 import SprintDetails from "./pages/SprintDetails";
 import ToastManager from "./components/ToastManager";
 
+import OneSignalHandler from "./components/OneSignalHandler";
+
 import ChatBot from "./components/ChatBot";
 
 function AppContent() {
@@ -27,6 +29,7 @@ function AppContent() {
   return (
     <>
       <ToastManager />
+      <OneSignalHandler />
       {!isLoginPage && <ChatBot />}
       <Routes>
         {/* Default redirect */}
