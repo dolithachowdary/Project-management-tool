@@ -66,7 +66,7 @@ export default function RecentActivity({ projectId, sprintId, hideHeader = false
           <div style={styles.loading}>Loading...</div>
         ) : logs.length === 0 ? (
           <div style={styles.empty}>
-            <FileText size={40} color="#e2e8f0" />
+            <FileText size={40} color="var(--border-color)" />
             <p>No activity recorded yet</p>
           </div>
         ) : (
@@ -177,7 +177,7 @@ const styles = {
   itemTitle: {
     fontSize: 14,
     fontWeight: 400,
-    color: "var(--text-primary)",
+    color: "var(--text-primary)", // Reverted to original as the edit was malformed
     marginBottom: 4,
     lineHeight: 1.4,
     fontFamily: "'Poppins', sans-serif",
@@ -197,7 +197,7 @@ const styles = {
   },
   userNote: {
     fontSize: 13,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     lineHeight: 1.4,
   },
   avatarWrap: {
@@ -207,11 +207,11 @@ const styles = {
   empty: {
     padding: 40,
     textAlign: "center",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
   },
   loading: {
     padding: 24,
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontSize: 14,
   }
 };

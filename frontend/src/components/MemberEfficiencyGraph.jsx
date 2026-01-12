@@ -2,9 +2,10 @@ import React from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 import Avatar from './Avatar';
 
-const MemberXAxisTick = ({ x, y, payload, data }) => {
+const CustomXAxisTick = ({ x, y, payload, data }) => {
     const item = data[payload.index];
     if (!item) return null;
     return (
@@ -17,6 +18,7 @@ const MemberXAxisTick = ({ x, y, payload, data }) => {
 };
 
 export default function MemberEfficiencyGraph({ data = [] }) {
+    const { theme } = useTheme();
     if (!data || data.length === 0) {
         return (
             <div style={styles.emptyWrap}>
@@ -28,24 +30,32 @@ export default function MemberEfficiencyGraph({ data = [] }) {
     return (
         <div style={styles.wrapper}>
             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 60 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                     <XAxis
                         dataKey="name"
                         axisLine={false}
                         tickLine={false}
-                        interval={0}
-                        tick={(props) => <MemberXAxisTick {...props} data={data} />}
+                        tick={<CustomXAxisTick data={data} />}
+                        height={60}
                     />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                    <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
+                    />
                     <Tooltip
-                        cursor={false}
+                        cursor={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
                         contentStyle={{
-                            borderRadius: '8px',
-                            border: 'none',
-                            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                            fontSize: '12px'
+                            background: 'var(--card-bg)',
+                            borderRadius: '12px',
+                            border: '1px solid var(--border-color)',
+                            boxShadow: 'var(--shadow-md)',
+                            fontSize: '13px',
+                            padding: '10px 14px',
+                            color: 'var(--text-primary)'
                         }}
+                        itemStyle={{ color: 'var(--text-primary)' }}
                     />
                     <Legend
                         verticalAlign="top"
@@ -54,8 +64,8 @@ export default function MemberEfficiencyGraph({ data = [] }) {
                         iconSize={8}
                         wrapperStyle={{ top: -10, right: 0, fontSize: '11px' }}
                     />
-                    <Bar name="Estimated" dataKey="estimated" fill="#93c5fd" barSize={12} radius={[4, 4, 0, 0]} />
-                    <Bar name="Actual" dataKey="actual" fill="#6366f1" barSize={12} radius={[4, 4, 0, 0]} />
+                    <Bar name="Estimated" dataKey="estimated" fill="var(--info-bg)" barSize={12} radius={[4, 4, 0, 0]} />
+                    <Bar name="Actual" dataKey="actual" fill="var(--info-color)" barSize={12} radius={[4, 4, 0, 0]} />
                 </BarChart>
             </ResponsiveContainer>
         </div>
@@ -73,11 +83,11 @@ const styles = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#f8fafc",
+        background: "var(--bg-secondary)",
         borderRadius: 12,
     },
     emptyText: {
-        color: "#94a3b8",
+        color: "var(--text-secondary)",
         fontSize: 13,
     }
 };

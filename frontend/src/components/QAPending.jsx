@@ -46,7 +46,7 @@ export default function QAPending() {
       <div style={styles.scrollArea} className="hide-scrollbar">
         {tasks.length === 0 ? (
           <div style={styles.empty}>
-            <Search size={32} color="#e2e8f0" />
+            <Search size={32} color="var(--border-color)" />
             <p>No tasks pending QA</p>
           </div>
         ) : (
@@ -71,18 +71,18 @@ export default function QAPending() {
 
 const styles = {
   card: {
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     borderRadius: 16,
     padding: 20,
-    background: "#fff",
+    background: "var(--card-bg)",
     marginTop: 20,
     maxHeight: 400,
     display: "flex",
     flexDirection: "column",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    boxShadow: "var(--shadow-sm)",
   },
-  header: { fontSize: 16, fontWeight: 700, color: "#1e293b" },
-  sub: { marginTop: 4, fontSize: 12, color: "#64748b", marginBottom: 12 },
+  header: { fontSize: 16, fontWeight: 700, color: "var(--text-primary)" },
+  sub: { marginTop: 4, fontSize: 12, color: "var(--text-secondary)", marginBottom: 12 },
   loadingWrap: { padding: 20 },
   scrollArea: {
     flex: 1,
@@ -94,14 +94,14 @@ const styles = {
     alignItems: "center",
     gap: 12,
     padding: "12px 0",
-    borderBottom: "1px solid #f8fafc",
+    borderBottom: "1px solid var(--border-color)",
     "&:last-child": { borderBottom: "none" }
   },
   iconWrap: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    background: "#f1f5f9",
+    background: "var(--hover-bg)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -113,16 +113,24 @@ const styles = {
     borderRadius: "50%"
   },
   textBlock: { display: "flex", flexDirection: "column", flex: 1, minWidth: 0 },
-  title: { fontSize: 13, fontWeight: 600, color: "#334155", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  time: { fontSize: 11, marginTop: 2, color: "#94a3b8" },
-  project: { fontSize: 11, marginTop: 1, color: "#6366f1", fontWeight: 500 },
+  title: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "var(--text-secondary)",
+    marginBottom: 8,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis"
+  },
+  time: { fontSize: 11, marginTop: 2, color: "var(--text-secondary)" },
+  project: { fontSize: 11, marginTop: 1, color: "var(--accent-color)", fontWeight: 500 },
   empty: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     padding: "30px 0",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontSize: 13,
     gap: 8
   }

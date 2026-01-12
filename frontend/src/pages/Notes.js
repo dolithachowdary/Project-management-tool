@@ -20,13 +20,13 @@ import {
 /* ================= CONSTANTS ================= */
 
 const COLORS = [
-  { body: "#F3E8FF", header: "#E9D5FF", id: "purple" },
-  { body: "#FEF9C3", header: "#FEF08A", id: "yellow" },
-  { body: "#DCFCE7", header: "#BBF7D0", id: "green" },
-  { body: "#FCE7F3", header: "#FBCFE8", id: "pink" },
-  { body: "#DBEAFE", header: "#BFDBFE", id: "blue" },
-  { body: "#E5E7EB", header: "#D1D5DB", id: "gray" },
-  { body: "#4B5563", header: "#374151", id: "dark" }
+  { body: "var(--bg-secondary)", header: "#E9D5FF", id: "purple", accent: "#A855F7" },
+  { body: "var(--bg-secondary)", header: "#FEF08A", id: "yellow", accent: "#EAB308" },
+  { body: "var(--bg-secondary)", header: "#BBF7D0", id: "green", accent: "#22C55E" },
+  { body: "var(--bg-secondary)", header: "#FBCFE8", id: "pink", accent: "#EC4899" },
+  { body: "var(--bg-secondary)", header: "#BFDBFE", id: "blue", accent: "#3B82F6" },
+  { body: "var(--bg-secondary)", header: "#D1D5DB", id: "gray", accent: "#6B7280" },
+  { body: "var(--bg-secondary)", header: "#374151", id: "dark", accent: "#111827" }
 ];
 
 export default function Notes() {
@@ -239,11 +239,11 @@ export default function Notes() {
                   <div
                     key={note.id}
                     id={`editing-card-${note.id}`}
-                    style={{ ...styles.note, background: displayColor.body, zIndex: zIndex, outline: "2px solid #333" }}
+                    style={{ ...styles.note, background: "var(--card-bg)", zIndex: zIndex, border: `2px solid ${displayColor.accent || "#333"}` }}
                   >
                     {/* Header Strip & Controls */}
                     <div style={{ position: "relative", height: 12 }}>
-                      <div style={{ ...styles.colorStrip, background: displayColor.header, position: "absolute", top: 0 }} />
+                      <div style={{ ...styles.colorStrip, background: displayColor.accent || displayColor.header, position: "absolute", top: 0 }} />
 
                       {/* INLINE EDIT MENU BUTTON */}
                       <div style={{ position: "absolute", top: 8, right: 8, zIndex: 11 }}>
@@ -298,7 +298,7 @@ export default function Notes() {
               /* -------- NORMAL VIEW CARD -------- */
               const noteZIndex = (openCardMenuId === note.id) ? 1000 : "auto"; // Raise if menu currently open
 
-              const gridStyle = { ...styles.note, background: note.color.body, zIndex: noteZIndex };
+              const gridStyle = { ...styles.note, background: "var(--card-bg)", zIndex: noteZIndex, border: `1px solid ${note.color.accent || "var(--border-color)"}` };
 
               const i = notes.indexOf(note); // Get index carefully (map provides it but we need cleanly)
 
@@ -312,7 +312,7 @@ export default function Notes() {
                   key={note.id}
                   style={gridStyle}
                 >
-                  <div style={{ ...styles.colorStrip, background: note.color.header }} />
+                  <div style={{ ...styles.colorStrip, background: note.color.accent || note.color.header }} />
 
                   <div
                     style={styles.noteBody}
@@ -357,9 +357,9 @@ export default function Notes() {
         </div>
 
         {/* ================= FIXED WIDGET (NEW NOTE ONLY) ================= */}
-        <div style={{ ...styles.editorWidget, background: newNoteColor.body, zIndex: isWidgetMenuOpen ? 1000 : 100 }}>
+        <div style={{ ...styles.editorWidget, background: "var(--card-bg)", border: `2px solid ${newNoteColor.accent || "var(--border-color)"}`, zIndex: isWidgetMenuOpen ? 1000 : 100 }}>
           <div style={styles.editorHeader}>
-            <div style={{ ...styles.colorStrip, background: newNoteColor.header, position: "absolute", top: 0, left: 0, right: 0, borderRadius: "12px 12px 0 0" }} />
+            <div style={{ ...styles.colorStrip, background: newNoteColor.accent || newNoteColor.header, position: "absolute", top: 0, left: 0, right: 0, borderRadius: "12px 12px 0 0" }} />
 
             <div style={styles.editorTopControls}>
               <div style={styles.relativeContainer}>
@@ -441,8 +441,7 @@ function ColorMenu({ showColors = true, activeColor, onSelectColor, onEdit, onCo
                 onClick={() => onSelectColor && onSelectColor(c)}
                 style={{
                   ...styles.menuColorSwatch,
-                  background: c.body,
-                  border: activeColor?.id === c.id ? "1px solid #000" : "1px solid rgba(0,0,0,0.1)"
+                  border: activeColor?.id === c.id ? "2px solid var(--accent-color)" : "1px solid var(--border-color)"
                 }}
               >
                 {activeColor?.id === c.id && <Check size={10} color="#000" />}
@@ -480,7 +479,7 @@ const styles = {
   page: {
     display: "flex",
     height: "100vh",
-    background: "#F9FAFB",
+    background: "var(--bg-secondary)",
     fontFamily: "'Poppins', sans-serif"
   },
   main: {
@@ -522,7 +521,7 @@ const styles = {
     whiteSpace: "pre-wrap",
     wordBreak: "break-word",
     overflowWrap: "anywhere",
-    color: "#1F2937",
+    color: "var(--text-primary)",
     fontSize: 15,
     lineHeight: 1.6,
     flex: 1,
@@ -635,7 +634,7 @@ const styles = {
     outline: "none",
     fontSize: 16,
     lineHeight: 1.5,
-    color: "#333",
+    color: "var(--text-primary)",
     background: "transparent",
     minHeight: 180
   },
@@ -675,10 +674,10 @@ const styles = {
     right: 0,
     top: "100%",
     marginTop: 6,
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 8,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-    border: "1px solid rgba(0,0,0,0.05)",
+    boxShadow: "var(--shadow-md)",
+    border: "1px solid var(--border-color)",
     width: 200,
     overflow: "hidden",
     zIndex: 999
@@ -706,7 +705,7 @@ const styles = {
   menuItem: {
     padding: "10px 16px",
     fontSize: 14,
-    color: "#333",
+    color: "var(--text-primary)",
     cursor: "pointer",
     display: "flex",
     alignItems: "center"

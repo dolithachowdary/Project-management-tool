@@ -148,12 +148,12 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
 
   const styles = {
     formContainer: {
-      backgroundColor: "#fff",
+      backgroundColor: "var(--card-bg)",
       borderRadius: 12,
       padding: "24px",
       marginBottom: "20px",
-      boxShadow: "0 4px 20px rgba(15,23,42,0.08)",
-      border: "1px solid #E6E9EE"
+      boxShadow: "var(--shadow-md)",
+      border: "1px solid var(--border-color)"
     },
     formHeader: {
       display: "flex",
@@ -161,18 +161,18 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       alignItems: "center",
       marginBottom: "24px",
       paddingBottom: "16px",
-      borderBottom: "1px solid #E6E9EE"
+      borderBottom: "1px solid var(--border-color)"
     },
     formTitle: {
       fontSize: "18px",
       fontWeight: "600",
-      color: RED,
+      color: "var(--accent-color)",
       margin: 0
     },
     closeButton: {
       background: "transparent",
       border: "none",
-      color: "#666",
+      color: "var(--text-secondary)",
       cursor: "pointer",
       fontSize: "18px",
       padding: "8px",
@@ -197,7 +197,7 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       display: "block",
       marginBottom: "8px",
       fontWeight: "500",
-      color: "#374151",
+      color: "var(--text-primary)",
       fontSize: "14px"
     },
     required: {
@@ -207,20 +207,22 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       width: "100%",
       padding: "12px 14px",
       borderRadius: "8px",
-      border: "1px solid #E6E9EE",
+      border: "1px solid var(--border-color)",
       fontSize: "14px",
       outline: "none",
-      backgroundColor: "#fff",
+      backgroundColor: "var(--bg-primary)",
+      color: "var(--text-primary)",
       boxSizing: "border-box"
     },
     textarea: {
       width: "100%",
       padding: "12px 14px",
       borderRadius: "8px",
-      border: "1px solid #E6E9EE",
+      border: "1px solid var(--border-color)",
       fontSize: "14px",
       outline: "none",
-      backgroundColor: "#fff",
+      backgroundColor: "var(--bg-primary)",
+      color: "var(--text-primary)",
       boxSizing: "border-box",
       minHeight: "80px",
       resize: "vertical"
@@ -229,19 +231,20 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       width: "100%",
       padding: "12px 14px",
       borderRadius: "8px",
-      border: "1px solid #E6E9EE",
+      border: "1px solid var(--border-color)",
       fontSize: "14px",
       outline: "none",
-      backgroundColor: "#fff",
+      backgroundColor: "var(--bg-primary)",
+      color: "var(--text-primary)",
       boxSizing: "border-box"
     },
     staticText: {
       padding: "12px 14px",
       fontSize: "14px",
-      color: "#1e293b",
-      background: "#f8fafc",
+      color: "var(--text-primary)",
+      background: "var(--bg-secondary)",
       borderRadius: "8px",
-      border: "1px solid #e2e8f0",
+      border: "1px solid var(--border-color)",
       fontWeight: "600"
     },
     buttonGroup: {
@@ -262,9 +265,9 @@ export default function TaskForm({ onSave, onCancel, projects = [], initialData,
       flex: 1
     },
     cancelButton: {
-      background: "#fff",
-      color: "#374151",
-      border: "1px solid #E6E9EE",
+      background: "var(--card-bg)",
+      color: "var(--text-primary)",
+      border: "1px solid var(--border-color)",
       padding: "12px 24px",
       borderRadius: "8px",
       cursor: "pointer",

@@ -14,7 +14,7 @@ export default function Upcoming({ tasks = [], onTaskClick }) {
     date: new Date(t.end_date || t.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
     time: t.end_time || "End of day",
     project: t.project_name || t.projectName || "General",
-    color: t.priority === "High" ? "#b91c1c" : t.priority === "Low" ? "#15803d" : "#92400e",
+    color: t.priority === "High" ? "var(--error-color, #ef4444)" : t.priority === "Low" ? "var(--success-color, #10b981)" : "var(--warning-color, #f59e0b)",
     raw: t
   }));
 
@@ -115,15 +115,15 @@ const styles = {
     display: "inline-block",
     fontSize: 10,
     fontWeight: 600,
-    color: "#6366f1",
-    background: "#eef2ff",
+    color: "var(--accent-color)",
+    background: "var(--bg-secondary)",
     padding: "2px 8px",
     borderRadius: 4,
   },
   empty: {
     padding: "40px 0",
     textAlign: "center",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontSize: 14,
   }
 };

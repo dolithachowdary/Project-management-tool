@@ -242,7 +242,7 @@ const styles = {
   pageContainer: {
     display: "flex",
     height: "100vh",
-    background: "#f9fafb", // Match Dashboard/Notes background
+    background: "var(--bg-secondary)", // Match Dashboard/Notes background
     overflow: "hidden",
   },
   mainContent: {
@@ -264,7 +264,7 @@ const styles = {
   backBtn: {
     background: "none",
     border: "none",
-    color: "#c62828",
+    color: "var(--accent-color)",
     cursor: "pointer",
     margin: "12px 0 20px",
     fontSize: 14,
@@ -307,7 +307,7 @@ const styles = {
   modalOverlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(15, 23, 42, 0.4)",
+    background: "var(--modal-overlay)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -324,7 +324,7 @@ const styles = {
   errorContainer: {
     padding: 60,
     textAlign: "center",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontSize: 16,
     fontWeight: 500,
   }

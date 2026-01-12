@@ -2,8 +2,10 @@ import React from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 
 export default function MemberTaskStatusGraph({ data = [] }) {
+    const { theme } = useTheme();
     if (!data || data.length === 0) {
         return (
             <div style={styles.emptyWrap}>
@@ -13,34 +15,35 @@ export default function MemberTaskStatusGraph({ data = [] }) {
     }
 
     const COLORS = {
-        todo: "#FDE68A",        // Yellow 200
-        inprogress: "#BFDBFE",  // Blue 200
-        done: "#BBF7D0"         // Green 200
+        todo: "var(--warning-bg)",
+        inprogress: "var(--info-bg)",
+        done: "var(--success-bg)"
     };
 
     const BORDERS = {
-        todo: "#FCD34D",        // Yellow 300
-        inprogress: "#93C5FD",  // Blue 300
-        done: "#86EFAC"         // Green 300
+        todo: "var(--warning-color)",
+        inprogress: "var(--info-color)",
+        done: "var(--success-color)"
     };
 
     const TEXT_COLORS = {
-        todo: "#B45309",        // Amber 700
-        inprogress: "#1D4ED8",  // Blue 700
-        done: "#047857"         // Green 700
+        todo: "var(--warning-color)",
+        inprogress: "var(--info-color)",
+        done: "var(--success-color)"
     };
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
             return (
                 <div style={{
-                    backgroundColor: '#fff',
+                    backgroundColor: theme === 'dark' ? '#1e293b' : '#fff',
                     padding: '12px 16px',
-                    border: 'none',
+                    border: '1px solid var(--border-color)',
                     borderRadius: '12px',
-                    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
+                    boxShadow: 'var(--shadow-md)',
+                    color: 'var(--text-primary)'
                 }}>
-                    <p style={{ margin: '0 0 8px 0', fontWeight: '700', color: '#1e293b' }}>{label}</p>
+                    <p style={{ margin: '0 0 8px 0', fontWeight: '700', color: 'var(--text-primary)' }}>{label}</p>
                     {payload.map((entry, index) => (
                         <p key={index} style={{
                             margin: '4px 0',
@@ -70,17 +73,17 @@ export default function MemberTaskStatusGraph({ data = [] }) {
                     data={data}
                     margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
                 >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border-color)" />
                     <XAxis type="number" hide />
                     <YAxis
                         type="category"
                         dataKey="name"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }}
                         width={80}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }} />
                     <Legend
                         verticalAlign="top"
                         align="right"
@@ -109,11 +112,11 @@ const styles = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#f8fafc",
+        background: "var(--bg-secondary)",
         borderRadius: 12,
     },
     emptyText: {
-        color: "#94a3b8",
+        color: "var(--text-secondary)",
         fontSize: 13,
     }
 };

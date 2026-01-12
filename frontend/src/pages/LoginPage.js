@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import api from "../api/axios";
+import { useTheme } from "../context/ThemeContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -23,8 +25,6 @@ export default function LoginPage() {
         password,
       });
 
-      // Handle potentially nested response structures
-      // Sometimes it's res.data.data, sometimes res.data directly
       const payload = res.data?.data || res.data || {};
       const { user, accessToken, refreshToken } = payload;
 
@@ -58,7 +58,7 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#ffffffff",
+        backgroundColor: "var(--bg-secondary)",
       }}
     >
       <motion.div
@@ -67,10 +67,11 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         style={{
           width: "24rem",
-          backgroundColor: "white",
+          backgroundColor: "var(--card-bg)",
           borderRadius: "1rem",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          boxShadow: "var(--shadow-md)",
           padding: "1.5rem",
+          border: "1px solid var(--border-color)",
         }}
       >
         <div
@@ -81,17 +82,22 @@ export default function LoginPage() {
             gap: "0rem",
           }}
         >
-          <img src="/redsage.png" alt="Logo" style={{ height: "5rem" }} />
+          <img
+            src={theme === 'dark' ? "/dark-redsage1.png" : "/light-redsage.png"}
+            alt="Logo"
+            style={{ height: "4.5rem", marginBottom: "1rem" }}
+            onError={(e) => { e.target.src = "/redsage.png"; }}
+          />
           <h1
             style={{
               fontSize: "1.5rem",
               fontWeight: "bold",
-              color: "#dc2626",
+              color: "var(--accent-color)",
             }}
           >
             Welcome Back
           </h1>
-          <p style={{ color: "#6b7280", textAlign: "center" }}>
+          <p style={{ color: "var(--text-secondary)", textAlign: "center", marginBottom: "1.5rem" }}>
             Sign in to manage your tasks
           </p>
 
@@ -110,9 +116,11 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               style={{
-                padding: "0.5rem",
+                padding: "0.75rem",
                 borderRadius: "0.5rem",
-                border: "1px solid #fca5a5",
+                border: "1px solid var(--border-color)",
+                background: "var(--input-bg)",
+                color: "var(--text-primary)",
                 outline: "none",
               }}
             />
@@ -122,9 +130,11 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               style={{
-                padding: "0.5rem",
+                padding: "0.75rem",
                 borderRadius: "0.5rem",
-                border: "1px solid #fca5a5",
+                border: "1px solid var(--border-color)",
+                background: "var(--input-bg)",
+                color: "var(--text-primary)",
                 outline: "none",
               }}
             />
@@ -132,13 +142,14 @@ export default function LoginPage() {
               type="submit"
               style={{
                 width: "100%",
-                backgroundColor: "#ca2a2aff",
+                backgroundColor: "var(--accent-color)",
                 color: "white",
                 fontWeight: "600",
                 padding: "0.75rem",
                 borderRadius: "0.5rem",
                 border: "none",
                 cursor: "pointer",
+                marginTop: "0.5rem",
               }}
             >
               Sign In
@@ -149,3 +160,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

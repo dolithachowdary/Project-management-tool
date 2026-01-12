@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 export default function WeeklyTaskGraph({ data = [] }) {
+  const { theme } = useTheme();
   const [tooltip, setTooltip] = useState(null);
 
   if (!data || data.length === 0) {
@@ -37,11 +39,11 @@ export default function WeeklyTaskGraph({ data = [] }) {
 
       <div style={styles.legend}>
         <div style={styles.legendItem}>
-          <span style={{ ...styles.dot, background: "#ffdad9" }} />
+          <span style={{ ...styles.dot, background: "var(--error-bg)" }} />
           <span style={styles.legendLabel}>Total Tasks</span>
         </div>
         <div style={styles.legendItem}>
-          <span style={{ ...styles.dot, background: "#f87171" }} />
+          <span style={{ ...styles.dot, background: "var(--accent-color)" }} />
           <span style={styles.legendLabel}>Completed Tasks</span>
         </div>
       </div>
@@ -77,7 +79,7 @@ export default function WeeklyTaskGraph({ data = [] }) {
                   width={barWidth}
                   height={Math.max(totalH, 4)}
                   rx="6"
-                  fill="#ffdad9"
+                  fill="var(--error-bg)"
                 />
 
                 {/* COMPLETED (DARK RED) */}
@@ -87,7 +89,7 @@ export default function WeeklyTaskGraph({ data = [] }) {
                   width={barWidth}
                   height={completedH}
                   rx="6"
-                  fill="#f87171"
+                  fill="var(--accent-color)"
                 />
 
                 <text
@@ -147,16 +149,21 @@ const styles = {
     position: "fixed",
     background: "var(--card-bg)",
     border: "1px solid var(--border-color)",
-    borderRadius: 8,
-    padding: "8px 12px",
+    borderRadius: 12,
+    padding: "10px 14px",
     fontSize: 12,
     boxShadow: "var(--shadow-md)",
     pointerEvents: "none",
     zIndex: 9999,
     color: "var(--text-primary)",
   },
+  tooltipTitle: {
+    margin: "0 0 6px 0",
+    fontWeight: "700",
+    color: "var(--text-primary)"
+  },
   emptyWrap: {
-    height: "90%",
+    height: "100%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

@@ -5,7 +5,7 @@ import { formatStatus } from "../utils/helpers";
 import PriorityBadge from "./PriorityBadge";
 import { getStatusStyles } from "./StatusBadge";
 
-const RED = "#C62828";
+const RED = "var(--accent-color)";
 
 export default function TaskListView({
   tasks,
@@ -22,22 +22,22 @@ export default function TaskListView({
   const statusOptions = ["To Do", "In Progress", "Review", "Done", "Blocked"];
 
   const styles = {
-    container: { background: "#fff", borderRadius: 20, overflowX: "auto", border: "1px solid #f1f5f9", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)" },
+    container: { background: "var(--card-bg)", borderRadius: 20, overflowX: "auto", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-sm)" },
     table: { width: "100%", borderCollapse: "separate", borderSpacing: 0 },
-    th: { textAlign: "left", padding: "16px 14px", fontSize: 13, fontWeight: 800, color: "#475569", borderBottom: "1px solid #f1f5f9", background: "#fcfdfe", whiteSpace: "nowrap" },
+    th: { textAlign: "left", padding: "16px 14px", fontSize: 13, fontWeight: 800, color: "var(--text-secondary)", borderBottom: "1px solid var(--border-color)", background: "var(--bg-secondary)", whiteSpace: "nowrap" },
     tr: { transition: "all 0.2s" },
-    td: { padding: "14px", fontSize: 13, color: "#1e293b", borderBottom: "1px solid #f8fafc", verticalAlign: "middle", whiteSpace: "nowrap" },
-    taskSerial: { fontWeight: 700, color: "#64748b", cursor: "help" },
-    taskName: { fontWeight: 600, color: "#1e293b", fontSize: 14 },
-    moduleText: { color: "#64748b", fontSize: 13, fontWeight: 500 },
-    projectText: { color: "#64748b", fontSize: 13, fontWeight: 500 },
+    td: { padding: "14px", fontSize: 13, color: "var(--text-primary)", borderBottom: "1px solid var(--bg-secondary)", verticalAlign: "middle", whiteSpace: "nowrap" },
+    taskSerial: { fontWeight: 700, color: "var(--text-secondary)", cursor: "help" },
+    taskName: { fontWeight: 600, color: "var(--text-primary)", fontSize: 14 },
+    moduleText: { color: "var(--text-secondary)", fontSize: 13, fontWeight: 500 },
+    projectText: { color: "var(--text-secondary)", fontSize: 13, fontWeight: 500 },
     badge: { padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, border: "1px solid", textTransform: "capitalize", display: "inline-block" },
     select: { border: "1px solid transparent", borderRadius: 10, padding: "6px 12px", fontWeight: 700, cursor: "pointer", outline: "none", fontSize: 11, width: "100%", minWidth: 110 },
-    actionBtn: { background: "none", border: "1px solid transparent", color: "#64748b", cursor: "pointer", padding: 6, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" },
+    actionBtn: { background: "none", border: "1px solid transparent", color: "var(--text-secondary)", cursor: "pointer", padding: 6, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" },
     indicator: { position: "absolute", left: 0, top: 0, bottom: 0, width: 4, transition: "height 0.2s" },
   };
 
-  if (tasks.length === 0) return <div style={{ padding: 60, textAlign: "center", color: "#94a3b8", fontWeight: 600 }}>No tasks available.</div>;
+  if (tasks.length === 0) return <div style={{ padding: 60, textAlign: "center", color: "var(--text-secondary)", fontWeight: 600 }}>No tasks available.</div>;
 
   return (
     <div style={styles.container} className="hide-scrollbar">
@@ -72,7 +72,7 @@ export default function TaskListView({
             return (
               <tr
                 key={t.id}
-                style={{ ...styles.tr, background: isHovered ? "#fcfdfe" : "transparent", position: "relative" }}
+                style={{ ...styles.tr, background: isHovered ? "var(--hover-bg)" : "transparent", position: "relative" }}
                 onMouseEnter={() => setHoveredRow(t.id)}
                 onMouseLeave={() => setHoveredRow(null)}
               >
@@ -153,11 +153,11 @@ export default function TaskListView({
                 </td>
 
                 <td style={styles.td}>
-                  <span style={{ color: "#64748b", fontWeight: 500, whiteSpace: "nowrap" }}>{formatShortDate(startDate) || "—"}</span>
+                  <span style={{ color: "var(--text-secondary)", fontWeight: 500, whiteSpace: "nowrap" }}>{formatShortDate(startDate) || "—"}</span>
                 </td>
 
                 <td style={styles.td}>
-                  <span style={{ color: "#64748b", fontWeight: 500, whiteSpace: "nowrap" }}>{formatShortDate(endDate) || "—"}</span>
+                  <span style={{ color: "var(--text-secondary)", fontWeight: 500, whiteSpace: "nowrap" }}>{formatShortDate(endDate) || "—"}</span>
                 </td>
 
                 <td style={{ ...styles.td, paddingRight: 24 }}>
@@ -168,7 +168,7 @@ export default function TaskListView({
                       disabled={!canEdit(t)}
                       title="Edit Task"
                     >
-                      <Edit2 size={12} color={isHovered ? RED : "#64748b"} />
+                      <Edit2 size={12} color={isHovered ? RED : "var(--text-secondary)"} />
                     </button>
                   </div>
                 </td>

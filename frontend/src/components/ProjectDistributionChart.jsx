@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 export default function ProjectDistributionChart({ data = [] }) {
+    const { theme } = useTheme();
     const [tooltip, setTooltip] = useState(null);
 
     if (!data || data.length === 0) {
@@ -30,12 +32,13 @@ export default function ProjectDistributionChart({ data = [] }) {
                     style={{
                         ...styles.tooltip,
                         left: tooltip.x + 12,
-                        top: tooltip.y + 12
+                        top: tooltip.y + 12,
+                        backgroundColor: theme === 'dark' ? '#1e293b' : '#fff',
                     }}
                 >
                     <strong>{tooltip.name}</strong>
-                    <div style={{ color: '#64748b', marginTop: '4px' }}>To Do: {tooltip.todo}</div>
-                    <div style={{ color: '#64748b' }}>In Progress: {tooltip.inprogress}</div>
+                    <div style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>To Do: {tooltip.todo}</div>
+                    <div style={{ color: 'var(--text-secondary)' }}>In Progress: {tooltip.inprogress}</div>
                     <div style={{ color: tooltip.color, fontWeight: '700', marginTop: '4px' }}>
                         Total Pending: {tooltip.count}
                     </div>
@@ -46,7 +49,7 @@ export default function ProjectDistributionChart({ data = [] }) {
                 <div style={styles.svgWrapper}>
                     <svg viewBox="-1.2 -1.2 2.4 2.4" style={styles.svg}>
                         {!hasPendingTasks ? (
-                            <circle cx="0" cy="0" r="1" fill="#f1f5f9" />
+                            <circle cx="0" cy="0" r="1" fill="var(--bg-secondary)" />
                         ) : (
                             data.map((item, index) => {
                                 const startPercent = cumulativePercent;
@@ -83,20 +86,20 @@ export default function ProjectDistributionChart({ data = [] }) {
                             })
                         )}
                         {/* Doughnut hole */}
-                        <circle cx="0" cy="0" r="0.65" fill="#ffffff" />
+                        <circle cx="0" cy="0" r="0.65" fill="var(--card-bg)" />
 
                         {/* Center Text */}
                         <text
                             x="0" y="-0.1"
                             textAnchor="middle"
-                            style={styles.totalLabel}
+                            style={{ ...styles.totalLabel, fill: "var(--text-secondary)" }}
                         >
                             Total
                         </text>
                         <text
                             x="0" y="0.25"
                             textAnchor="middle"
-                            style={styles.totalValue}
+                            style={{ ...styles.totalValue, fill: "var(--text-primary)" }}
                         >
                             {totalTasks}
                         </text>
@@ -148,7 +151,7 @@ const styles = {
     svg: {
         width: "100%",
         height: "100%",
-        transform: "rotate(-90deg)", // Start from top
+        transform: "rotate(-90deg)",
     },
     path: {
         transition: "transform 0.2s, opacity 0.2s",
@@ -160,15 +163,15 @@ const styles = {
     },
     totalLabel: {
         fontSize: "0.22px",
-        fill: "#94a3b8",
+        fill: "var(--text-secondary)",
         fontWeight: "500",
-        transform: "rotate(90deg)", // Counter-rotate text
+        transform: "rotate(90deg)",
     },
     totalValue: {
         fontSize: "0.4px",
-        fill: "#1e293b",
+        fill: "var(--text-primary)",
         fontWeight: "800",
-        transform: "rotate(90deg)", // Counter-rotate text
+        transform: "rotate(90deg)",
     },
     legend: {
         display: "flex",
@@ -207,7 +210,7 @@ const styles = {
     },
     legendName: {
         fontSize: "13px",
-        color: "#1e293b",
+        color: "var(--text-primary)",
         fontWeight: "600",
         whiteSpace: "nowrap",
         overflow: "hidden",
@@ -215,7 +218,7 @@ const styles = {
     },
     legendCount: {
         fontSize: "13px",
-        color: "#64748b",
+        color: "var(--text-secondary)",
         fontWeight: "700"
     },
     progressRow: {
@@ -225,7 +228,7 @@ const styles = {
     },
     progressContainer: {
         height: "6px",
-        background: "#f1f5f9",
+        background: "var(--border-color)",
         borderRadius: "3px",
         flex: 1,
         overflow: "hidden"
@@ -238,31 +241,32 @@ const styles = {
     progressLabel: {
         fontSize: "11px",
         fontWeight: "700",
-        color: "#64748b",
+        color: "var(--text-secondary)",
         minWidth: "30px",
         textAlign: "right"
     },
     tooltip: {
         position: "fixed",
-        background: "#fff",
-        border: "1px solid #f1f5f9",
+        background: "var(--card-bg)",
+        border: "1px solid var(--border-color)",
         borderRadius: 8,
         padding: "10px 14px",
         fontSize: 12,
-        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+        boxShadow: "var(--shadow-md)",
         pointerEvents: "none",
         zIndex: 9999,
+        color: "var(--text-primary)"
     },
     emptyWrap: {
         height: "200px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#f8fafc",
+        background: "var(--bg-secondary)",
         borderRadius: 12,
     },
     emptyText: {
-        color: "#94a3b8",
+        color: "var(--text-secondary)",
         fontSize: 13,
     }
 };

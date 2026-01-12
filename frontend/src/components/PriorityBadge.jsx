@@ -4,27 +4,27 @@ const getPriorityStyles = (priority) => {
     switch (priority?.toLowerCase()) {
         case "high":
             return {
-                backgroundColor: "#fee2e2",
-                color: "#b91c1c",
-                borderColor: "#fecaca",
+                backgroundColor: "var(--error-bg)",
+                color: "var(--error-color)",
+                borderColor: "var(--error-color)",
             };
         case "medium":
             return {
-                backgroundColor: "#fef3c7",
-                color: "#92400e",
-                borderColor: "#fde68a",
+                backgroundColor: "var(--warning-bg)",
+                color: "var(--warning-color)",
+                borderColor: "var(--warning-color)",
             };
         case "low":
             return {
-                backgroundColor: "#dcfce7",
-                color: "#15803d",
-                borderColor: "#bbf7d0",
+                backgroundColor: "var(--success-bg)",
+                color: "var(--success-color)",
+                borderColor: "var(--success-color)",
             };
         default:
             return {
-                backgroundColor: "#f3f4f6",
-                color: "#475569",
-                borderColor: "#e2e8f0",
+                backgroundColor: "var(--bg-secondary)",
+                color: "var(--text-secondary)",
+                borderColor: "var(--border-color)",
             };
     }
 };

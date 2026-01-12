@@ -262,11 +262,11 @@ export default function PMTimeline() {
 
 const styles = {
   container: {
-    background: "#fff",
-    border: "1px solid #f1f5f9",
+    background: "var(--card-bg)",
+    border: "1px solid var(--border-color)",
     borderRadius: 20,
     padding: 24,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+    boxShadow: "var(--shadow-sm)",
     overflow: "hidden"
   },
   topRow: {
@@ -282,16 +282,16 @@ const styles = {
   selectInput: {
     padding: "10px 16px",
     borderRadius: "12px",
-    border: "1px solid #e2e8f0",
-    background: "#fff",
+    border: "1px solid var(--border-color)",
+    background: "var(--input-bg)",
     fontSize: "14px",
     fontWeight: "700",
-    color: "#475569",
+    color: "var(--text-secondary)",
     cursor: "pointer",
     outline: "none",
     minWidth: 160,
     transition: "border-color 0.2s",
-    "&:hover": { borderColor: "#C62828" }
+    "&:hover": { borderColor: "var(--accent-color)" }
   },
   navGroup: {
     display: "flex",
@@ -302,18 +302,18 @@ const styles = {
     width: 36,
     height: 36,
     borderRadius: "10px",
-    background: "#fff",
-    border: "1px solid #e2e8f0",
+    background: "var(--card-bg)",
+    border: "1px solid var(--border-color)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     cursor: "pointer",
     transition: "all 0.2s",
     "&:hover": {
-      borderColor: "#C62828",
-      color: "#C62828",
-      background: "#fff1f1",
+      borderColor: "var(--accent-color)",
+      color: "var(--accent-color)",
+      background: "var(--hover-bg)",
     }
   },
   dateSelectorWrapper: {
@@ -321,18 +321,18 @@ const styles = {
   },
   header: {
     display: "flex",
-    background: "#fcfdfe",
-    borderTop: "1px solid #f1f5f9",
-    borderBottom: "1px solid #e2e8f0",
+    background: "var(--bg-secondary)",
+    borderTop: "1px solid var(--border-color)",
+    borderBottom: "1px solid var(--border-color)",
     marginTop: 8,
   },
   memberHeader: {
     width: 220,
     fontWeight: 700,
     fontSize: 14,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     padding: "12px 24px",
-    borderRight: "1px solid #e2e8f0",
+    borderRight: "1px solid var(--border-color)",
     boxSizing: "border-box",
   },
   hours: { flex: 1, display: "grid", gridTemplateColumns: "repeat(9, 1fr)" },
@@ -340,23 +340,23 @@ const styles = {
     textAlign: "center",
     fontSize: 12,
     fontWeight: 700,
-    color: "#64748b",
-    borderRight: "1px solid #e2e8f0",
+    color: "var(--text-secondary)",
+    borderRight: "1px solid var(--border-color)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: "12px 0",
   },
   body: { display: "flex", position: "relative" },
-  membersCol: { width: 220, borderRight: "1px solid #f1f5f9" },
-  memberRow: { height: 70, display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: "1px solid #f1f5f9", paddingRight: 16 },
+  membersCol: { width: 220, borderRight: "1px solid var(--border-color)" },
+  memberRow: { height: 70, display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: "1px solid var(--border-color)", paddingRight: 16 },
   memberInfo: { display: "flex", alignItems: "center", gap: 12 },
-  memberName: { fontWeight: 700, fontSize: 14, color: "#1e293b" },
-  memberMeta: { fontSize: 12, color: "#94a3b8", marginTop: 4, paddingLeft: 44 },
+  memberName: { fontWeight: 700, fontSize: 14, color: "var(--text-primary)" },
+  memberMeta: { fontSize: 12, color: "var(--text-secondary)", marginTop: 4, paddingLeft: 44 },
   timeline: { flex: 1, position: "relative", minHeight: 450 },
   grid: { position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "repeat(9, 1fr)" },
-  gridLine: { borderRight: "1px solid #e2e8f0" },
-  timelineRow: { position: "relative", height: 70, borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center" },
+  gridLine: { borderRight: "1px solid var(--border-color)" },
+  timelineRow: { position: "relative", height: 70, borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center" },
   task: {
     position: "absolute",
     height: 48,
@@ -367,6 +367,7 @@ const styles = {
     zIndex: 2,
     overflow: "hidden",
     padding: 0,
+    backdropFilter: "blur(4px)",
   },
   colorAccent: {
     width: 6,
@@ -383,16 +384,16 @@ const styles = {
   taskTitle: {
     fontSize: 13,
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
   taskSubtitle: {
     fontSize: 11,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontWeight: 500,
   },
-  empty: { padding: 60, textAlign: "center", color: "#94a3b8", width: "100%" }
+  empty: { padding: 60, textAlign: "center", color: "var(--text-secondary)", width: "100%" }
 };
 

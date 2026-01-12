@@ -121,8 +121,9 @@ const styles = {
   },
 
   today: {
-    background: "#C62828",
+    background: "var(--accent-color)",
     color: "#fff",
-    boxShadow: "0 4px 10px rgba(198, 40, 40, 0.3)",
+    boxShadow: "0 4px 10px var(--accent-color)",
+    opacity: 0.9,
   },
 };

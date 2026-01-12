@@ -61,7 +61,7 @@ export default function Tasks() {
           userMap[u.id || u._id] = {
             name: u.full_name || u.name,
             role: u.role,
-            color: u.color || "#C62828",
+            color: u.color || "var(--accent-color)",
             avatar_url: u.avatar_url
           };
         });
@@ -245,7 +245,7 @@ export default function Tasks() {
   const styles = {
     pageContainer: {
       display: "flex",
-      backgroundColor: "#FBFAFC",
+      backgroundColor: "var(--bg-primary)",
       height: "100vh",
       overflow: "hidden"
     },
@@ -289,25 +289,25 @@ export default function Tasks() {
       left: 12,
       top: "50%",
       transform: "translateY(-50%)",
-      color: "#C62828",
+      color: "var(--accent-color)",
     },
     searchInput: {
       width: "70%",
       padding: "10px 12px 10px 36px",
       borderRadius: 12,
-      border: "1px solid #f1f5f9",
+      border: "1px solid var(--border-color)",
       fontSize: 14,
       outline: "none",
-      backgroundColor: "#fff",
-      color: "#1e293b",
+      backgroundColor: "var(--input-bg)",
+      color: "var(--text-primary)",
       fontWeight: 500
     },
     toolbarControl: {
       display: "flex",
       alignItems: "center",
-      background: "#fff",
+      background: "var(--input-bg)",
       borderRadius: 12,
-      border: "1px solid #f1f5f9",
+      border: "1px solid var(--border-color)",
       padding: "0 8px",
       height: 40,
       minWidth: 120,
@@ -317,7 +317,7 @@ export default function Tasks() {
       fontSize: 13,
       outline: "none",
       background: "transparent",
-      color: "#64748b",
+      color: "var(--text-secondary)",
       fontWeight: 600,
       width: "100%",
     },
@@ -326,7 +326,7 @@ export default function Tasks() {
       fontSize: 13,
       outline: "none",
       background: "transparent",
-      color: "#64748b",
+      color: "var(--text-secondary)",
       fontWeight: 600,
       width: "100%",
       cursor: "pointer"
@@ -336,7 +336,7 @@ export default function Tasks() {
       marginLeft: 0,
     },
     addTaskBtn: {
-      background: "#C62828",
+      background: "var(--accent-color)",
       color: "#fff",
       border: "none",
       padding: "0 20px",
@@ -351,11 +351,11 @@ export default function Tasks() {
       whiteSpace: "nowrap",
       transition: "all 0.2s ease",
       gap: 8,
-      boxShadow: "0 4px 12px rgba(198,40,40,0.2)"
+      boxShadow: "var(--shadow-md)"
     },
     iconToggle: {
       display: "flex",
-      background: "#f1f5f9",
+      background: "var(--bg-secondary)",
       padding: 4,
       borderRadius: 12,
       gap: 4,
@@ -371,12 +371,12 @@ export default function Tasks() {
       justifyContent: "center",
       cursor: "pointer",
       transition: "all 0.2s ease",
-      color: "#64748b"
+      color: "var(--text-secondary)"
     },
     activeToggle: {
-      background: "#fff",
-      color: "#C62828",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+      background: "var(--card-bg)",
+      color: "var(--accent-color)",
+      boxShadow: "var(--shadow-sm)",
     },
     toggleIcon: {
       width: 18,
@@ -397,9 +397,9 @@ export default function Tasks() {
       alignItems: "center",
       gap: 8,
       borderRadius: 12,
-      background: "#f8fafc",
-      color: "#64748b",
-      border: "1px solid #f1f5f9",
+      background: "var(--input-bg)",
+      color: "var(--text-secondary)",
+      border: "1px solid var(--border-color)",
       cursor: "pointer",
       fontSize: 13,
       fontWeight: 700,
@@ -408,23 +408,23 @@ export default function Tasks() {
       whiteSpace: "nowrap",
     },
     activeChip: {
-      background: "#fee2e2",
-      color: "#C62828",
-      borderColor: "#fecaca"
+      background: "var(--hover-bg)",
+      color: "var(--accent-color)",
+      borderColor: "var(--accent-color)"
     },
     chipCount: {
-      background: "#fff",
+      background: "var(--bg-primary)",
       color: "inherit",
       borderRadius: 8,
       padding: "2px 8px",
       fontSize: 11,
       fontWeight: 800,
-      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+      boxShadow: "var(--shadow-sm)",
     },
     clearDateBtn: {
-      background: "#fff",
-      border: "1px solid #E5E7EB",
-      color: "#374151",
+      background: "var(--bg-primary)",
+      border: "1px solid var(--border-color)",
+      color: "var(--text-primary)",
       fontSize: 13,
       padding: "8px 14px",
       borderRadius: 10,
@@ -458,7 +458,7 @@ export default function Tasks() {
             ),
 
             React.createElement("div", { style: styles.toolbarControl },
-              React.createElement(Calendar, { size: 14, color: "#C62828", style: { marginRight: 8 } }),
+              React.createElement(Calendar, { size: 14, color: "var(--accent-color)", style: { marginRight: 8 } }),
               React.createElement("input", {
                 type: "date",
                 style: styles.dateInput,
@@ -512,7 +512,7 @@ export default function Tasks() {
                   style: {
                     ...styles.toggleIcon,
                     filter: viewMode === "grid"
-                      ? "invert(20%) sepia(90%) saturate(5000%) hue-rotate(350deg)"
+                      ? "invert(35%) sepia(85%) saturate(2000%) hue-rotate(345deg)"
                       : "invert(40%) brightness(0.5)",
                   }
                 })
@@ -530,7 +530,7 @@ export default function Tasks() {
                   style: {
                     ...styles.toggleIcon,
                     filter: viewMode === "board"
-                      ? "invert(20%) sepia(90%) saturate(5000%) hue-rotate(350deg)"
+                      ? "invert(35%) sepia(85%) saturate(2000%) hue-rotate(345deg)"
                       : "invert(40%) brightness(0.5)",
                   }
                 })

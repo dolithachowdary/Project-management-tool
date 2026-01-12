@@ -5,8 +5,10 @@ import { ChevronDown, ChevronUp, Box, CircleCheckBig, Circle, CircleMinus, Plus 
 import Loader from "./Loader";
 import Avatar from "./Avatar";
 import AddModuleModal from "./AddModuleModal";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Modules({ projectId, projectColor, onTaskClick, isAddModalOpen, setIsAddModalOpen }) {
+  const { theme } = useTheme();
   const [modules, setModules] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [expandedModules, setExpandedModules] = useState({});
@@ -77,13 +79,13 @@ export default function Modules({ projectId, projectColor, onTaskClick, isAddMod
                     <div style={styles.moduleSub}>{m.description || "Module description"}</div>
 
                     <div style={styles.statusBadges}>
-                      <span style={{ ...styles.badge, background: "#fffbeb", color: "#d97706" }}>
+                      <span style={{ ...styles.badge, background: "var(--warning-bg)", color: "var(--warning-color)" }}>
                         {todoCount} To Do
                       </span>
-                      <span style={{ ...styles.badge, background: "#eff6ff", color: "#2563eb" }}>
+                      <span style={{ ...styles.badge, background: "var(--info-bg)", color: "var(--info-color)" }}>
                         {inProgressCount} In Progress
                       </span>
-                      <span style={{ ...styles.badge, background: "#f0fdf4", color: "#16a34a" }}>
+                      <span style={{ ...styles.badge, background: "var(--success-bg)", color: "var(--success-color)" }}>
                         {completedCount} Completed
                       </span>
                     </div>
@@ -97,7 +99,7 @@ export default function Modules({ projectId, projectColor, onTaskClick, isAddMod
                     </div>
                     <span style={styles.progressText}>{Math.round(progress)}%</span>
                   </div>
-                  {isExpanded ? <ChevronUp size={30} color="#121315ff" /> : <ChevronDown size={30} color="#121315ff" />}
+                  {isExpanded ? <ChevronUp size={30} color="var(--text-primary)" /> : <ChevronDown size={30} color="var(--text-primary)" />}
                 </div>
               </div>
 
@@ -111,16 +113,16 @@ export default function Modules({ projectId, projectColor, onTaskClick, isAddMod
                     >
                       <div style={styles.taskLeft}>
                         {t.status?.toLowerCase() === "done" ? (
-                          <CircleCheckBig size={16} color="#16a34a" />
+                          <CircleCheckBig size={16} color="var(--success-color)" />
                         ) : t.status?.toLowerCase() === "in_progress" ? (
-                          <CircleMinus size={16} color="#2563eb" />
+                          <CircleMinus size={16} color="var(--info-color)" />
                         ) : (
-                          <Circle size={16} color="#94a3b8" />
+                          <Circle size={16} color="var(--text-secondary)" />
                         )}
                         <span style={{
                           ...styles.taskTitle,
                           textDecoration: t.status?.toLowerCase() === "done" ? "line-through" : "none",
-                          color: t.status?.toLowerCase() === "done" ? "#94a3b8" : "#1e293b"
+                          color: t.status?.toLowerCase() === "done" ? "var(--text-secondary)" : "var(--text-primary)"
                         }}>
                           {t.title || t.taskName}
                         </span>
@@ -172,24 +174,24 @@ const styles = {
     alignItems: "center",
     gap: 6,
     padding: "8px 16px",
-    background: "#fff",
-    border: "1px solid #e2e8f0",
+    background: "var(--card-bg)",
+    border: "1px solid var(--border-color)",
     borderRadius: 12,
     fontSize: 14,
     fontWeight: 600,
-    color: "#475569",
+    color: "var(--text-secondary)",
     cursor: "pointer",
     transition: "all 0.2s",
-    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+    boxShadow: "var(--shadow-sm)",
     "&:hover": {
-      background: "#f8fafc",
-      color: "#1e293b",
+      background: "var(--hover-bg)",
+      color: "var(--text-primary)",
     },
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     margin: 0,
   },
   moduleList: {
@@ -198,11 +200,11 @@ const styles = {
     gap: 16,
   },
   card: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 20,
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     overflow: "hidden",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+    boxShadow: "var(--shadow-sm)",
   },
   cardHeader: {
     padding: "20px 24px",
@@ -212,7 +214,7 @@ const styles = {
     cursor: "pointer",
     transition: "background 0.2s",
     "&:hover": {
-      background: "#f8fafc",
+      background: "var(--hover-bg)",
     },
   },
   cardLeft: {
@@ -224,7 +226,7 @@ const styles = {
     width: 40,
     height: 40,
     borderRadius: 12,
-    background: "#eef2ff",
+    background: "var(--bg-secondary)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -238,11 +240,11 @@ const styles = {
   moduleName: {
     fontSize: 16,
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
   },
   moduleSub: {
     fontSize: 13,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     marginBottom: 8,
   },
   statusBadges: {
@@ -270,7 +272,7 @@ const styles = {
   progressTrack: {
     flex: 1,
     height: 6,
-    background: "#f1f5f9",
+    background: "var(--border-color)",
     borderRadius: 10,
     overflow: "hidden",
   },
@@ -282,7 +284,7 @@ const styles = {
   progressText: {
     fontSize: 12,
     fontWeight: 600,
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     minWidth: 34,
   },
   taskList: {
@@ -295,7 +297,7 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "14px 0",
-    borderBottom: "1px solid #f1f5f9",
+    borderBottom: "1px solid var(--border-color)",
     "&:last-child": {
       borderBottom: "none",
     },
@@ -322,7 +324,7 @@ const styles = {
   emptyTasks: {
     padding: "16px 0",
     fontSize: 13,
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontStyle: "italic",
   },
 };

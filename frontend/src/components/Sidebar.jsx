@@ -81,9 +81,7 @@ const Sidebar = () => {
                     strokeWidth={2}
                     style={{
                       opacity: 0.85,
-                      filter: isActive
-                        ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
-                        : theme === 'dark' ? "invert(100%) brightness(100%)" : "invert(0%) brightness(0%)",
+                      color: isActive ? "var(--accent-color)" : "var(--text-primary)",
                     }}
                   />
                 ) : (
@@ -119,16 +117,14 @@ const Sidebar = () => {
             strokeWidth={2}
             style={{
               opacity: 0.85,
-              filter: isNotesActive
-                ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
-                : theme === 'dark' ? "invert(100%) brightness(100%)" : "invert(0%) brightness(0%)",
+              color: isNotesActive ? "var(--accent-color)" : "var(--text-primary)",
             }}
           />
           Notes
         </button>
 
         <button style={styles.bottomButton} onClick={handleSignOut}>
-          <LogOut size={20} strokeWidth={2} style={{ opacity: 0.85 }} />
+          <LogOut size={20} strokeWidth={2} style={{ opacity: 0.85, color: 'var(--text-primary)' }} />
           Sign Out
         </button>
       </div>
@@ -181,7 +177,7 @@ const styles = {
 
   activeButton: {
     backgroundColor: "var(--hover-bg)",
-    borderLeft: "4px solid #c71b1b",
+    borderLeft: "4px solid var(--accent-color)",
     fontWeight: "600",
   },
 

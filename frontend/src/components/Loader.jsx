@@ -33,7 +33,7 @@ const Loader = ({ fullScreen = true }) => {
             left: 0,
             width: '100vw',
             height: '100vh',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)', // Slight transparency or solid white per requirements
+            backgroundColor: 'var(--bg-primary)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',

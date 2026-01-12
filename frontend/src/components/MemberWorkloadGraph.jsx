@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 import Avatar from "./Avatar";
 
 export default function MemberWorkloadGraph({ data = [] }) {
+    const { theme } = useTheme();
     const [tooltip, setTooltip] = useState(null);
 
     if (!data || data.length === 0) {
@@ -22,21 +24,22 @@ export default function MemberWorkloadGraph({ data = [] }) {
                         ...styles.tooltip,
                         left: tooltip.x + 12,
                         top: tooltip.y + 12,
+                        backgroundColor: theme === 'dark' ? '#1e293b' : '#fff',
                     }}
                 >
                     <strong>{tooltip.name}</strong>
-                    <div style={{ color: '#64748b' }}>Assigned: {tooltip.total}</div>
-                    <div style={{ color: '#c53030' }}>Completed: {tooltip.completed}</div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Assigned: {tooltip.total}</div>
+                    <div style={{ color: 'var(--error-color)' }}>Completed: {tooltip.completed}</div>
                 </div>
             )}
 
             <div style={styles.legend}>
                 <div style={styles.legendItem}>
-                    <span style={{ ...styles.dot, background: "#ffdad9" }} />
+                    <span style={{ ...styles.dot, background: "var(--error-bg)" }} />
                     <span style={styles.legendLabel}>Total Tasks</span>
                 </div>
                 <div style={styles.legendItem}>
-                    <span style={{ ...styles.dot, background: "#f87171" }} />
+                    <span style={{ ...styles.dot, background: "var(--error-color)" }} />
                     <span style={styles.legendLabel}>Completed Tasks</span>
                 </div>
             </div>
@@ -73,7 +76,7 @@ export default function MemberWorkloadGraph({ data = [] }) {
                                         width={barWidth}
                                         height={Math.max(totalH, 4)}
                                         rx="6"
-                                        fill="#ffdad9"
+                                        fill="var(--error-bg)"
                                     />
 
                                     {/* COMPLETED (DARK RED) */}
@@ -83,7 +86,7 @@ export default function MemberWorkloadGraph({ data = [] }) {
                                         width={barWidth}
                                         height={completedH}
                                         rx="6"
-                                        fill="#f87171"
+                                        fill="var(--error-color)"
                                     />
                                 </g>
                             );
@@ -125,7 +128,7 @@ const styles = {
     },
     legendLabel: {
         fontSize: 12,
-        color: "#64748b",
+        color: "var(--text-secondary)",
         fontWeight: 500,
     },
     dot: {
@@ -158,7 +161,7 @@ const styles = {
     memberLabel: {
         fontSize: 11,
         fontWeight: 600,
-        color: "#64748b",
+        color: "var(--text-secondary)",
         whiteSpace: "nowrap",
         overflow: "hidden",
         textOverflow: "ellipsis",
@@ -167,25 +170,26 @@ const styles = {
     },
     tooltip: {
         position: "fixed",
-        background: "#fff",
-        border: "1px solid #f1f5f9",
+        background: "var(--card-bg)",
+        border: "1px solid var(--border-color)",
         borderRadius: 8,
         padding: "10px 14px",
         fontSize: 12,
-        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+        boxShadow: "var(--shadow-md)",
         pointerEvents: "none",
         zIndex: 9999,
+        color: "var(--text-primary)"
     },
     emptyWrap: {
         height: "200px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#f8fafc",
+        background: "var(--bg-secondary)",
         borderRadius: 12,
     },
     emptyText: {
-        color: "#94a3b8",
+        color: "var(--text-secondary)",
         fontSize: 13,
     }
 };

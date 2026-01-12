@@ -236,7 +236,7 @@ export default function ProjectGantt() {
                 <div style={styles.projectHeader}>Projects</div>
                 <div style={styles.days}>
                     {daysInView.map(day => (
-                        <div key={day.toString()} style={{ ...styles.day, backgroundColor: isSunday(day) ? "#f8fafc" : "transparent" }}>
+                        <div key={day.toString()} style={{ ...styles.day, backgroundColor: isSunday(day) ? "var(--bg-secondary)" : "transparent" }}>
                             <div style={styles.dayName}>{format(day, "EEE")}</div>
                             <div style={styles.dayDate}>{format(day, "d")}</div>
                         </div>
@@ -265,7 +265,7 @@ export default function ProjectGantt() {
                                 key={i}
                                 style={{
                                     ...styles.gridLine,
-                                    backgroundColor: isSunday(day) ? "rgba(241, 245, 249, 0.5)" : "transparent"
+                                    backgroundColor: isSunday(day) ? "var(--bg-secondary)" : "transparent"
                                 }}
                             />
                         ))}
@@ -299,11 +299,11 @@ export default function ProjectGantt() {
 
 const styles = {
     container: {
-        background: "#fff",
-        border: "1px solid #f1f5f9",
+        background: "var(--card-bg)",
+        border: "1px solid var(--border-color)",
         borderRadius: 20,
         padding: 24,
-        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        boxShadow: "var(--shadow-sm)",
         overflow: "hidden"
     },
     topRow: {
@@ -319,11 +319,11 @@ const styles = {
     selectInput: {
         padding: "10px 16px",
         borderRadius: "12px",
-        border: "1px solid #e2e8f0",
-        background: "#fff",
+        border: "1px solid var(--border-color)",
+        background: "var(--input-bg)",
         fontSize: "14px",
         fontWeight: "700",
-        color: "#475569",
+        color: "var(--text-secondary)",
         cursor: "pointer",
         outline: "none",
         minWidth: 200,
@@ -337,40 +337,40 @@ const styles = {
         width: 36,
         height: 36,
         borderRadius: "10px",
-        background: "#fff",
-        border: "1px solid #e2e8f0",
+        background: "var(--card-bg)",
+        border: "1px solid var(--border-color)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "#64748b",
+        color: "var(--text-secondary)",
         cursor: "pointer",
         transition: "all 0.2s",
     },
     dateLabel: {
         fontSize: "15px",
         fontWeight: "600",
-        color: "#1e293b",
+        color: "var(--text-primary)",
         display: "flex",
         alignItems: "center",
-        background: "#f8fafc",
+        background: "var(--bg-secondary)",
         padding: "8px 16px",
         borderRadius: "10px",
-        border: "1px solid #e2e8f0",
+        border: "1px solid var(--border-color)",
     },
     header: {
         display: "flex",
-        background: "#fcfdfe",
-        borderTop: "1px solid #f1f5f9",
-        borderBottom: "1px solid #e2e8f0",
+        background: "var(--bg-secondary)",
+        borderTop: "1px solid var(--border-color)",
+        borderBottom: "1px solid var(--border-color)",
         marginTop: 8,
     },
     projectHeader: {
         width: 250,
         fontWeight: 700,
         fontSize: 14,
-        color: "#1e293b",
+        color: "var(--text-primary)",
         padding: "12px 24px",
-        borderRight: "1px solid #e2e8f0",
+        borderRight: "1px solid var(--border-color)",
         boxSizing: "border-box",
         display: "flex",
         alignItems: "center"
@@ -378,26 +378,26 @@ const styles = {
     days: { flex: 1, display: "grid", gridTemplateColumns: "repeat(7, 1fr)" },
     day: {
         textAlign: "center",
-        borderRight: "1px solid #e2e8f0",
+        borderRight: "1px solid var(--border-color)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         padding: "8px 0",
     },
-    dayName: { fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" },
-    dayDate: { fontSize: 14, fontWeight: 800, color: "#1e293b", marginTop: 2 },
+    dayName: { fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" },
+    dayDate: { fontSize: 14, fontWeight: 800, color: "var(--text-primary)", marginTop: 2 },
     body: { display: "flex", position: "relative" },
-    projectsCol: { width: 250, borderRight: "1px solid #f1f5f9" },
-    projectRow: { display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: "1px solid #f1f5f9", paddingRight: 16, paddingLeft: 24 },
+    projectsCol: { width: 250, borderRight: "1px solid var(--border-color)" },
+    projectRow: { display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: "1px solid var(--border-color)", paddingRight: 16, paddingLeft: 24 },
     projectInfo: { display: "flex", alignItems: "center", gap: 12 },
     projectBadge: { width: 12, height: 12, borderRadius: "50%" },
-    projectName: { fontWeight: 700, fontSize: 14, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-    projectMeta: { fontSize: 12, color: "#94a3b8", marginTop: 4, paddingLeft: 24 },
+    projectName: { fontWeight: 700, fontSize: 14, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+    projectMeta: { fontSize: 12, color: "var(--text-secondary)", marginTop: 4, paddingLeft: 24 },
     timeline: { flex: 1, position: "relative", minHeight: 450 },
     grid: { position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "repeat(7, 1fr)" },
-    gridLine: { borderRight: "1px solid #e2e8f0" },
-    timelineRow: { position: "relative", borderBottom: "1px solid #f1f5f9" },
+    gridLine: { borderRight: "1px solid var(--border-color)" },
+    timelineRow: { position: "relative", borderBottom: "1px solid var(--border-color)" },
     task: {
         position: "absolute",
         borderRadius: "8px",
@@ -408,10 +408,11 @@ const styles = {
         overflow: "hidden",
         padding: 0,
         cursor: "default",
+        backdropFilter: "blur(2px)",
     },
     colorAccent: { width: 6, height: "100%", flexShrink: 0 },
     taskContent: { padding: "0 10px", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" },
-    taskTitle: { fontSize: 11, fontWeight: 700, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-    taskSubtitle: { fontSize: 9, color: "#64748b", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-    empty: { padding: 60, textAlign: "center", color: "#94a3b8", width: "100%" }
+    taskTitle: { fontSize: 11, fontWeight: 700, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+    taskSubtitle: { fontSize: 9, color: "var(--text-secondary)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+    empty: { padding: 60, textAlign: "center", color: "var(--text-secondary)", width: "100%" }
 };

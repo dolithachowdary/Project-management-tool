@@ -257,7 +257,7 @@ const styles = {
     pageContainer: {
         display: 'flex',
         height: '100vh',
-        background: '#f8fafc',
+        background: 'var(--bg-secondary)',
     },
     mainContent: {
         flex: 1,
@@ -276,7 +276,7 @@ const styles = {
         gap: '8px',
         background: 'none',
         border: 'none',
-        color: '#64748b',
+        color: 'var(--text-secondary)',
         fontSize: '14px',
         fontWeight: '500',
         cursor: 'pointer',
@@ -290,12 +290,12 @@ const styles = {
     title: {
         fontSize: '32px',
         fontWeight: '700',
-        color: '#0f172a',
+        color: 'var(--text-primary)',
         margin: '0 0 8px 0',
     },
     subtitle: {
         fontSize: '16px',
-        color: '#64748b',
+        color: 'var(--text-secondary)',
         margin: 0,
     },
     statsGrid: {
@@ -305,14 +305,14 @@ const styles = {
         marginBottom: '32px',
     },
     statCard: {
-        background: '#fff',
+        background: 'var(--card-bg)',
         borderRadius: '16px',
         padding: '24px',
         display: 'flex',
         alignItems: 'center',
         gap: '16px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        border: '1px solid #e2e8f0',
+        boxShadow: 'var(--shadow-sm)',
+        border: '1px solid var(--border-color)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
     },
     statIcon: {
@@ -329,31 +329,31 @@ const styles = {
     statValue: {
         fontSize: '28px',
         fontWeight: '700',
-        color: '#0f172a',
+        color: 'var(--text-primary)',
         marginBottom: '4px',
     },
     statLabel: {
         fontSize: '13px',
-        color: '#64748b',
+        color: 'var(--text-secondary)',
         fontWeight: '500',
     },
     chartCard: {
-        background: '#fff',
+        background: 'var(--card-bg)',
         borderRadius: '16px',
         padding: '32px',
         marginBottom: '32px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        border: '1px solid #e2e8f0',
+        boxShadow: 'var(--shadow-sm)',
+        border: '1px solid var(--border-color)',
     },
     chartTitle: {
         fontSize: '20px',
         fontWeight: '700',
-        color: '#0f172a',
+        color: 'var(--text-primary)',
         margin: '0 0 4px 0',
     },
     chartSubtitle: {
         fontSize: '14px',
-        color: '#64748b',
+        color: 'var(--text-secondary)',
         margin: '0 0 24px 0',
     },
     graphWrapper: {
@@ -366,11 +366,11 @@ const styles = {
         marginBottom: '32px',
     },
     listCard: {
-        background: '#fff',
+        background: 'var(--card-bg)',
         borderRadius: '16px',
         padding: '24px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        border: '1px solid #e2e8f0',
+        boxShadow: 'var(--shadow-sm)',
+        border: '1px solid var(--border-color)',
     },
     listHeader: {
         display: 'flex',
@@ -378,12 +378,12 @@ const styles = {
         gap: '12px',
         marginBottom: '20px',
         paddingBottom: '16px',
-        borderBottom: '2px solid #f1f5f9',
+        borderBottom: '2px solid var(--border-color)',
     },
     listTitle: {
         fontSize: '18px',
         fontWeight: '700',
-        color: '#0f172a',
+        color: 'var(--text-primary)',
         margin: 0,
     },
     listContent: {
@@ -397,7 +397,7 @@ const styles = {
         justifyContent: 'space-between',
         padding: '12px',
         borderRadius: '12px',
-        background: '#f8fafc',
+        background: 'var(--bg-secondary)',
         transition: 'background 0.2s ease',
     },
     memberInfo: {
@@ -413,11 +413,11 @@ const styles = {
     memberName: {
         fontSize: '14px',
         fontWeight: '600',
-        color: '#0f172a',
+        color: 'var(--text-primary)',
     },
     memberRole: {
         fontSize: '12px',
-        color: '#64748b',
+        color: 'var(--text-secondary)',
     },
     memberStats: {
         display: 'flex',
@@ -459,12 +459,12 @@ const styles = {
     errorTitle: {
         fontSize: '24px',
         fontWeight: '700',
-        color: '#0f172a',
+        color: 'var(--text-primary)',
         margin: 0,
     },
     errorText: {
         fontSize: '16px',
-        color: '#64748b',
+        color: 'var(--text-secondary)',
         margin: '0 0 24px 0',
         maxWidth: '500px',
     },
@@ -486,51 +486,56 @@ const styles = {
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
     [data-color="blue"] {
-        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        background: var(--bg-secondary);
         color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
     [data-color="red"] {
-        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        background: var(--bg-secondary);
         color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
     [data-color="green"] {
-        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        background: var(--bg-secondary);
         color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
     [data-color="orange"] {
-        background: linear-gradient(135deg, #fed7aa, #fbbf24);
+        background: var(--bg-secondary);
         color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
     }
 
     [data-type="danger"] {
-        background: #fee2e2;
-        color: #dc2626;
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
     }
 
     [data-type="warning"] {
-        background: #fef3c7;
-        color: #d97706;
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
     }
 
     [data-type="info"] {
-        background: #e0e7ff;
-        color: #4f46e5;
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
     }
 
     div[style*="memberRow"]:hover {
-        background: #f1f5f9 !important;
+        background: var(--bg-primary) !important;
+        opacity: 0.9;
     }
 
     div[style*="statCard"]:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: var(--shadow-md) !important;
     }
 
     button[style*="backBtn"]:hover {
-        color: #3b82f6 !important;
+        color: var(--accent-color) !important;
     }
 `;
 document.head.appendChild(styleSheet);

@@ -219,12 +219,12 @@ const SprintDetails = () => {
           <style>
             {`
               .task-row { transition: background 0.2s; }
-              .task-row:hover { background-color: #f8fafc !important; }
+              .task-row:hover { background-color: var(--hover-bg) !important; }
               .board-card { transition: transform 0.2s ease, box-shadow 0.2s ease !important; }
               .board-card:hover { 
                 transform: translateY(-4px); 
-                box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1) !important; 
-                border-color: #e2e8f0 !important;
+                box-shadow: var(--shadow-md) !important; 
+                border-color: var(--border-color) !important;
               }
               .hide-scrollbar::-webkit-scrollbar { display: none; }
               .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -249,14 +249,14 @@ const SprintDetails = () => {
                     style={styles.editHeaderBtn}
                     title="Edit Sprint"
                   >
-                    <Pencil size={18} color="#94a3b8" />
+                    <Pencil size={18} color="var(--text-secondary)" />
                   </button>
                   <button
                     onClick={() => setShowFlowGraph(true)}
                     style={styles.editHeaderBtn}
                     title="Show Sprint Flow"
                   >
-                    <Workflow size={18} color="#4F7DFF" strokeWidth={2.5} />
+                    <Workflow size={18} color="var(--accent-color)" strokeWidth={2.5} />
                   </button>
                 </div>
               </div>
@@ -336,7 +336,7 @@ const SprintDetails = () => {
                       cx="40"
                       cy="40"
                       r={radius}
-                      stroke="#e2e8f0"
+                      stroke="var(--border-color)"
                       strokeWidth="6"
                       fill="transparent"
                     />
@@ -365,7 +365,7 @@ const SprintDetails = () => {
                   {goalFilter === 'all' ? 'Overall' : `Goal ${parseInt(goalFilter) + 1}`}
                 </h3>
                 {goalFilter !== 'all' && (
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', fontWeight: 500 }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', fontWeight: 500 }}>
                     {recalculatedGoals[parseInt(goalFilter)]?.text}
                   </div>
                 )}
@@ -426,9 +426,9 @@ const SprintDetails = () => {
                 {/* TASK LIST GROUPED BY STATUS */}
                 <div style={styles.taskGroups}>
                   {[
-                    { key: 'planned', label: 'To Do', color: '#64748b' },
-                    { key: 'in_progress', label: 'In Progress', color: '#3b82f6' },
-                    { key: 'done', label: 'Completed', color: '#10b981' }
+                    { key: 'planned', label: 'To Do', color: 'var(--warning-color)' },
+                    { key: 'in_progress', label: 'In Progress', color: 'var(--info-color)' },
+                    { key: 'done', label: 'Completed', color: 'var(--success-color)' }
                   ].map(group => {
                     const groupTasks = filteredModules.flatMap(m =>
                       (m.tasks || []).filter(t => {
@@ -476,7 +476,7 @@ const SprintDetails = () => {
                                   onClick={() => handleEditTask(task)}
                                 >
                                   <td style={styles.td}>
-                                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', display: 'block', whiteSpace: 'nowrap', marginRight: '8px' }}>
+                                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', whiteSpace: 'nowrap', marginRight: '8px' }}>
                                       {task.task_code || task.task_serial}
                                     </span>
                                   </td>
@@ -503,7 +503,7 @@ const SprintDetails = () => {
                                           <div style={{ ...styles.goalNumberSmall, backgroundColor: sprint.project_color || "#3b82f6", width: '14px', height: '14px', fontSize: '9px' }}>
                                             {(task.goal_index + 1)}
                                           </div>
-                                          <span style={{ fontSize: '12px', color: '#64748b' }}>
+                                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                                             {recalculatedGoals[task.goal_index]?.text || `Goal ${task.goal_index + 1}`}
                                           </span>
                                         </div>
@@ -559,9 +559,9 @@ const SprintDetails = () => {
               <DragDropContext onDragEnd={handleDragEnd}>
                 <div style={styles.boardContainer} className="hide-scrollbar">
                   {[
-                    { key: 'planned', label: 'To Do', color: '#64748b' },
-                    { key: 'in_progress', label: 'In Progress', color: '#3b82f6' },
-                    { key: 'done', label: 'Completed', color: '#10b981' }
+                    { key: 'planned', label: 'To Do', color: 'var(--warning-color)' },
+                    { key: 'in_progress', label: 'In Progress', color: 'var(--info-color)' },
+                    { key: 'done', label: 'Completed', color: 'var(--success-color)' }
                   ].map(group => {
                     const groupTasks = filteredModules.flatMap(m =>
                       (m.tasks || []).filter(t => {
@@ -626,7 +626,7 @@ const SprintDetails = () => {
                                         </div>
                                         <h4 style={styles.cardTitle}>{task.title}</h4>
                                         {task.goal_index !== null && task.goal_index !== undefined && goalFilter === 'all' && (
-                                          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                                             {recalculatedGoals[task.goal_index]?.text}
                                           </div>
                                         )}
@@ -737,7 +737,7 @@ const styles = {
   pageContainer: {
     display: "flex",
     height: "100vh",
-    background: "#f8fafc",
+    background: "var(--bg-secondary)",
   },
   mainContent: {
     flex: 1,
@@ -758,26 +758,26 @@ const styles = {
     gap: "8px",
     background: "none",
     border: "none",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
     padding: "0",
     transition: "color 0.2s ease",
     ":hover": {
-      color: "#1e293b",
+      color: "var(--text-primary)",
     }
   },
   sprintHeader: {
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--card-bg)",
     borderRadius: "24px",
     padding: "16px 30px",
     marginBottom: "10px",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)",
-    border: "1px solid #f1f5f9",
+    boxShadow: "var(--shadow-sm)",
+    border: "1px solid var(--border-color)",
     gap: "32px",
   },
   headerLeft: {
@@ -788,8 +788,8 @@ const styles = {
   headerCenter: {
     flex: "0 1 500px",
     padding: "0 32px",
-    borderLeft: "1px solid #f1f5f9",
-    borderRight: "1px solid #f1f5f9",
+    borderLeft: "1px solid var(--border-color)",
+    borderRight: "1px solid var(--border-color)",
     maxHeight: "130px",
     overflowY: "auto",
     msOverflowStyle: 'none',
@@ -813,7 +813,7 @@ const styles = {
     textTransform: "uppercase",
     letterSpacing: "0.05em",
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     marginBottom: "12px",
     marginTop: 0,
     textAlign: "center",
@@ -823,6 +823,8 @@ const styles = {
     gap: "42px",
     padding: "0 20px",
     marginBottom: "0",
+    background: "var(--card-bg)",
+    borderRadius: "12px 12px 0 0"
   },
   tab: {
     display: "flex",
@@ -832,7 +834,7 @@ const styles = {
     background: "none",
     border: "none",
     borderBottom: "2px solid transparent",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
@@ -845,8 +847,8 @@ const styles = {
     padding: "12px 0",
     background: "none",
     border: "none",
-    borderBottom: "2.5px solid #C62828",
-    color: "#C62828",
+    borderBottom: "2.5px solid var(--accent-color)",
+    color: "var(--accent-color)",
     fontSize: "14px",
     fontWeight: "700",
     cursor: "pointer",
@@ -854,18 +856,18 @@ const styles = {
   tabsDivider: {
     width: "100%",
     height: "1px",
-    backgroundColor: "#e2e8f0",
+    backgroundColor: "var(--border-color)",
     marginBottom: "15px",
-    marginTop: "-1px", // Overlap with tab border for clean look
+    marginTop: "-1px",
   },
   sprintTitle: {
     fontSize: "20px",
     fontWeight: "500",
-    color: "#0f172a",
+    color: "var(--text-primary)",
     margin: "0 0 8px 0",
   },
   editHeaderBtn: {
-    background: '#f1f5f9',
+    background: 'var(--bg-secondary)',
     border: 'none',
     padding: '6px',
     borderRadius: '8px',
@@ -874,18 +876,18 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s',
-    'hover': { background: '#e2e8f0' }
+    'hover': { background: 'var(--hover-bg)' }
   },
   goalText: {
     fontSize: "18px",
-    color: "#475569",
+    color: "var(--text-secondary)",
     marginBottom: "16px",
     maxWidth: "600px",
     lineHeight: "1.5",
   },
   goalLabel: {
     fontWeight: "600",
-    color: "#0f172a",
+    color: "var(--text-primary)",
     marginRight: "4px",
   },
   goalsProgressContainer: {
@@ -907,7 +909,7 @@ const styles = {
     width: "18px",
     height: "18px",
     borderRadius: "50%",
-    backgroundColor: "#3b82f6",
+    backgroundColor: "var(--accent-color)",
     color: "#fff",
     fontSize: "10px",
     fontWeight: "700",
@@ -918,7 +920,7 @@ const styles = {
   },
   goalTextSmall: {
     fontSize: "14px",
-    color: "#1e293b",
+    color: "var(--text-primary)",
     fontWeight: "600",
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -933,7 +935,7 @@ const styles = {
   goalProgressBarBg: {
     flex: 1,
     height: "6px",
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "var(--bg-secondary)",
     borderRadius: "3px",
     overflow: "hidden",
   },
@@ -945,7 +947,7 @@ const styles = {
   goalProgressText: {
     fontSize: "11px",
     fontWeight: "700",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     minWidth: "30px",
   },
   metaRow: {
@@ -958,7 +960,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "10px",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontSize: "14px",
     fontWeight: "500",
   },
@@ -998,9 +1000,9 @@ const styles = {
     gap: "12px",
     padding: "16px 24px",
     borderRadius: "16px",
-    backgroundColor: "#fff",
-    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #e2e8f0",
+    backgroundColor: "var(--card-bg)",
+    boxShadow: "var(--shadow-md)",
+    border: "1px solid var(--border-color)",
     minWidth: "200px",
     zIndex: 2,
   },
@@ -1015,12 +1017,12 @@ const styles = {
   },
   nodeSubtitle: {
     fontSize: "12px",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
   },
   verticalLine: {
     width: "2px",
     height: "60px",
-    backgroundColor: "#cbd5e1",
+    backgroundColor: "var(--border-color)",
   },
   modulesGrid: {
     display: "flex",
@@ -1037,7 +1039,7 @@ const styles = {
       left: "50px",
       right: "50px",
       height: "2px",
-      backgroundColor: "#cbd5e1",
+      backgroundColor: "var(--border-color)",
     }
   },
   moduleBranch: {
@@ -1049,7 +1051,7 @@ const styles = {
   moduleConnector: {
     width: "2px",
     height: "30px",
-    backgroundColor: "#cbd5e1",
+    backgroundColor: "var(--border-color)",
   },
   moduleNode: {
     width: "100%",
@@ -1073,7 +1075,7 @@ const styles = {
   taskConnector: {
     width: "12px",
     height: "2px",
-    backgroundColor: "#cbd5e1",
+    backgroundColor: "var(--border-color)",
   },
   taskNode: {
     flex: 1,
@@ -1082,11 +1084,11 @@ const styles = {
     gap: "12px",
     padding: "12px 16px",
     borderRadius: "12px",
-    border: "1px solid rgba(0,0,0,0.05)",
+    border: "1px solid var(--border-color)",
     transition: "transform 0.2s ease, box-shadow 0.2s ease",
     ":hover": {
       transform: "translateX(4px)",
-      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+      boxShadow: "var(--shadow-sm)",
     }
   },
   taskInfo: {
@@ -1096,16 +1098,16 @@ const styles = {
   taskTitle: {
     fontSize: "13px",
     fontWeight: "600",
-    color: "#1e293b",
+    color: "var(--text-primary)",
     lineHeight: "1.2",
   },
   taskAssignee: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "var(--text-secondary)",
   },
   emptyTasks: {
     fontSize: "12px",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontStyle: "italic",
     textAlign: "center",
     padding: "8px",
@@ -1116,11 +1118,11 @@ const styles = {
   emptyState: {
     padding: "40px",
     textAlign: "center",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontSize: "14px",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--card-bg)",
     borderRadius: "16px",
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
   },
   listViewContainer: {
     display: "flex",
@@ -1142,7 +1144,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    color: "#1e293b",
+    color: "var(--text-primary)",
     cursor: "pointer",
     padding: "0 4px",
   },
@@ -1152,16 +1154,16 @@ const styles = {
   },
   groupCount: {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     marginLeft: "4px",
   },
   taskTable: {
     width: "100%",
     borderCollapse: "collapse",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--card-bg)",
     borderRadius: "12px",
     overflow: "hidden",
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     tableLayout: "fixed",
   },
   th: {
@@ -1169,24 +1171,24 @@ const styles = {
     padding: "12px 16px",
     fontSize: "13px",
     fontWeight: "600",
-    color: "#64748b",
-    borderBottom: "1px solid #f1f5f9",
-    backgroundColor: "#fcfdfe",
+    color: "var(--text-secondary)",
+    borderBottom: "1px solid var(--border-color)",
+    backgroundColor: "var(--bg-secondary)",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
   tr: {
-    borderBottom: "1px solid #f1f5f9",
+    borderBottom: "1px solid var(--border-color)",
     transition: "background 0.2s",
     ":hover": {
-      backgroundColor: "#f8fafc",
+      backgroundColor: "var(--hover-bg)",
     }
   },
   td: {
     padding: "12px 16px",
     fontSize: "14px",
-    color: "#334155",
+    color: "var(--text-primary)",
     verticalAlign: "middle",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -1210,8 +1212,8 @@ const styles = {
     fontSize: "11px",
     padding: "3px 8px",
     borderRadius: "6px",
-    backgroundColor: "#f1f5f9",
-    color: "#64748b",
+    backgroundColor: "var(--bg-secondary)",
+    color: "var(--text-secondary)",
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: "0.3px",
@@ -1225,13 +1227,13 @@ const styles = {
     width: "24px",
     height: "24px",
     borderRadius: "50%",
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "var(--bg-secondary)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: "11px",
     fontWeight: "600",
-    color: "#64748b",
+    color: "var(--text-secondary)",
   },
   priorityBadge: {
     fontSize: "11px",
@@ -1251,20 +1253,20 @@ const styles = {
   },
   dateCell: {
     fontSize: "13px",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     whiteSpace: "nowrap",
   },
   emptyRow: {
     padding: "20px",
     textAlign: "center",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontSize: "13px",
     fontStyle: "italic",
   },
   addTableRow: {
     cursor: "pointer",
     ":hover": {
-      backgroundColor: "#f8fafc",
+      backgroundColor: "var(--hover-bg)",
     }
   },
   addTableCell: {
@@ -1272,7 +1274,7 @@ const styles = {
   },
   addTaskText: {
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     display: "block",
     width: "100%",
   },
@@ -1284,22 +1286,23 @@ const styles = {
   },
   inlineInput: {
     width: "100%",
-    border: "1px solid #e2e8f0",
+    border: "1px solid var(--border-color)",
     borderRadius: "4px",
     padding: "6px 8px",
     fontSize: "13px",
     outline: "none",
-    background: "#fff",
+    background: "var(--input-bg)",
+    color: "var(--text-primary)",
   },
   inlineSelect: {
     width: "100%",
-    border: "1px solid #e2e8f0",
+    border: "1px solid var(--border-color)",
     borderRadius: "4px",
     padding: "6px 4px",
     fontSize: "12px",
     outline: "none",
-    background: "#fff",
-    color: "#475569",
+    background: "var(--input-bg)",
+    color: "var(--text-secondary)",
     minWidth: "85px",
   },
   inlineActions: {
@@ -1308,7 +1311,7 @@ const styles = {
     marginLeft: "auto",
   },
   saveBtn: {
-    backgroundColor: "#C62828",
+    backgroundColor: "var(--accent-color)",
     color: "#fff",
     border: "none",
     borderRadius: "4px",
@@ -1319,8 +1322,8 @@ const styles = {
   },
   cancelBtn: {
     backgroundColor: "transparent",
-    color: "#64748b",
-    border: "1px solid #e2e8f0",
+    color: "var(--text-secondary)",
+    border: "1px solid var(--border-color)",
     borderRadius: "4px",
     padding: "6px 12px",
     fontSize: "12px",
@@ -1343,17 +1346,17 @@ const styles = {
     alignItems: "center",
     gap: "8px",
     padding: "8px 16px",
-    backgroundColor: "#f8fafc",
-    border: "1px solid #e2e8f0",
+    backgroundColor: "var(--bg-secondary)",
+    border: "1px solid var(--border-color)",
     borderRadius: "8px",
-    color: "#1e293b",
+    color: "var(--text-primary)",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
     transition: "all 0.2s",
     ":hover": {
-      backgroundColor: "#f1f5f9",
-      borderColor: "#cbd5e1",
+      backgroundColor: "var(--hover-bg)",
+      borderColor: "var(--text-secondary)",
     }
   },
   actionLink: {
@@ -1362,13 +1365,13 @@ const styles = {
     gap: "8px",
     background: "none",
     border: "none",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
     transition: "color 0.2s",
     ":hover": {
-      color: "#1e293b",
+      color: "var(--text-primary)",
     }
   },
   boardContainer: {
@@ -1383,10 +1386,10 @@ const styles = {
     minWidth: "320px",
     display: "flex",
     flexDirection: "column",
-    background: "#f8fafc",
+    background: "var(--bg-secondary)",
     borderRadius: "20px",
     padding: "20px",
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
   },
   columnHeader: {
     marginBottom: "16px",
@@ -1402,19 +1405,19 @@ const styles = {
   columnTitle: {
     fontSize: "13px",
     fontWeight: "700",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
   },
   columnCount: {
     fontSize: "11px",
-    color: "#94a3b8",
-    background: "#f1f5f9",
+    color: "var(--text-secondary)",
+    background: "var(--bg-primary)",
     padding: "2px 10px",
     borderRadius: "20px",
     marginLeft: "8px",
     fontWeight: "700",
-    border: "1px solid #e2e8f0",
+    border: "1px solid var(--border-color)",
   },
   columnContent: {
     flex: 1,
@@ -1426,11 +1429,11 @@ const styles = {
     transition: "background-color 0.2s ease",
   },
   taskCard: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: "16px",
     padding: "16px",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
-    border: "1px solid #f1f5f9",
+    boxShadow: "var(--shadow-sm)",
+    border: "1px solid var(--border-color)",
     cursor: "grab",
     transition: "transform 0.2s ease, box-shadow 0.2s ease",
   },
@@ -1440,7 +1443,7 @@ const styles = {
   cardTitle: {
     fontSize: "14px",
     fontWeight: "500",
-    color: "#334155",
+    color: "var(--text-primary)",
     margin: "0",
     lineHeight: "1.4",
   },
@@ -1457,7 +1460,7 @@ const styles = {
   },
   cardDate: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     display: "flex",
     alignItems: "center",
     gap: "4px",
@@ -1475,9 +1478,9 @@ const styles = {
     width: "100%",
     padding: "8px",
     background: "none",
-    border: "1px dashed #cbd5e1",
+    border: "1px dashed var(--border-color)",
     borderRadius: "8px",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontSize: "13px",
     fontWeight: "500",
     cursor: "pointer",
@@ -1485,21 +1488,23 @@ const styles = {
     marginTop: "4px",
   },
   boardInlineForm: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: "12px",
     padding: "12px",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+    boxShadow: "var(--shadow-md)",
     display: "flex",
     flexDirection: "column",
     gap: "12px",
   },
   boardInlineInput: {
     width: "100%",
-    border: "1px solid #e2e8f0",
+    border: "1px solid var(--border-color)",
     borderRadius: "6px",
     padding: "8px",
     fontSize: "14px",
     outline: "none",
+    background: "var(--input-bg)",
+    color: "var(--text-primary)",
   },
   boardInlineActions: {
     display: "flex",
@@ -1508,7 +1513,7 @@ const styles = {
   },
   boardSaveBtn: {
     padding: "6px 12px",
-    background: "#0d9488",
+    background: "var(--accent-color)", // Using accent instead of teal
     color: "#fff",
     border: "none",
     borderRadius: "6px",
@@ -1518,8 +1523,8 @@ const styles = {
   },
   boardCancelBtn: {
     padding: "6px 12px",
-    background: "#f1f5f9",
-    color: "#64748b",
+    background: "var(--bg-secondary)",
+    color: "var(--text-secondary)",
     border: "none",
     borderRadius: "6px",
     fontSize: "12px",
@@ -1534,20 +1539,20 @@ const styles = {
     height: "24px",
     borderRadius: "6px",
     background: "none",
-    border: "1px solid #e2e8f0",
-    color: "#64748b",
+    border: "1px solid var(--border-color)",
+    color: "var(--text-secondary)",
     cursor: "pointer",
     transition: "all 0.2s",
     ":hover": {
-      background: "#fff",
-      color: "#0d9488",
-      borderColor: "#0d9488",
+      background: "var(--card-bg)",
+      color: "var(--accent-color)",
+      borderColor: "var(--accent-color)",
     }
   },
   modalOverlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(15, 23, 42, 0.4)",
+    background: "var(--modal-overlay)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -1563,7 +1568,7 @@ const styles = {
   },
   clearFilterBtn: {
     padding: "4px 10px",
-    background: "#fee2e2",
+    background: "rgba(239, 68, 68, 0.15)",
     color: "#ef4444",
     border: "none",
     borderRadius: "20px",

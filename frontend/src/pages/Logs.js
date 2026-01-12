@@ -87,7 +87,7 @@ export default function Logs() {
                             <>
                                 {sortedDates.length === 0 ? (
                                     <div style={styles.emptyState}>
-                                        <History size={48} color="#cbd5e1" />
+                                        <History size={48} color="var(--border-color)" />
                                         <h3>No logs found</h3>
                                         <p>Try adjusting your filters or date range.</p>
                                     </div>
@@ -141,69 +141,69 @@ export default function Logs() {
 
 
 const styles = {
-    app: { display: "flex", height: "100vh", overflow: "hidden", backgroundColor: "#f8fafc" },
+    app: { display: "flex", height: "100vh", overflow: "hidden", backgroundColor: "var(--bg-secondary)" },
     main: { flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" },
     content: { flex: 1, overflowY: "auto", padding: "32px" },
     pageHeader: { marginBottom: "32px" },
     titleArea: { marginBottom: "24px" },
-    title: { fontSize: "28px", fontWeight: "800", color: "#1e293b", margin: 0 },
-    subtitle: { fontSize: "15px", color: "#64748b", marginTop: "4px" },
+    title: { fontSize: "28px", fontWeight: "800", color: "var(--text-primary)", margin: 0 },
+    subtitle: { fontSize: "15px", color: "var(--text-secondary)", marginTop: "4px" },
     filterBar: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap" },
     filterGroup: { display: "flex", gap: "12px" },
     selectWrap: {
         display: "flex",
         alignItems: "center",
         gap: "8px",
-        background: "#fff",
-        border: "1px solid #e2e8f0",
+        background: "var(--card-bg)",
+        border: "1px solid var(--border-color)",
         borderRadius: "12px",
         padding: "0 12px",
         height: "44px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.02)"
+        boxShadow: "var(--shadow-sm)"
     },
-    select: { border: "none", outline: "none", background: "none", fontSize: "14px", fontWeight: "600", color: "#475569", minWidth: "120px" },
-    icon: { color: "#64748b" },
+    select: { border: "none", outline: "none", background: "none", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", minWidth: "120px" },
+    icon: { color: "var(--text-secondary)" },
     dateNav: { display: "flex", alignItems: "center", gap: "8px" },
     navBtn: {
         width: "44px",
         height: "44px",
         borderRadius: "12px",
-        border: "1px solid #e2e8f0",
-        background: "#fff",
+        border: "1px solid var(--border-color)",
+        background: "var(--card-bg)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
-        color: "#475569"
+        color: "var(--text-primary)"
     },
     dateDisplay: {
         display: "flex",
         alignItems: "center",
         gap: "10px",
-        background: "#fff",
-        border: "1px solid #e2e8f0",
+        background: "var(--card-bg)",
+        border: "1px solid var(--border-color)",
         borderRadius: "12px",
         padding: "0 16px",
         height: "44px",
         fontWeight: "700",
-        color: "#1e293b",
+        color: "var(--text-primary)",
         position: "relative",
         cursor: "pointer"
     },
     hiddenPicker: { position: "absolute", inset: 0, cursor: "pointer", width: "100%" },
     logContainer: { display: "flex", flexDirection: "column", gap: "40px" },
     dateSection: { display: "flex", flexDirection: "column", gap: "16px" },
-    dateHeader: { fontSize: "16px", fontWeight: "700", color: "#64748b", paddingLeft: "4px" },
-    table: { background: "#fff", borderRadius: "16px", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" },
+    dateHeader: { fontSize: "16px", fontWeight: "700", color: "var(--text-secondary)", paddingLeft: "4px" },
+    table: { background: "var(--card-bg)", borderRadius: "16px", border: "1px solid var(--border-color)", overflow: "hidden", boxShadow: "var(--shadow-sm)" },
     tableHeader: {
         display: "grid",
         gridTemplateColumns: "250px 180px 1fr 180px 80px",
         padding: "16px 24px",
-        background: "#f8fafc",
-        borderBottom: "1px solid #e2e8f0",
+        background: "var(--bg-secondary)",
+        borderBottom: "1px solid var(--border-color)",
         fontSize: "13px",
         fontWeight: "700",
-        color: "#64748b",
+        color: "var(--text-secondary)",
         textTransform: "uppercase",
         letterSpacing: "0.5px"
     },
@@ -211,34 +211,34 @@ const styles = {
         display: "grid",
         gridTemplateColumns: "250px 180px 1fr 180px 80px",
         padding: "16px 24px",
-        borderBottom: "1px solid #f1f5f9",
+        borderBottom: "1px solid var(--border-color)",
         alignItems: "center",
         fontSize: "14px",
         transition: "background 0.2s"
     },
     colId: {
-        color: "#94a3b8",
+        color: "var(--text-secondary)",
         fontFamily: "monospace",
         paddingRight: "16px",
         wordBreak: "break-all"
     },
     colUser: { display: "flex", alignItems: "center", gap: "10px" },
-    userName: { fontWeight: "600", color: "#1e293b" },
-    colAction: { color: "#334155" },
-    colProject: { color: "#64748b" },
+    userName: { fontWeight: "600", color: "var(--text-primary)" },
+    colAction: { color: "var(--text-primary)" },
+    colProject: { color: "var(--text-secondary)" },
     colStatus: { display: "flex" },
-    badge: { padding: "4px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: "700", color: "#1e293b", textTransform: "capitalize" },
-    colTime: { color: "#94a3b8", textAlign: "right", fontWeight: "500" },
-    emptyState: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "100px 0", color: "#94a3b8" },
+    badge: { padding: "4px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: "700", color: "var(--text-primary)", textTransform: "capitalize" },
+    colTime: { color: "var(--text-secondary)", textAlign: "right", fontWeight: "500" },
+    emptyState: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "100px 0", color: "var(--text-secondary)" },
     footer: { display: "flex", justifyContent: "center", padding: "40px 0" },
     showMoreBtn: {
         padding: "12px 24px",
         borderRadius: "12px",
-        border: "1px solid #e2e8f0",
-        background: "#fff",
+        border: "1px solid var(--border-color)",
+        background: "var(--card-bg)",
         fontSize: "15px",
         fontWeight: "700",
-        color: "#1e293b",
+        color: "var(--text-primary)",
         cursor: "pointer",
         transition: "all 0.2s"
     }

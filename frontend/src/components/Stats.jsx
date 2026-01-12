@@ -7,7 +7,7 @@ const Stats = ({ data }) => {
       value: 0,
       percent: "0%",
       trend: "up",
-      color: "#2e7d32",
+      color: "var(--success-color)",
       graph: [0, 0, 0, 0, 0, 0, 0],
     },
     {
@@ -15,7 +15,7 @@ const Stats = ({ data }) => {
       value: 0,
       percent: "0%",
       trend: "down",
-      color: "#c62828",
+      color: "var(--error-color)",
       graph: [0, 0, 0, 0, 0, 0, 0],
     },
     {
@@ -23,7 +23,7 @@ const Stats = ({ data }) => {
       value: 0,
       percent: "0%",
       trend: "up",
-      color: "#777",
+      color: "var(--text-secondary)",
       graph: [0, 0, 0, 0, 0, 0, 0],
     },
   ];
@@ -132,7 +132,7 @@ const styles = {
   title: {
     fontSize: 14,
     fontWeight: 600,
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     marginBottom: 8,
   },
 

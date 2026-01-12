@@ -27,7 +27,7 @@ const Card = ({
               onEdit();
             }}
           >
-            <Pencil size={14} color="#94a3b8" />
+            <Pencil size={14} color="var(--text-secondary)" />
           </button>
         )}
       </div>

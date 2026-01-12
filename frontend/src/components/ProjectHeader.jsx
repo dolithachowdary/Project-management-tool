@@ -58,17 +58,17 @@ const ProjectHeader = ({
               <h2 style={styles.title}>{title}</h2>
               {canModifyStructure && (
                 <button style={styles.editBtn} onClick={onEdit} title="Edit Project">
-                  <Pencil size={18} color="#94a3b8" />
+                  <Pencil size={18} color="var(--text-secondary)" />
                 </button>
               )}
               <button style={styles.editBtn} onClick={onShowFlow} title="Show Project Flow">
-                <GitGraph size={18} color="#4F7DFF" strokeWidth={2.5} />
+                <GitGraph size={18} color="var(--accent-color)" strokeWidth={2.5} />
               </button>
             </div>
           </div>
 
           <div style={styles.dates}>
-            <Calendar size={14} color="#64748b" />
+            <Calendar size={14} color="var(--text-secondary)" />
             <span>{startDate} – {endDate}</span>
           </div>
 
@@ -90,15 +90,15 @@ const ProjectHeader = ({
         {/* RIGHT AREA: MINI STAT CARDS */}
         <div style={styles.rightStats}>
           {/* SPRINT CARD */}
-          <div style={{ ...styles.statCard, background: "#f0f7ff" }}>
+          <div style={{ ...styles.statCard, background: "var(--info-bg)" }}>
             <div style={styles.cardInfo}>
               <div style={styles.cardHeaderArea}>
-                <div style={{ ...styles.iconBox, background: "var(--bg-primary)" }}>
-                  <Clock3 size={16} color="#3b82f6" />
+                <div style={{ ...styles.iconBox, background: "var(--card-bg)" }}>
+                  <Clock3 size={16} color="var(--info-color)" />
                 </div>
                 {canModifyStructure && (
                   <button style={styles.cardAddBtn} className="card-add-btn" onClick={onAddSprint} title="Add Sprint">
-                    <Plus size={14} color="#3b82f6" />
+                    <Plus size={14} color="var(--info-color)" />
                   </button>
                 )}
               </div>
@@ -106,22 +106,22 @@ const ProjectHeader = ({
                 <div style={styles.cardLabel}>Sprints {sprintCount > 0 && `(${sprintCount})`}</div>
                 <div style={styles.cardVal}>{currentSprintName}</div>
                 <div style={styles.cardProgressTrack}>
-                  <div style={{ ...styles.cardProgressFill, width: `${sprintProgress}%`, background: "#3b82f6" }} />
+                  <div style={{ ...styles.cardProgressFill, width: `${sprintProgress}%`, background: "var(--info-color)" }} />
                 </div>
               </div>
             </div>
           </div>
 
           {/* MODULES CARD */}
-          <div style={{ ...styles.statCard, background: "#f5f3ff" }}>
+          <div style={{ ...styles.statCard, background: "var(--purple-bg)" }}>
             <div style={styles.cardInfo}>
               <div style={{ ...styles.cardHeaderArea }}>
-                <div style={{ ...styles.iconBox, background: "var(--bg-primary)" }}>
-                  <Box size={16} color="#8b5cf6" />
+                <div style={{ ...styles.iconBox, background: "var(--card-bg)" }}>
+                  <Box size={16} color="var(--purple-color)" />
                 </div>
                 {canModifyStructure && (
                   <button style={styles.cardAddBtn} className="card-add-btn" onClick={onAddModule} title="Add Module">
-                    <Plus size={14} color="#8b5cf6" />
+                    <Plus size={14} color="var(--purple-color)" />
                   </button>
                 )}
               </div>
@@ -133,15 +133,15 @@ const ProjectHeader = ({
           </div>
 
           {/* TASKS CARD */}
-          <div style={{ ...styles.statCard, background: "#fff7ed" }}>
+          <div style={{ ...styles.statCard, background: "var(--warning-bg)" }}>
             <div style={styles.cardInfo}>
               <div style={styles.cardHeaderArea}>
-                <div style={{ ...styles.iconBox, background: "var(--bg-primary)" }}>
-                  <ClipboardList size={16} color="#f97316" />
+                <div style={{ ...styles.iconBox, background: "var(--card-bg)" }}>
+                  <ClipboardList size={16} color="var(--warning-color)" />
                 </div>
                 {canAddTasks && (
                   <button style={styles.cardAddBtn} className="card-add-btn" onClick={onAddTask} title="Create Task">
-                    <Plus size={14} color="#f97316" />
+                    <Plus size={14} color="var(--warning-color)" />
                   </button>
                 )}
               </div>
@@ -204,7 +204,7 @@ const styles = {
     position: "absolute",
     top: 0,
     right: 0,
-    background: "#C62828", // ALWAYS RED
+    background: "var(--accent-color)", // ALWAYS ACCENT
     color: "#fff",
     border: "none",
     borderRadius: 14,
@@ -212,7 +212,7 @@ const styles = {
     fontSize: 13,
     fontWeight: 700,
     cursor: "pointer",
-    boxShadow: "0 4px 12px rgba(198, 40, 40, 0.25)",
+    boxShadow: "0 4px 12px var(--modal-overlay)",
     transition: "all 0.2s",
   },
   dates: {
@@ -333,7 +333,7 @@ const styles = {
   cardProgressTrack: {
     width: "100%",
     height: 8,
-    background: "rgba(255,255,255,0.5)",
+    background: "var(--border-color)",
     borderRadius: 10,
     overflow: "hidden",
     marginTop: 8,

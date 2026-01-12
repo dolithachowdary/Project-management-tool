@@ -2,8 +2,10 @@ import React from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 
 export default function PriorityDistributionGraph({ data = [] }) {
+    const { theme } = useTheme();
     if (!data || data.length === 0) {
         return (
             <div style={styles.emptyWrap}>
@@ -13,37 +15,40 @@ export default function PriorityDistributionGraph({ data = [] }) {
     }
 
     const COLORS = {
-        Low: "#bbf7d0",
-        Medium: "#fbde6aff",
-        High: "#f9a2a2ff"
+        Low: "var(--success-color)",
+        Medium: "var(--warning-color)",
+        High: "var(--error-color)"
     };
 
     return (
         <div style={styles.wrapper}>
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                     <XAxis
                         dataKey="name"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }}
                     />
                     <YAxis
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: '#94a3b8', fontSize: 11 }}
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
                         allowDecimals={false}
                     />
                     <Tooltip
-                        cursor={{ fill: '#f8fafc' }}
+                        cursor={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
                         contentStyle={{
+                            background: 'var(--card-bg)',
                             borderRadius: '12px',
-                            border: 'none',
-                            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                            border: '1px solid var(--border-color)',
+                            boxShadow: 'var(--shadow-md)',
                             fontSize: '13px',
-                            padding: '10px 14px'
+                            padding: '10px 14px',
+                            color: 'var(--text-primary)'
                         }}
+                        itemStyle={{ color: 'var(--text-primary)' }}
                     />
                     <Bar dataKey="count" barSize={20} radius={[6, 6, 0, 0]}>
                         {data.map((entry, index) => (
@@ -67,11 +72,11 @@ const styles = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#f8fafc",
+        background: "var(--bg-secondary)",
         borderRadius: 12,
     },
     emptyText: {
-        color: "#94a3b8",
+        color: "var(--text-secondary)",
         fontSize: 13,
     }
 };

@@ -10,42 +10,42 @@ export const getStatusStyles = (status) => {
         case "todo":
         case "planned":
             return {
-                backgroundColor: "#fffbeb",
-                color: "#92400e",
-                borderColor: "#fde68a",
+                backgroundColor: "var(--warning-bg)",
+                color: "var(--warning-color)",
+                borderColor: "var(--warning-color)",
             };
         case "in progress":
         case "in_progress":
             return {
-                backgroundColor: "#eff6ff",
-                color: "#1d4ed8",
-                borderColor: "#bfdbfe",
+                backgroundColor: "var(--info-bg)",
+                color: "var(--info-color)",
+                borderColor: "var(--info-color)",
             };
         case "done":
         case "completed":
         case "finished":
             return {
-                backgroundColor: "#f0fdf4",
-                color: "#15803d",
-                borderColor: "#bbf7d0",
+                backgroundColor: "var(--success-bg)",
+                color: "var(--success-color)",
+                borderColor: "var(--success-color)",
             };
         case "review":
             return {
-                backgroundColor: "#f5f3ff",
-                color: "#6d28d9",
-                borderColor: "#ddd6fe",
+                backgroundColor: "var(--purple-bg)",
+                color: "var(--purple-color)",
+                borderColor: "var(--purple-color)",
             };
         case "blocked":
             return {
-                backgroundColor: "#fef2f2",
-                color: "#b91c1c",
-                borderColor: "#fecaca",
+                backgroundColor: "var(--error-bg)",
+                color: "var(--error-color)",
+                borderColor: "var(--error-color)",
             };
         default:
             return {
-                backgroundColor: "#f3f4f6",
-                color: "#475569",
-                borderColor: "#e2e8f0",
+                backgroundColor: "var(--bg-secondary)",
+                color: "var(--text-secondary)",
+                borderColor: "var(--border-color)",
             };
     }
 };

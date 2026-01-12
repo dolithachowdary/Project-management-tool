@@ -8,7 +8,10 @@ import { getSprintBurndown } from '../api/sprints';
 import RecentActivity from './RecentActivity';
 import Avatar from './Avatar';
 
+import { useTheme } from '../context/ThemeContext';
+
 const SprintOverview = ({ data, styles }) => {
+    const { theme } = useTheme();
     const sprint = data?.sprint;
     const projectColor = sprint?.project_color || '#0d9488';
     const [burndownChartData, setBurndownChartData] = React.useState([]);
@@ -52,6 +55,58 @@ const SprintOverview = ({ data, styles }) => {
             };
         });
     }, [allTasks]);
+
+    // 2. Goal Burndown Calculation
+    const goalBurndownData = useMemo(() => {
+        if (!sprint || !burndownChartData.length) return [];
+
+        let gList = [];
+        try {
+            gList = JSON.parse(sprint.goal || "[]");
+            if (!Array.isArray(gList)) gList = [];
+        } catch (e) {
+            const gs = sprint.goal || "";
+            if (gs.trim()) {
+                gList = gs.split("\n").filter(l => l.trim()).map((l, idx) => ({ id: idx, text: l.trim() }));
+            }
+        }
+
+        if (gList.length === 0) return [];
+
+        // For each goal, find when it was completed
+        // A goal is completed when all its assigned tasks are done
+        const goalsWithCompletion = gList.map((g, idx) => {
+            const goalTasks = allTasks.filter(t => t.goal_index === idx);
+            if (goalTasks.length === 0) return { ...g, completedAt: null };
+
+            const allDone = goalTasks.every(t => t.status?.toLowerCase() === 'done' || t.status?.toLowerCase() === 'completed');
+            if (!allDone) return { ...g, completedAt: null };
+
+            // Completion date is the latest completed_at of its tasks
+            const completionDates = goalTasks.map(t => t.completed_at ? new Date(t.completed_at) : null).filter(Boolean);
+            if (completionDates.length === 0) return { ...g, completedAt: new Date(0) }; // Fallback if somehow done but no date
+
+            return { ...g, completedAt: new Date(Math.max(...completionDates)) };
+        });
+
+        // Merge with burndownChartData
+        return burndownChartData.map(day => {
+            const dayDate = new Date(day.date);
+            dayDate.setHours(23, 59, 59, 999);
+
+            const remainingGoals = goalsWithCompletion.filter(g => {
+                if (!g.completedAt) return true;
+                return g.completedAt > dayDate;
+            }).length;
+
+            return {
+                ...day,
+                remainingGoals: remainingGoals
+            };
+        });
+    }, [sprint, burndownChartData, allTasks]);
+
+    const finalBurndownData = goalBurndownData.length > 0 ? goalBurndownData : burndownChartData;
 
     const getStatusLabel = (s) => {
         const status = s?.toLowerCase() || '';
@@ -116,11 +171,11 @@ const SprintOverview = ({ data, styles }) => {
             padding: '10px 0',
         },
         card: {
-            background: '#fff',
+            background: 'var(--card-bg)',
             borderRadius: '16px',
             padding: '12px 16px',
-            border: '1px solid #f1f5f9',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+            border: '1px solid var(--border-color)',
+            boxShadow: 'var(--shadow-sm)',
             display: 'flex',
             flexDirection: 'column',
             height: '340px', // Uniform height increased
@@ -130,7 +185,7 @@ const SprintOverview = ({ data, styles }) => {
         cardTitle: {
             fontSize: '15px',
             fontWeight: '700',
-            color: '#1e293b',
+            color: 'var(--text-primary)',
             marginBottom: '16px',
             display: 'flex',
             justifyContent: 'space-between',
@@ -147,10 +202,10 @@ const SprintOverview = ({ data, styles }) => {
         const data = weeklyData[payload.index];
         return (
             <g transform={`translate(${x},${y})`}>
-                <text x={0} y={0} dy={16} textAnchor="middle" fill="#94a3b8" fontSize={10} fontWeight={600}>
+                <text x={0} y={0} dy={16} textAnchor="middle" fill="var(--text-secondary)" fontSize={10} fontWeight={600}>
                     {data.name}
                 </text>
-                <text x={0} y={0} dy={28} textAnchor="middle" fill="#cbd5e1" fontSize={9}>
+                <text x={0} y={0} dy={28} textAnchor="middle" fill="var(--text-secondary)" opacity={0.7} fontSize={9}>
                     {data.date}
                 </text>
             </g>
@@ -179,12 +234,20 @@ const SprintOverview = ({ data, styles }) => {
                 <div style={dashboardStyles.chartContainer}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={weeklyData} margin={{ top: 30, right: 10, left: -25, bottom: 20 }} barGap={-16}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={<CustomXAxisTick />} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} />
                             <Tooltip
                                 cursor={false}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', fontSize: '12px' }}
+                                contentStyle={{
+                                    backgroundColor: theme === 'dark' ? '#1e293b' : '#fff',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--border-color)',
+                                    boxShadow: 'var(--shadow-md)',
+                                    fontSize: '12px',
+                                    color: 'var(--text-primary)'
+                                }}
+                                itemStyle={{ color: 'var(--text-primary)' }}
                             />
                             <Legend verticalAlign="top" align="right" iconType="circle" iconSize={8} wrapperStyle={{ top: 0, right: 0, fontSize: '11px' }} />
                             <Bar dataKey="total" name="Total Tasks" fill={`${projectColor}33`} radius={[4, 4, 0, 0]} barSize={16} />
@@ -201,22 +264,31 @@ const SprintOverview = ({ data, styles }) => {
                 </div>
                 <div style={dashboardStyles.chartContainer}>
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={burndownChartData} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="displayDate" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9 }} dy={5} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                        <LineChart data={finalBurndownData} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                            <XAxis dataKey="displayDate" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 9 }} dy={5} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} />
                             <Tooltip
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', fontSize: '12px' }}
+                                contentStyle={{
+                                    backgroundColor: theme === 'dark' ? '#1e293b' : '#fff',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--border-color)',
+                                    boxShadow: 'var(--shadow-md)',
+                                    fontSize: '12px',
+                                    color: 'var(--text-primary)'
+                                }}
+                                itemStyle={{ color: 'var(--text-primary)' }}
                             />
                             <Legend verticalAlign="top" align="right" iconType="plainline" iconSize={12} wrapperStyle={{ top: 0, right: 0, fontSize: '11px' }} />
                             <Line
                                 type="monotone"
                                 dataKey="ideal"
                                 name="Ideal Burn"
-                                stroke="#94a3b8"
+                                stroke="var(--text-secondary)"
                                 strokeWidth={1.5}
                                 dot={false}
                                 strokeDasharray="5 5"
+                                opacity={0.5}
                             />
                             <Line
                                 type="monotone"
@@ -232,12 +304,23 @@ const SprintOverview = ({ data, styles }) => {
                                 type="monotone"
                                 dataKey="remainingActual"
                                 name="Effort Remaining (Actual)"
-                                stroke="#C62828"
+                                stroke="var(--error-color)"
                                 strokeWidth={2}
-                                dot={{ r: 2, fill: '#C62828' }}
+                                dot={{ r: 2, fill: 'var(--error-color)' }}
                                 strokeDasharray="3 3"
                                 connectNulls
                             />
+                            {goalBurndownData.length > 0 && (
+                                <Line
+                                    type="stepAfter"
+                                    dataKey="remainingGoals"
+                                    name="Goals Remaining"
+                                    stroke="var(--purple-color)"
+                                    strokeWidth={3}
+                                    dot={{ r: 4, fill: 'var(--purple-color)', strokeWidth: 2, stroke: 'var(--card-bg)' }}
+                                    activeDot={{ r: 6 }}
+                                />
+                            )}
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
@@ -269,17 +352,23 @@ const SprintOverview = ({ data, styles }) => {
                                 {statusData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={
                                         entry.name === 'Done' ? projectColor :
-                                            entry.name === 'In Progress' ? '#C62828' :
-                                                entry.name === 'Late' ? '#ef4444' : '#e2e8f0'
+                                            entry.name === 'In Progress' ? 'var(--info-color)' :
+                                                entry.name === 'Late' ? 'var(--error-color)' : 'var(--border-color)'
                                     } />
                                 ))}
                             </Pie>
-                            <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
-                            <Legend verticalAlign="bottom" height={40} iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '20px' }} />
-                            <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '24px', fontWeight: '700', fill: '#1e293b' }}>
+                            <Tooltip contentStyle={{
+                                backgroundColor: theme === 'dark' ? '#1e293b' : '#fff',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                color: 'var(--text-primary)'
+                            }} />
+                            <Legend verticalAlign="bottom" height={40} iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '20px', color: 'var(--text-secondary)' }} />
+                            <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '24px', fontWeight: '700', fill: 'var(--text-primary)' }}>
                                 {allTasks.filter(t => getStatusLabel(t.status) !== 'Done').length}
                             </text>
-                            <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '14px', fill: '#94a3b8' }}>
+                            <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '14px', fill: 'var(--text-secondary)' }}>
                                 Tasks left
                             </text>
                         </PieChart>
@@ -293,13 +382,22 @@ const SprintOverview = ({ data, styles }) => {
                 <div style={dashboardStyles.chartContainer}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={priorityData} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="priority" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                            <Tooltip cursor={false} contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                            <XAxis dataKey="priority" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} />
+                            <Tooltip
+                                cursor={false}
+                                contentStyle={{
+                                    backgroundColor: theme === 'dark' ? '#1e293b' : '#fff',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '8px',
+                                    fontSize: '12px',
+                                    color: 'var(--text-primary)'
+                                }}
+                            />
                             <Legend verticalAlign="top" align="right" iconSize={8} wrapperStyle={{ top: 0, right: 0, fontSize: '10px' }} />
-                            <Bar dataKey="To Do" stackId="a" fill="#e2e8f0" radius={[0, 0, 0, 0]} barSize={20} />
-                            <Bar dataKey="In Progress" stackId="a" fill="#C62828" radius={[0, 0, 0, 0]} barSize={20} />
+                            <Bar dataKey="To Do" stackId="a" fill="var(--bg-secondary)" radius={[0, 0, 0, 0]} barSize={20} />
+                            <Bar dataKey="In Progress" stackId="a" fill="var(--info-color)" radius={[0, 0, 0, 0]} barSize={20} />
                             <Bar dataKey="Done" stackId="a" fill={projectColor} radius={[4, 4, 0, 0]} barSize={20} />
                         </BarChart>
                     </ResponsiveContainer>
@@ -312,16 +410,22 @@ const SprintOverview = ({ data, styles }) => {
                 <div style={dashboardStyles.chartContainer}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={memberData} margin={{ top: 30, right: 10, left: -25, bottom: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={<MemberXAxisTick />} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} />
                             <Tooltip
                                 cursor={false}
-                                contentStyle={{ borderRadius: '8px', fontSize: '12px' }}
+                                contentStyle={{
+                                    backgroundColor: theme === 'dark' ? '#1e293b' : '#fff',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '8px',
+                                    fontSize: '12px',
+                                    color: 'var(--text-primary)'
+                                }}
                             />
                             <Legend verticalAlign="top" align="right" iconSize={8} wrapperStyle={{ top: 0, right: 0, fontSize: '10px' }} />
-                            <Bar dataKey="To Do" stackId="a" fill="#e2e8f0" barSize={20} />
-                            <Bar dataKey="In Progress" stackId="a" fill="#C62828" barSize={20} />
+                            <Bar dataKey="To Do" stackId="a" fill="var(--bg-secondary)" barSize={20} />
+                            <Bar dataKey="In Progress" stackId="a" fill="var(--info-color)" barSize={20} />
                             <Bar dataKey="Done" stackId="a" fill={projectColor} radius={[4, 4, 0, 0]} barSize={20} />
                         </BarChart>
                     </ResponsiveContainer>

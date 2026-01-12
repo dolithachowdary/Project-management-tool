@@ -160,7 +160,7 @@ const styles = {
   pageContainer: {
     display: "flex",
     height: "100vh",
-    background: "#f9f9f9",
+    background: "var(--bg-secondary)",
     overflow: "hidden",
   },
   mainContent: {
@@ -181,7 +181,7 @@ const styles = {
   sectionTitle: {
     fontSize: "18px",
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     marginBottom: "20px",
   },
   cardGrid: {
@@ -201,23 +201,23 @@ const styles = {
     bottom: 24,
     right: 24,
     padding: "14px 18px",
-    background: "#C62828",
+    background: "var(--accent-color)",
     color: "#fff",
     border: "none",
     borderRadius: "999px",
     fontSize: 15,
     fontWeight: 500,
     cursor: "pointer",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+    boxShadow: "var(--shadow-md)",
     zIndex: 1001,
   },
   noData: {
     padding: "40px",
     textAlign: "center",
-    color: "#94a3b8",
-    background: "#fff",
+    color: "var(--text-secondary)",
+    background: "var(--card-bg)",
     borderRadius: "16px",
-    border: "1px dashed #e2e8f0",
+    border: "1px dashed var(--border-color)",
     gridColumn: "1 / -1",
     fontSize: "15px",
   }

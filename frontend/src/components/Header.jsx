@@ -78,20 +78,20 @@ const Header = () => {
   const showFreshNotification = (notif) => {
     toast.custom((t) => (
       <div
-        className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+        className={`${t.visible ? 'animate-enter' : 'animate-leave'}`}
         style={{
-          background: '#fff',
+          background: 'var(--bg-primary)',
           padding: '12px',
           borderRadius: '12px',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          boxShadow: 'var(--shadow-md)',
           display: 'flex',
           gap: '12px',
           alignItems: 'center',
           minWidth: '300px',
-          border: '1px solid #f1f5f9',
+          border: '1px solid var(--border-color)',
           position: 'fixed',
           bottom: '20px',
-          right: '20px',
+          right: '25px',
           zIndex: 9999,
           cursor: 'pointer'
         }}
@@ -102,15 +102,15 @@ const Header = () => {
       >
         <Avatar name={notif.sender_name || "System"} id={notif.sender_id} size={40} />
         <div style={{ flex: 1 }}>
-          <p style={{ margin: 0, fontWeight: '700', fontSize: '14px', color: '#1e293b' }}>{notif.title}</p>
-          <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>{notif.message}</p>
+          <p style={{ margin: 0, fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>{notif.title}</p>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>{notif.message}</p>
         </div>
         <button
           onClick={(e) => {
             e.stopPropagation();
             toast.dismiss(t.id);
           }}
-          style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
         >
           <X size={18} />
         </button>
@@ -252,12 +252,12 @@ const Header = () => {
           onClick={toggleTheme}
           style={{
             ...styles.bellWrapper,
-            backgroundColor: theme === 'dark' ? '#334155' : '#f8fafc',
-            borderColor: theme === 'dark' ? '#475569' : '#f1f5f9'
+            backgroundColor: 'var(--input-bg)',
+            borderColor: 'var(--border-color)'
           }}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
-          {theme === 'light' ? <Moon size={18} color="#64748b" /> : <Sun size={18} color="#f1f5f9" />}
+          {theme === 'light' ? <Moon size={18} color="var(--text-secondary)" /> : <Sun size={18} color="var(--text-primary)" />}
         </div>
 
         <div ref={dropdownRef} style={styles.bellWrapper}>
@@ -315,8 +315,8 @@ const Header = () => {
               <div style={styles.notifList}>
                 {notifications.length === 0 ? (
                   <div style={styles.emptyState}>
-                    <Clock size={40} color="#cbd5e1" style={{ marginBottom: '12px' }} />
-                    <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>No reminders yet</p>
+                    <Clock size={40} color="var(--border-color)" style={{ marginBottom: '12px' }} />
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>No reminders yet</p>
                   </div>
                 ) : (
                   notifications.map(n => (
@@ -325,7 +325,7 @@ const Header = () => {
                       style={{
                         ...styles.notifItem,
                         opacity: n.is_read ? 0.6 : 1,
-                        borderLeft: `4px solid ${n.project_color || (n.type === 'overdue_task' ? '#ef4444' : '#3b82f6')}`
+                        borderLeft: `4px solid ${n.project_color || (n.type === 'overdue_task' ? 'var(--error-color)' : 'var(--info-color)')}`
                       }}
                       onClick={() => handleNotifClick(n)}
                     >
@@ -334,9 +334,9 @@ const Header = () => {
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <p style={styles.notifTitle}>
-                              {n.type === 'overdue_task' && <AlertCircle size={12} style={{ marginRight: 4, color: '#ef4444' }} />}
-                              {n.type === 'sprint_end' && <Clock size={12} style={{ marginRight: 4, color: '#f59e0b' }} />}
-                              {n.type === 'tag' && <CheckCircle2 size={12} style={{ marginRight: 4, color: '#10b981' }} />}
+                              {n.type === 'overdue_task' && <AlertCircle size={12} style={{ marginRight: 4, color: 'var(--error-color)' }} />}
+                              {n.type === 'sprint_end' && <Clock size={12} style={{ marginRight: 4, color: 'var(--warning-color)' }} />}
+                              {n.type === 'tag' && <CheckCircle2 size={12} style={{ marginRight: 4, color: 'var(--success-color)' }} />}
                               {n.title}
                             </p>
                             <span style={styles.notifTime}>{timeAgo(n.created_at)}</span>
@@ -413,7 +413,7 @@ const styles = {
     left: "12px",
     top: "50%",
     transform: "translateY(-50%)",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
   },
   right: {
     display: "flex",
@@ -456,11 +456,11 @@ const styles = {
     position: "absolute",
     top: "2px",
     right: "2px",
-    backgroundColor: "#ef4444",
+    backgroundColor: "var(--error-color)",
     borderRadius: "50%",
     width: "8px",
     height: "8px",
-    border: "2px solid #fff",
+    border: "2px solid var(--card-bg)",
   },
   dropdown: {
     position: "absolute",
@@ -478,23 +478,24 @@ const styles = {
   },
   dropdownHeader: {
     padding: "16px",
-    borderBottom: "1px solid #f1f5f9",
+    borderBottom: "1px solid var(--border-color)",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: "var(--card-bg)",
   },
   clearAllBtn: {
     background: "none",
     border: "none",
-    color: "#C62828",
+    color: "var(--accent-color)",
     fontSize: "12px",
     fontWeight: "600",
     cursor: "pointer",
   },
   pushWrapper: {
     padding: "12px",
-    borderBottom: "1px solid #f1f5f9",
-    backgroundColor: "#f8fafc",
+    borderBottom: "1px solid var(--border-color)",
+    backgroundColor: "var(--bg-secondary)",
     display: "flex",
     gap: "8px",
   },
@@ -502,25 +503,27 @@ const styles = {
     flex: 1,
     padding: "8px 12px",
     borderRadius: "8px",
-    border: "1px solid #e2e8f0",
+    border: "1px solid var(--border-color)",
     fontSize: "13px",
     outline: "none",
     resize: "none",
     height: "40px",
     minWidth: "250px",
+    background: "var(--input-bg)",
+    color: "var(--text-primary)",
   },
   sendBtn: {
     width: "40px",
     height: "40px",
     borderRadius: "8px",
-    backgroundColor: "#c62828",
+    backgroundColor: "var(--accent-color)",
     color: "#fff",
     border: "none",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    transition: "background 0.2s",
+    transition: "opacity 0.2s",
   },
   notifList: {
     flex: 1,
@@ -528,11 +531,11 @@ const styles = {
   },
   notifItem: {
     padding: "12px 16px",
-    borderBottom: "1px solid #f8fafc",
+    borderBottom: "1px solid var(--border-color)",
     cursor: "pointer",
     transition: "background 0.2s",
     "&:hover": {
-      backgroundColor: "#f8fafc",
+      backgroundColor: "var(--hover-bg)",
     }
   },
   notifTitle: {
@@ -545,7 +548,7 @@ const styles = {
   },
   notifTime: {
     fontSize: "11px",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
   },
   notifMsg: {
     margin: "4px 0 0 0",
@@ -558,7 +561,7 @@ const styles = {
     marginTop: "6px",
     fontSize: "11px",
     fontWeight: "600",
-    background: "#f1f5f9",
+    background: "var(--hover-bg)",
     padding: "1px 6px",
     borderRadius: "4px",
   },
@@ -574,10 +577,10 @@ const styles = {
     top: "100%",
     left: 0,
     width: "100%",
-    background: "#fff",
-    border: "1px solid #e2e8f0",
+    background: "var(--card-bg)",
+    border: "1px solid var(--border-color)",
     borderRadius: "8px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    boxShadow: "var(--shadow-md)",
     zIndex: 1000,
     marginTop: "4px",
   },

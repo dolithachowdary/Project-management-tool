@@ -111,7 +111,7 @@ const styles = {
     display: "flex",
     height: "100vh",
     overflow: "hidden",
-    backgroundColor: "#fafafa",
+    backgroundColor: "var(--bg-secondary)",
   },
 
   main: {
@@ -126,13 +126,13 @@ const styles = {
     alignItems: "center",
     gap: 24,
     padding: "0 20px",
-    background: "#fff",
+    background: "var(--card-bg)",
     flexShrink: 0,
   },
 
   tabsDivider: {
     height: "1px",
-    background: "#f1f5f9",
+    background: "var(--border-color)",
     width: "100%",
   },
 
@@ -144,7 +144,7 @@ const styles = {
     background: "none",
     border: "none",
     borderBottom: "2px solid transparent",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
@@ -158,8 +158,8 @@ const styles = {
     padding: "12px 0",
     background: "none",
     border: "none",
-    borderBottom: "2.5px solid #C62828",
-    color: "#C62828",
+    borderBottom: "2.5px solid var(--accent-color)",
+    color: "var(--accent-color)",
     fontSize: "14px",
     fontWeight: "700",
     cursor: "pointer",
@@ -167,11 +167,11 @@ const styles = {
   welcome: {
     marginLeft: "auto",
     fontSize: 14,
-    color: "#64748b",
+    color: "var(--text-secondary)",
   },
   name: {
     fontWeight: 500,
-    color: "black",
+    color: "var(--text-primary)",
   },
 
   scrollArea: {

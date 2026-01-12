@@ -11,21 +11,21 @@ const ROW_GAP = 30;
 
 /* -------------------- Pastel palette -------------------- */
 const flowBg = {
-    project: 'rgba(79,125,255,0.08)',
-    module: 'rgba(139,92,246,0.08)',
-    sprint: 'rgba(236,72,153,0.08)',
-    goal: 'rgba(16,185,129,0.08)',
-    task: 'rgba(249,115,22,0.08)',
-    person: 'rgba(168, 85, 247, 0.1)',
+    project: 'var(--info-bg)',
+    module: 'var(--purple-bg)',
+    sprint: 'var(--error-bg)',
+    goal: 'var(--success-bg)',
+    task: 'var(--warning-bg)',
+    person: 'var(--purple-bg)',
 };
 
 const flowBorder = {
-    project: '#4F7DFF',
-    module: '#8b5cf6',
-    sprint: '#ec4899',
-    goal: '#10b981',
-    task: '#f97316',
-    person: '#a855f7',
+    project: 'var(--info-color)',
+    module: 'var(--purple-color)',
+    sprint: 'var(--error-color)',
+    goal: 'var(--success-color)',
+    task: 'var(--warning-color)',
+    person: 'var(--purple-color)',
 };
 
 /* -------------------- Data Helper -------------------- */
@@ -334,9 +334,9 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
                                         <path
                                             key={i}
                                             d={`M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`}
-                                            stroke={flowBorder[p.to.type]}
-                                            strokeWidth="2.5"
-                                            strokeOpacity={toIsPerson ? "0.4" : "0.2"}
+                                            stroke={flowBorder[p.to.type].startsWith('var') ? flowBorder[p.to.type] : flowBorder[p.to.type]}
+                                            strokeWidth="2"
+                                            strokeOpacity="0.3"
                                             fill="none"
                                         />
                                     );
@@ -354,9 +354,9 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
                                         <div
                                             style={{
                                                 ...styles.node,
-                                                background: n.type === 'person' ? 'rgba(250, 245, 255, 0.95)' : flowBg[n.type],
+                                                background: n.type === 'person' ? 'var(--bg-secondary)' : flowBg[n.type],
                                                 backdropFilter: n.type === 'person' ? 'blur(4px)' : 'none',
-                                                border: `2px solid ${flowBorder[n.type]}55`,
+                                                border: `1.5px solid ${flowBorder[n.type]}`,
                                                 ...(n.type === 'person' ? {
                                                     width: 60,
                                                     height: 60,
@@ -379,7 +379,7 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
                                                     width: 8,
                                                     height: 8,
                                                     background: flowBorder[n.type],
-                                                    border: '1.5px solid #fff',
+                                                    border: '1.5px solid var(--card-bg)',
                                                     zIndex: 10
                                                 }} />
                                             )}
@@ -406,7 +406,7 @@ const FlowGraph = ({ type = 'project', data, onClose }) => {
                                                     width: 220,
                                                     pointerEvents: 'none'
                                                 }}>
-                                                    <div style={{ ...styles.nodeName, fontSize: 15, fontWeight: 800, color: '#000', marginBottom: 2 }}>{n.name}</div>
+                                                    <div style={{ ...styles.nodeName, fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 2 }}>{n.name}</div>
                                                     <div style={{ ...styles.nodeType, fontSize: 10, color: flowBorder[n.type], fontWeight: 900, letterSpacing: '0.1em' }}>DEVELOPER</div>
                                                 </div>
                                             ) : (
@@ -432,7 +432,7 @@ const styles = {
     overlay: {
         position: 'fixed',
         inset: 0,
-        background: 'rgba(15,23,42,0.4)',
+        background: 'var(--modal-overlay)',
         backdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
@@ -440,19 +440,20 @@ const styles = {
         zIndex: 1000
     },
     modal: {
-        background: '#fff',
+        background: 'var(--card-bg)',
         width: '90vw',
         height: '85vh',
         borderRadius: 32,
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)',
-        overflow: 'hidden'
+        boxShadow: 'var(--shadow-lg)',
+        overflow: 'hidden',
+        border: '1px solid var(--border-color)',
     },
     header: {
         height: 72,
         padding: '0 32px',
-        borderBottom: '1px solid #f1f5f9',
+        borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
@@ -463,19 +464,21 @@ const styles = {
         gap: 12,
         fontSize: 18,
         fontWeight: 700,
-        color: '#0f172a'
+        color: 'var(--text-primary)'
     },
     close: {
-        background: '#f1f5f9',
+        background: 'var(--bg-secondary)',
         border: 'none',
         padding: 8,
         borderRadius: 10,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        color: 'var(--text-primary)',
     },
     graphBody: {
         flex: 1,
         overflow: 'hidden',
-        background: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
+        background: 'var(--bg-primary)',
+        backgroundImage: 'radial-gradient(var(--border-color) 1px, transparent 1px)',
         backgroundSize: '28px 28px'
     },
     canvas: {
@@ -493,7 +496,7 @@ const styles = {
         gap: 12,
         alignItems: 'center',
         backdropFilter: 'blur(10px)',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+        boxShadow: 'var(--shadow-sm)',
         overflow: 'hidden',
         boxSizing: 'border-box'
     },
@@ -509,7 +512,7 @@ const styles = {
     nodeType: {
         fontSize: 9,
         fontWeight: 800,
-        color: '#64748b',
+        color: 'var(--text-secondary)',
         opacity: 0.7,
         letterSpacing: '0.08em',
         marginBottom: 2
@@ -517,7 +520,7 @@ const styles = {
     nodeName: {
         fontSize: 13,
         fontWeight: 600,
-        color: '#0f172a',
+        color: 'var(--text-primary)',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis'

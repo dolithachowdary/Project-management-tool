@@ -148,8 +148,8 @@ export default function Timesheets() {
                           style={{
                             ...styles.projectCard,
                             borderLeft: `4px solid ${p.color || "#4F7DFF"}`,
-                            background: activeProjectId === p.id ? "#fff" : "transparent",
-                            boxShadow: activeProjectId === p.id ? "0 4px 12px rgba(0,0,0,0.05)" : "none",
+                            background: activeProjectId === p.id ? "var(--card-bg)" : "transparent",
+                            boxShadow: activeProjectId === p.id ? "var(--shadow-sm)" : "none",
                           }}
                         >
                           <h3 style={styles.projName}>{p.name}</h3>
@@ -234,7 +234,7 @@ const styles = {
   page: {
     display: "flex",
     height: "100vh",
-    background: "#f8fafc",
+    background: "var(--bg-secondary)",
   },
   main: {
     flex: 1,
@@ -258,18 +258,18 @@ const styles = {
   pageTitle: {
     fontSize: 28,
     fontWeight: 800,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     margin: 0,
   },
   pageSub: {
     fontSize: 15,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     margin: 0,
     marginTop: 4,
   },
   tabGroup: {
     display: "flex",
-    background: "#f1f5f9",
+    background: "var(--bg-primary)",
     padding: "4px",
     borderRadius: "12px",
     gap: 4,
@@ -284,14 +284,14 @@ const styles = {
     background: "transparent",
     fontSize: 14,
     fontWeight: 600,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     cursor: "pointer",
     transition: "all 0.2s",
   },
   activeTab: {
-    background: "#fff",
-    color: "#1e293b",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+    background: "var(--card-bg)",
+    color: "var(--text-primary)",
+    boxShadow: "var(--shadow-sm)",
   },
   body: {
     flex: 1,
@@ -312,10 +312,10 @@ const styles = {
     overflowY: "auto",
   },
   rightPane: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: "16px",
     padding: "24px",
-    border: "1px solid #e2e8f0",
+    border: "1px solid var(--border-color)",
     overflowY: "auto",
   },
   projectList: {
@@ -332,12 +332,12 @@ const styles = {
   projName: {
     fontSize: 15,
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     margin: 0,
   },
   projCode: {
     fontSize: 12,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     margin: 0,
     marginTop: 4,
   },
@@ -345,7 +345,7 @@ const styles = {
     marginBottom: "20px",
     background: "none",
     border: "none",
-    color: "#4F7DFF",
+    color: "var(--accent-color)",
     fontWeight: 600,
     cursor: "pointer",
     fontSize: 14,
@@ -360,15 +360,15 @@ const styles = {
     gap: 20,
   },
   historyCard: {
-    background: "#fff",
+    background: "var(--card-bg)",
     padding: "20px",
     borderRadius: "16px",
-    border: "1px solid #e2e8f0",
+    border: "1px solid var(--border-color)",
     cursor: "pointer",
     transition: "transform 0.2s, box-shadow 0.2s",
     "&:hover": {
       transform: "translateY(-4px)",
-      boxShadow: "0 12px 20px -8px rgba(0,0,0,0.1)",
+      boxShadow: "var(--shadow-md)",
     }
   },
   historyCardHeader: {
@@ -379,27 +379,27 @@ const styles = {
   historyProj: {
     fontSize: 12,
     fontWeight: 700,
-    color: "#4F7DFF",
+    color: "var(--accent-color)",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
   },
   historyStatus: {
     fontSize: 10,
     fontWeight: 800,
-    background: "#f1f5f9",
+    background: "var(--bg-secondary)",
     padding: "2px 8px",
     borderRadius: "4px",
-    color: "#64748b",
+    color: "var(--text-secondary)",
   },
   historyEmp: {
     fontSize: 17,
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     marginBottom: 4,
   },
   historyDates: {
     fontSize: 13,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     marginBottom: 16,
   },
   historyFooter: {
@@ -407,16 +407,16 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     paddingTop: 12,
-    borderTop: "1px solid #f1f5f9",
+    borderTop: "1px solid var(--border-color)",
     fontSize: 13,
-    color: "#475569",
+    color: "var(--text-secondary)",
   },
   empty: {
     height: "200px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontSize: 16,
     width: "100%",
   }

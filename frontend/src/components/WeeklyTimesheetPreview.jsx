@@ -457,21 +457,21 @@ const styles = {
     actionBtn: {
         padding: "8px 16px",
         borderRadius: 8,
-        border: "1px solid #e2e8f0",
-        background: "#fff",
+        border: "1px solid var(--border-color)",
+        background: "var(--card-bg)",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
         gap: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: "#64748b",
+        color: "var(--text-secondary)",
     },
     saveBtn: {
         padding: "8px 16px",
         borderRadius: 8,
         border: "none",
-        background: "#6A4C9C",
+        background: "var(--accent-color)",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
@@ -481,12 +481,13 @@ const styles = {
         color: "#fff",
     },
     sheet: {
-        background: "#fff",
+        background: "var(--card-bg)",
         padding: "40px",
-        borderRadius: 8,
-        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+        borderRadius: 12,
+        boxShadow: "var(--shadow-md)",
         minWidth: "1100px",
         fontFamily: "'Inter', sans-serif",
+        border: "1px solid var(--border-color)",
     },
     logoRow: {
         marginBottom: 30,
@@ -500,7 +501,7 @@ const styles = {
     templateTitle: {
         fontSize: 24,
         fontWeight: 700,
-        color: "#1e293b",
+        color: "var(--text-primary)",
         marginBottom: 20,
     },
     metaRowInfo: {
@@ -516,12 +517,12 @@ const styles = {
     },
     metaLabel: {
         fontWeight: 700,
-        color: "#475569",
+        color: "var(--text-secondary)",
         minWidth: "80px",
     },
     metaVal: {
-        color: "#1e293b",
-        borderBottom: "1px solid #cbd5e1",
+        color: "var(--text-primary)",
+        borderBottom: "1px solid var(--border-color)",
         minWidth: "150px",
         paddingBottom: "2px",
     },
@@ -542,9 +543,10 @@ const styles = {
     },
     td: {
         padding: "0",
-        border: "1px solid #cbd5e1",
+        border: "1px solid var(--border-color)",
         textAlign: "center",
         fontSize: 14,
+        color: "var(--text-primary)",
     },
     tableInput: {
         width: "100%",
@@ -554,25 +556,26 @@ const styles = {
         fontSize: "13px",
         outline: "none",
         textAlign: "center",
-        color: "#1e293b",
+        color: "var(--text-primary)",
     },
     totalRow: {
-        background: "#f1f5f9",
+        background: "var(--bg-secondary)",
     },
     totalLabel: {
         padding: "12px",
         textAlign: "right",
         fontWeight: 700,
         fontSize: 13,
-        color: "#1e293b",
-        border: "1px solid #cbd5e1",
+        color: "var(--text-primary)",
+        border: "1px solid var(--border-color)",
     },
     totalVal: {
         padding: "12px 4px",
         fontWeight: 700,
         fontSize: 14,
-        border: "1px solid #cbd5e1",
+        border: "1px solid var(--border-color)",
         textAlign: "center",
+        color: "var(--text-primary)",
     },
     signatureGrid: {
         marginTop: 50,
@@ -594,11 +597,11 @@ const styles = {
         fontSize: 12,
         fontWeight: 700,
         width: 180,
-        color: "#475569",
+        color: "var(--text-secondary)",
     },
     sigUnderline: {
         flex: 1,
-        borderBottom: "1px solid #000",
+        borderBottom: "1px solid var(--text-primary)",
         height: 24,
     },
     dateBlockSig: {
@@ -615,20 +618,20 @@ const styles = {
     sigLabelSmall: {
         fontSize: 11,
         fontWeight: 700,
-        color: "#64748b",
+        color: "var(--text-secondary)",
     },
     sigUnderlineSmall: {
         flex: 1,
-        borderBottom: "1px solid #000",
+        borderBottom: "1px solid var(--text-primary)",
         height: 24,
     },
     footer: {
         marginTop: 60,
         textAlign: "center",
         fontSize: 11,
-        color: "#94a3b8",
+        color: "var(--text-secondary)",
         paddingTop: 20,
-        borderTop: "1px solid #f1f5f9",
+        borderTop: "1px solid var(--border-color)",
     },
     deleteBtn: {
         background: "none",
@@ -643,7 +646,7 @@ const styles = {
         transition: "background 0.2s",
     },
     addBtnRow: {
-        background: "#6A4C9C",
+        background: "var(--accent-color)",
         border: "none",
         color: "#fff",
         cursor: "pointer",
@@ -654,7 +657,7 @@ const styles = {
         height: "28px",
         borderRadius: "50%",
         fontSize: "12px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        boxShadow: "var(--shadow-sm)",
         transition: "all 0.2s",
     }
 };

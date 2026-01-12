@@ -212,7 +212,7 @@ function Analytics() {
                             <div style={styles.topGrid}>
                                 <div style={styles.chartCardLarge}>
                                     <div style={styles.chartHeader}>
-                                        <BarChart3 size={20} color="#c53030" />
+                                        <BarChart3 size={20} color="var(--accent-color)" />
                                         <h3 style={styles.chartTitle}>Workload Balance</h3>
                                     </div>
                                     <p style={styles.chartSubtitle}>Tasks assigned vs. completed per member.</p>
@@ -223,7 +223,7 @@ function Analytics() {
 
                                 <div style={styles.chartCardSmall}>
                                     <div style={styles.chartHeader}>
-                                        <Activity size={20} color="#c53030" />
+                                        <Activity size={20} color="var(--accent-color)" />
                                         <h3 style={styles.chartTitle}>Priority Distribution</h3>
                                     </div>
                                     <p style={styles.chartSubtitle}>Total breakdown of task priorities.</p>
@@ -234,7 +234,7 @@ function Analytics() {
 
                                 <div style={styles.chartCardSmall}>
                                     <div style={styles.chartHeader}>
-                                        <PieChart size={20} color="#c53030" />
+                                        <PieChart size={20} color="var(--accent-color)" />
                                         <h3 style={styles.chartTitle}>Project Distribution</h3>
                                     </div>
                                     <p style={styles.chartSubtitle}>Active projects task load.</p>
@@ -247,7 +247,7 @@ function Analytics() {
                             <div style={styles.bottomGrid}>
                                 <div style={styles.chartCardFull}>
                                     <div style={styles.chartHeader}>
-                                        <Activity size={20} color="#c53030" />
+                                        <Activity size={20} color="var(--accent-color)" />
                                         <h3 style={styles.chartTitle}>Time Efficiency</h3>
                                     </div>
                                     <p style={styles.chartSubtitle}>Estimated vs. Actual hours per member.</p>
@@ -258,7 +258,7 @@ function Analytics() {
 
                                 <div style={styles.chartCardFull}>
                                     <div style={styles.chartHeader}>
-                                        <Activity size={20} color="#c53030" />
+                                        <Activity size={20} color="var(--accent-color)" />
                                         <h3 style={styles.chartTitle}>Member Task Status</h3>
                                     </div>
                                     <p style={styles.chartSubtitle}>Status breakdown of current tasks per member.</p>
@@ -282,7 +282,7 @@ const styles = {
         display: "flex",
         height: "100vh",
         overflow: "hidden",
-        backgroundColor: "#fafafa",
+        backgroundColor: "var(--bg-secondary)",
     },
     main: {
         flex: 1,
@@ -292,18 +292,18 @@ const styles = {
     },
     contentHeader: {
         padding: "20px 24px",
-        background: "#fff",
-        borderBottom: "1px solid #f1f5f9",
+        background: "var(--card-bg)",
+        borderBottom: "1px solid var(--border-color)",
     },
     title: {
         fontSize: "24px",
         fontWeight: "700",
-        color: "#1e293b",
+        color: "var(--text-primary)",
         margin: 0,
     },
     subtitle: {
         fontSize: "14px",
-        color: "#64748b",
+        color: "var(--text-secondary)",
         marginTop: "4px",
         margin: 0,
     },
@@ -316,7 +316,7 @@ const styles = {
         display: "flex",
         gap: "32px",
         padding: "0 24px",
-        background: "#fff",
+        background: "var(--header-bg)",
         marginTop: "12px"
     },
     tab: {
@@ -328,7 +328,7 @@ const styles = {
         border: "none",
         fontSize: "15px",
         fontWeight: "600",
-        color: "#64748b",
+        color: "var(--text-secondary)",
         cursor: "pointer",
         borderBottom: "2px solid transparent",
         transition: "all 0.2s"
@@ -342,13 +342,13 @@ const styles = {
         border: "none",
         fontSize: "15px",
         fontWeight: "700",
-        color: "#c53030", // Consistent with the orange/red in the image
+        color: "var(--accent-color)", // Consistent with the orange/red in the image
         cursor: "pointer",
-        borderBottom: "2px solid #c53030",
+        borderBottom: "2px solid var(--accent-color)",
     },
     tabsDivider: {
         height: "1px",
-        background: "#f1f5f9",
+        background: "var(--border-color)",
         width: "100%"
     },
     overviewSection: {
@@ -367,29 +367,29 @@ const styles = {
         gap: "24px",
     },
     chartCardLarge: {
-        background: "#fff",
+        background: "var(--card-bg)",
         borderRadius: "20px",
-        border: "1px solid #f1f5f9",
+        border: "1px solid var(--border-color)",
         padding: "16px",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        boxShadow: "var(--shadow-sm)",
         display: "flex",
         flexDirection: "column",
     },
     chartCardSmall: {
-        background: "#fff",
+        background: "var(--card-bg)",
         borderRadius: "20px",
-        border: "1px solid #f1f5f9",
+        border: "1px solid var(--border-color)",
         padding: "12px",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        boxShadow: "var(--shadow-sm)",
         display: "flex",
         flexDirection: "column",
     },
     chartCardFull: {
-        background: "#fff",
+        background: "var(--card-bg)",
         borderRadius: "20px",
-        border: "1px solid #f1f5f9",
+        border: "1px solid var(--border-color)",
         padding: "16px",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        boxShadow: "var(--shadow-sm)",
         display: "flex",
         flexDirection: "column",
     },
@@ -402,12 +402,12 @@ const styles = {
     chartTitle: {
         fontSize: "18px",
         fontWeight: "700",
-        color: "#1e293b",
+        color: "var(--text-primary)",
         margin: 0
     },
     chartSubtitle: {
         fontSize: "13px",
-        color: "#64748b",
+        color: "var(--text-secondary)",
         marginBottom: "24px",
         margin: 0
     },
@@ -419,13 +419,13 @@ const styles = {
     placeholderCard: {
         height: "100%",
         minHeight: "300px",
-        background: "#f8fafc",
-        border: "1px dashed #cbd5e1",
+        background: "var(--bg-secondary)",
+        border: "1px dashed var(--border-color)",
         borderRadius: "12px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "#94a3b8",
+        color: "var(--text-secondary)",
         fontSize: "14px",
         fontWeight: "500"
     }

@@ -59,34 +59,35 @@ export default function TaskBoardView({
     colTitle: {
       fontSize: 13,
       fontWeight: 700,
-      color: "#475569",
+      color: "var(--text-secondary)",
       margin: 0,
       textTransform: "uppercase",
       letterSpacing: "0.5px"
     },
     colCount: {
-      background: "#f1f5f9",
-      color: "#64748b",
+      background: "var(--bg-secondary)",
+      color: "var(--text-secondary)",
       padding: "1px 6px",
       borderRadius: "999px",
       fontSize: 10,
-      fontWeight: 700
+      fontWeight: 700,
+      border: "1px solid var(--border-color)"
     },
     card: {
-      background: "#fff",
+      background: "var(--card-bg)",
       borderRadius: 14,
       padding: "10px",
       marginBottom: 12,
-      border: "1px solid #f1f5f9",
+      border: "1px solid var(--border-color)",
       cursor: "grab",
       transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
       position: "relative",
-      boxShadow: "0 2px 4px -1px rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04)"
+      boxShadow: "var(--shadow-sm)"
     },
     taskName: {
       fontSize: 13,
       fontWeight: 700,
-      color: "#1e293b",
+      color: "var(--text-primary)",
       marginBottom: 6,
       lineHeight: 1.4
     },
@@ -94,7 +95,7 @@ export default function TaskBoardView({
       fontSize: 12,
       fontWeight: 600,
       marginBottom: 12,
-      color: "#64748b"
+      color: "var(--text-secondary)"
     },
     projectPill: {
       display: "inline-block",
@@ -109,7 +110,7 @@ export default function TaskBoardView({
     dateRow: {
       fontSize: 11,
       fontWeight: 600,
-      color: "#94a3b8",
+      color: "var(--text-secondary)",
       marginBottom: 16,
       display: "flex",
       alignItems: "center",
@@ -119,8 +120,8 @@ export default function TaskBoardView({
       fontSize: "10px",
       padding: "3px 8px",
       borderRadius: "6px",
-      backgroundColor: "#f1f5f9",
-      color: "#64748b",
+      backgroundColor: "var(--bg-secondary)",
+      color: "var(--text-secondary)",
       fontWeight: "700",
       textTransform: "uppercase",
       letterSpacing: "0.3px",
@@ -136,17 +137,17 @@ export default function TaskBoardView({
     taskSerial: {
       fontSize: 10,
       fontWeight: 700,
-      color: "#94a3b8",
+      color: "var(--text-secondary)",
       textTransform: "uppercase",
       letterSpacing: "0.5px"
     },
     empty: {
       padding: "40px 20px",
       textAlign: "center",
-      color: "#cbd5e1",
+      color: "var(--text-secondary)",
       fontSize: 13,
       fontWeight: 500,
-      border: "2px dashed #f1f5f9",
+      border: "2px dashed var(--border-color)",
       borderRadius: 16
     }
   };
@@ -175,7 +176,7 @@ export default function TaskBoardView({
                       maxHeight: "680px",
                       overflowY: "auto",
                       paddingRight: "4px",
-                      backgroundColor: snapshot.isDraggingOver ? "rgba(241, 245, 249, 0.5)" : "transparent",
+                      backgroundColor: snapshot.isDraggingOver ? "rgba(var(--bg-secondary-rgb), 0.5)" : "transparent",
                       borderRadius: 12,
                       transition: "background-color 0.2s",
                       msOverflowStyle: "none",
@@ -189,7 +190,6 @@ export default function TaskBoardView({
                       <div style={styles.empty}>No tasks in this column</div>
                     ) : (
                       colTasks.map((t, idx) => {
-                        // sStyle and displaySerial were unused
 
                         return (
                           <Draggable key={t.id} draggableId={String(t.id)} index={idx}>
@@ -203,7 +203,7 @@ export default function TaskBoardView({
                                   ...provided.draggableProps.style,
                                   opacity: snapshot.isDragging ? 0.9 : 1,
                                   boxShadow: snapshot.isDragging
-                                    ? "0 20px 25px -5px rgba(0,0,0,0.1)"
+                                    ? "var(--shadow-md)"
                                     : styles.card.boxShadow
                                 }}
                                 onClick={() => canEdit(t) && onEdit && onEdit(t)}
