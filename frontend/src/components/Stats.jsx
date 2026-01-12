@@ -40,7 +40,7 @@ const Stats = ({ data }) => {
 
           {/* RIGHT */}
           <div style={styles.right}>
-            <Sparkline data={s.graph || [0, 0, 0, 0, 0, 0, 0]} color={s.color} />
+            {/* <Sparkline data={s.graph || [0, 0, 0, 0, 0, 0, 0]} color={s.color} /> */}
 
             <div style={{ ...styles.percent, color: s.color }}>
               {s.percent} {s.trend === "up" ? "▲" : "▼"}
@@ -56,56 +56,56 @@ export default Stats;
 
 /* ---------------- SPARKLINE WITH GRADIENT ---------------- */
 
-const Sparkline = ({ data, color }) => {
-  if (!data || data.length === 0) return null;
+// const Sparkline = ({ data, color }) => {
+//   if (!data || data.length === 0) return null;
 
-  const max = Math.max(...data, 1);
-  const min = Math.min(...data, 0);
+//   const max = Math.max(...data, 1);
+//   const min = Math.min(...data, 0);
 
-  const points = data.map((d, i) => {
-    const x = (i / (data.length - 1 || 1)) * 80;
-    const y = 30 - ((d - min) / (max - min || 1)) * 24;
-    return { x, y };
-  });
+//   const points = data.map((d, i) => {
+//     const x = (i / (data.length - 1 || 1)) * 80;
+//     const y = 30 - ((d - min) / (max - min || 1)) * 24;
+//     return { x, y };
+//   });
 
-  const linePath = points
-    .map(p => `${p.x},${p.y}`)
-    .join(" ");
+//   const linePath = points
+//     .map(p => `${p.x},${p.y}`)
+//     .join(" ");
 
-  const areaPath = `
-    M ${points[0].x},30
-    L ${linePath.replace(/,/g, " ")}
-    L ${points[points.length - 1].x},30
-    Z
-  `;
+//   const areaPath = `
+//     M ${points[0].x},30
+//     L ${linePath.replace(/,/g, " ")}
+//     L ${points[points.length - 1].x},30
+//     Z
+//   `;
 
-  return (
-    <svg width="90" height="40">
-      <defs>
-        <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
+//   return (
+//     <svg width="90" height="40">
+//       <defs>
+//         <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
+//           <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+//           <stop offset="100%" stopColor={color} stopOpacity="0" />
+//         </linearGradient>
+//       </defs>
 
-      {/* AREA */}
-      <path
-        d={areaPath}
-        fill={`url(#grad-${color})`}
-      />
+//       {/* AREA */}
+//       <path
+//         d={areaPath}
+//         fill={`url(#grad-${color})`}
+//       />
 
-      {/* LINE */}
-      <polyline
-        points={linePath}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
+//       {/* LINE */}
+//       <polyline
+//         points={linePath}
+//         fill="none"
+//         stroke={color}
+//         strokeWidth="2"
+//         strokeLinecap="round"
+//         strokeLinejoin="round"
+//       />
+//     </svg>
+//   );
+// };
 
 /* ---------------- STYLES ---------------- */
 
