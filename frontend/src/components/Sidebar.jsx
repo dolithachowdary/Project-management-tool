@@ -1,6 +1,6 @@
-import React from "react";
 import { StickyNote, LogOut, Logs } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 
 import DashboardIcon from "../assets/icons/dashboard.svg";
 import ProjectsIcon from "../assets/icons/projects.svg";
@@ -11,6 +11,7 @@ import analyticsIcon from "../assets/icons/analytics.svg";
 import reportsicon from "../assets/icons/reports.svg";
 
 const Sidebar = () => {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -52,7 +53,12 @@ const Sidebar = () => {
       {/* TOP */}
       <div>
         <div style={styles.logoContainer}>
-          <img src={process.env.PUBLIC_URL + "/light-redsage.png"} alt="Logo" style={styles.logo} onError={(e) => { e.target.src = process.env.PUBLIC_URL + "/redsage.png"; }} />
+          <img
+            src={theme === 'dark' ? (process.env.PUBLIC_URL + "/dark-redsage1.png") : (process.env.PUBLIC_URL + "/light-redsage.png")}
+            alt="Logo"
+            style={styles.logo}
+            onError={(e) => { e.target.src = process.env.PUBLIC_URL + "/redsage.png"; }}
+          />
         </div>
 
         <nav style={styles.nav}>
@@ -77,7 +83,7 @@ const Sidebar = () => {
                       opacity: 0.85,
                       filter: isActive
                         ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
-                        : "invert(0%) brightness(0%)",
+                        : theme === 'dark' ? "invert(100%) brightness(100%)" : "invert(0%) brightness(0%)",
                     }}
                   />
                 ) : (
@@ -88,7 +94,7 @@ const Sidebar = () => {
                       ...styles.icon,
                       filter: isActive
                         ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
-                        : "invert(0%) brightness(0%)",
+                        : theme === 'dark' ? "invert(100%) brightness(100%)" : "invert(0%) brightness(0%)",
                     }}
                   />
                 )}
@@ -115,7 +121,7 @@ const Sidebar = () => {
               opacity: 0.85,
               filter: isNotesActive
                 ? "invert(28%) sepia(98%) saturate(2492%) hue-rotate(345deg) brightness(90%) contrast(95%)"
-                : "invert(0%) brightness(0%)",
+                : theme === 'dark' ? "invert(100%) brightness(100%)" : "invert(0%) brightness(0%)",
             }}
           />
           Notes
@@ -135,18 +141,18 @@ const styles = {
     width: "230px",
     height: "100vh",
     overflow: "hidden",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--sidebar-bg)",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
-    borderRight: "1px solid #e0e0e0",
+    borderRight: "1px solid var(--border-color)",
     flexShrink: 0,
   },
 
   logoContainer: {
     textAlign: "center",
     padding: "20px 0",
-    borderBottom: "1px solid rgba(0,0,0,0.1)",
+    borderBottom: "1px solid var(--border-color)",
   },
 
   logo: {
@@ -170,10 +176,11 @@ const styles = {
     fontSize: "18px",
     textAlign: "left",
     fontFamily: "'Poppins', sans-serif",
+    color: "var(--text-primary)",
   },
 
   activeButton: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "var(--hover-bg)",
     borderLeft: "4px solid #c71b1b",
     fontWeight: "600",
   },
@@ -201,6 +208,7 @@ const styles = {
     fontSize: "18px", // Match menuButton size
     textAlign: "left",
     fontFamily: "'Poppins', sans-serif",
+    color: "var(--text-primary)",
     // marginTop: "5px", // Optional spacing
   },
 };

@@ -35,7 +35,7 @@ const Card = ({
       {/* PROGRESS */}
       <div style={styles.labelRow}>
         <span style={styles.label}>Progress</span>
-        <strong style={{ color: "#1e293b" }}>{progress}%</strong>
+        <strong style={{ color: "var(--text-primary)" }}>{progress}%</strong>
       </div>
 
       <div style={styles.progressBar}>
@@ -71,11 +71,11 @@ export default Card;
 
 const styles = {
   card: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 20,
     padding: 20,
-    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)",
-    border: "1px solid #f1f5f9",
+    boxShadow: "var(--shadow-sm)",
+    border: "1px solid var(--border-color)",
     position: "relative",
     display: "flex",
     flexDirection: "column",
@@ -93,7 +93,7 @@ const styles = {
   title: {
     fontSize: 14,
     fontWeight: 600,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     margin: 0,
     flex: 1,
   },
@@ -107,7 +107,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     transition: "background 0.2s",
-    "&:hover": { background: "#f1f5f9" }
+    "&:hover": { background: "var(--hover-bg)" }
   },
   labelRow: {
     display: "flex",
@@ -116,11 +116,11 @@ const styles = {
     fontSize: 13,
   },
   label: {
-    color: "#64748b",
+    color: "var(--text-secondary)",
   },
   progressBar: {
     height: 8,
-    background: "#f1f5f9",
+    background: "var(--border-color)",
     borderRadius: 10,
     overflow: "hidden",
   },
@@ -131,7 +131,7 @@ const styles = {
   },
   metaRow: {
     fontSize: 12,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     marginBottom: 8,
   },
   footer: {

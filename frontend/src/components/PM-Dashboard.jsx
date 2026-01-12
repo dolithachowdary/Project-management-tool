@@ -299,13 +299,13 @@ const styles = {
     height: 380, // Standard fixed height
   },
   graphWrapper: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 16,
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     padding: "20px 24px",
     display: "flex",
     flexDirection: "column",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    boxShadow: "var(--shadow-sm)",
     minHeight: 0,
     overflow: "hidden", // Added to ensure no leakage
   },
@@ -328,7 +328,7 @@ const styles = {
   sectionTitle: {
     fontSize: 16,
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     margin: 0,
     fontFamily: "'Poppins', sans-serif",
   },
@@ -359,10 +359,10 @@ const styles = {
   empty: {
     padding: 40,
     textAlign: "center",
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 12,
-    border: "1px dashed #e2e8f0",
-    color: "#94a3b8",
+    border: "1px dashed var(--border-color)",
+    color: "var(--text-secondary)",
     gridColumn: "1 / -1",
   },
   modalOverlay: {

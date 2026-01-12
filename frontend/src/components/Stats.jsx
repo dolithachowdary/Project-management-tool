@@ -113,20 +113,20 @@ const styles = {
   row: {
     display: "flex",
     gap: 12,
-    
+
     flexWrap: "wrap"
   },
 
   card: {
     flex: "1 1 200px",
-    background: "#ffffff",
+    background: "var(--card-bg)",
     borderRadius: 16,
     padding: "20px 24px",
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)",
+    boxShadow: "var(--shadow-sm)",
   },
 
   title: {
@@ -139,7 +139,7 @@ const styles = {
   value: {
     fontSize: 32,
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
   },
 
   right: {

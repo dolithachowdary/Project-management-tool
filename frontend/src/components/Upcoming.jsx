@@ -63,20 +63,20 @@ export default function Upcoming({ tasks = [], onTaskClick }) {
 
 const styles = {
   card: {
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     borderRadius: 16,
     padding: 16, // Reduced from 20
-    background: "#fff",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    background: "var(--card-bg)",
+    boxShadow: "var(--shadow-sm)",
   },
   headerRow: {
     display: "flex",
     justifyContent: "space-between",
     marginBottom: 12, // Reduced from 20
-    borderBottom: "1px solid #f8fafc",
+    borderBottom: "1px solid var(--border-color)",
     paddingBottom: 8, // Reduced from 12
   },
-  title: { fontWeight: 700, fontSize: 16, color: "#1e293b" }, // Smaller title
+  title: { fontWeight: 700, fontSize: 16, color: "var(--text-primary)" }, // Smaller title
   list: {
     maxHeight: 330,
     overflowY: "auto",
@@ -92,7 +92,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#fff",
+    background: "var(--card-bg)",
     zIndex: 2,
   },
   dot: {
@@ -103,14 +103,14 @@ const styles = {
   line: {
     width: 2,
     flex: 1,
-    background: "#f1f5f9",
+    background: "var(--border-color)",
     marginTop: 4,
     marginBottom: -24,
   },
   rightCol: { flex: 1, marginLeft: 12 },
-  itemTitle: { fontSize: 13, fontWeight: 600, color: "#334155", marginBottom: 6 },
+  itemTitle: { fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 },
   meta: { display: "flex", gap: 12, marginBottom: 8 },
-  timeRow: { display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#64748b" },
+  timeRow: { display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--text-secondary)" },
   projectBadge: {
     display: "inline-block",
     fontSize: 10,

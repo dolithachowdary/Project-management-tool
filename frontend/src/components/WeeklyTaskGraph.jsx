@@ -30,8 +30,8 @@ export default function WeeklyTaskGraph({ data = [] }) {
           }}
         >
           <strong>{tooltip.day}</strong>
-          <div style={{ color: '#64748b' }}>Total: {tooltip.today}</div>
-          <div style={{ color: '#c62828' }}>Done: {tooltip.completed}</div>
+          <div style={{ color: 'var(--text-secondary)' }}>Total: {tooltip.today}</div>
+          <div style={{ color: 'var(--accent-color)' }}>Done: {tooltip.completed}</div>
         </div>
       )}
 
@@ -126,7 +126,7 @@ const styles = {
   },
   legendLabel: {
     fontSize: 12,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontWeight: 500,
   },
   dot: {
@@ -141,29 +141,30 @@ const styles = {
   dayLabel: {
     fontSize: 12,
     fontWeight: 500,
-    fill: "#94a3b8",
+    fill: "var(--text-secondary)",
   },
   tooltip: {
     position: "fixed",
-    background: "#fff",
-    border: "1px solid #f1f5f9",
+    background: "var(--card-bg)",
+    border: "1px solid var(--border-color)",
     borderRadius: 8,
     padding: "8px 12px",
     fontSize: 12,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    boxShadow: "var(--shadow-md)",
     pointerEvents: "none",
     zIndex: 9999,
+    color: "var(--text-primary)",
   },
   emptyWrap: {
     height: "90%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#f8fafc",
+    background: "var(--bg-secondary)",
     borderRadius: 12,
   },
   emptyText: {
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontSize: 13,
   }
 };

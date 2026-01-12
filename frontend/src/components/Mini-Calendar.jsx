@@ -65,11 +65,11 @@ export default function MiniCalendar() {
 
 const styles = {
   container: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 16,
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     padding: "20px",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    boxShadow: "var(--shadow-sm)",
   },
   header: {
     display: "flex",
@@ -81,7 +81,7 @@ const styles = {
   month: {
     fontWeight: 700,
     fontSize: 15,
-    color: "#1e293b",
+    color: "var(--text-primary)",
   },
 
   navBtn: {
@@ -89,7 +89,7 @@ const styles = {
     background: "transparent",
     cursor: "pointer",
     fontSize: 20,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     padding: "0 8px",
   },
 
@@ -103,7 +103,7 @@ const styles = {
   day: {
     fontWeight: 700,
     fontSize: 12,
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     paddingBottom: 8,
   },
 
@@ -113,10 +113,10 @@ const styles = {
     cursor: "pointer",
     fontSize: 13,
     fontWeight: 600,
-    color: "#475569",
+    color: "var(--text-primary)",
     transition: "all 0.2s",
     "&:hover": {
-      background: "#f1f5f9",
+      background: "var(--hover-bg)",
     }
   },
 

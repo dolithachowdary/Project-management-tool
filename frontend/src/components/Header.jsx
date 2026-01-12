@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Bell, X, Send, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Search, Bell, X, Send, Clock, CheckCircle2, AlertCircle, Sun, Moon } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 import toast from "react-hot-toast";
 import Avatar from "./Avatar";
 import {
@@ -13,6 +14,7 @@ import { getAssignableUsers } from "../api/users";
 import { timeAgo } from "../utils/helpers";
 
 const Header = () => {
+  const { theme, toggleTheme } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -246,6 +248,18 @@ const Header = () => {
           />
         </div>
 
+        <div
+          onClick={toggleTheme}
+          style={{
+            ...styles.bellWrapper,
+            backgroundColor: theme === 'dark' ? '#334155' : '#f8fafc',
+            borderColor: theme === 'dark' ? '#475569' : '#f1f5f9'
+          }}
+          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {theme === 'light' ? <Moon size={18} color="#64748b" /> : <Sun size={18} color="#f1f5f9" />}
+        </div>
+
         <div ref={dropdownRef} style={styles.bellWrapper}>
           <div onClick={() => setIsDropdownOpen(!isDropdownOpen)} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <Bell size={20} style={styles.bellIcon} />
@@ -364,9 +378,10 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "12px 24px",
-    backgroundColor: "#fff",
-    borderBottom: "1px solid #f1f5f9",
+    backgroundColor: "var(--header-bg)",
+    borderBottom: "1px solid var(--border-color)",
     flexShrink: 0,
+    transition: "background-color 0.3s ease, border-color 0.3s ease",
   },
   left: {
     display: "flex",
@@ -377,15 +392,16 @@ const styles = {
     fontSize: "20px",
     fontWeight: "bold",
     textTransform: "capitalize",
-    color: "#1e293b",
+    color: "var(--text-primary)",
   },
   searchBox: {
     width: "250px",
     padding: "8px 10px 8px 36px",
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     borderRadius: "8px",
     fontSize: "14px",
-    background: "#f8fafc",
+    background: "var(--input-bg)",
+    color: "var(--text-primary)",
     outline: "none",
     transition: "all 0.2s",
   },
@@ -412,12 +428,12 @@ const styles = {
   profileName: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#1e293b",
+    color: "var(--text-primary)",
     margin: 0,
   },
   profileRole: {
     fontSize: "12px",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     margin: 0,
   },
   bellWrapper: {
@@ -425,15 +441,16 @@ const styles = {
     width: "36px",
     height: "36px",
     borderRadius: "10px",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "var(--input-bg)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
+    transition: "all 0.2s ease",
   },
   bellIcon: {
-    color: "#64748b",
+    color: "var(--text-secondary)",
   },
   notificationBadge: {
     position: "absolute",
@@ -450,10 +467,10 @@ const styles = {
     top: "120%",
     right: 0,
     width: "350px",
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: "12px",
-    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
-    border: "1px solid #f1f5f9",
+    boxShadow: "var(--shadow-md)",
+    border: "1px solid var(--border-color)",
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
@@ -522,7 +539,7 @@ const styles = {
     margin: 0,
     fontSize: "14px",
     fontWeight: "700",
-    color: "#1e293b",
+    color: "var(--text-primary)",
     display: "flex",
     alignItems: "center",
   },
@@ -533,7 +550,7 @@ const styles = {
   notifMsg: {
     margin: "4px 0 0 0",
     fontSize: "13px",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     lineHeight: "1.4",
   },
   projectTag: {

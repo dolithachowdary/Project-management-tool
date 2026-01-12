@@ -7,10 +7,11 @@ import Avatar from "./Avatar";
 
 const getActionIcon = (action = "") => {
   const a = action.toLowerCase();
-  if (a.includes("create")) return <Plus size={18} color="#000" strokeWidth={2.5} />;
-  if (a.includes("update") || a.includes("edit")) return <SquarePen size={18} color="#000" strokeWidth={2.5} />;
-  if (a.includes("complete") || a.includes("done")) return <CheckCheck size={18} color="#000" strokeWidth={2.5} />;
-  return <Info size={18} color="#000" strokeWidth={2.5} />;
+  const iconColor = "var(--text-primary)";
+  if (a.includes("create")) return <Plus size={18} color={iconColor} strokeWidth={2.5} />;
+  if (a.includes("update") || a.includes("edit")) return <SquarePen size={18} color={iconColor} strokeWidth={2.5} />;
+  if (a.includes("complete") || a.includes("done")) return <CheckCheck size={18} color={iconColor} strokeWidth={2.5} />;
+  return <Info size={18} color={iconColor} strokeWidth={2.5} />;
 };
 
 export default function RecentActivity({ projectId, sprintId, hideHeader = false }) {
@@ -108,15 +109,15 @@ export default function RecentActivity({ projectId, sprintId, hideHeader = false
 
 const styles = {
   container: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 16,
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     display: "flex",
     flexDirection: "column",
     height: "100%",
     maxHeight: "100%",
     overflow: "hidden", // Added to prevent overlap
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    boxShadow: "var(--shadow-sm)",
   },
   header: {
     padding: "16px 20px 8px", // Reduced padding
@@ -124,7 +125,7 @@ const styles = {
   title: {
     fontSize: 16,
     fontWeight: 700,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     margin: 0,
     fontFamily: "'Poppins', sans-serif",
   },
@@ -145,7 +146,7 @@ const styles = {
   dateLabel: {
     fontSize: 12,
     fontWeight: 500,
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     marginBottom: 16,
     textTransform: "uppercase",
     letterSpacing: "0.5px",
@@ -176,7 +177,7 @@ const styles = {
   itemTitle: {
     fontSize: 14,
     fontWeight: 400,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     marginBottom: 4,
     lineHeight: 1.4,
     fontFamily: "'Poppins', sans-serif",
@@ -192,7 +193,7 @@ const styles = {
   time: {
     fontSize: 11,
     fontWeight: 400,
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
   },
   userNote: {
     fontSize: 13,

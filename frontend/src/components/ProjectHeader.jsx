@@ -93,7 +93,7 @@ const ProjectHeader = ({
           <div style={{ ...styles.statCard, background: "#f0f7ff" }}>
             <div style={styles.cardInfo}>
               <div style={styles.cardHeaderArea}>
-                <div style={{ ...styles.iconBox, background: "#fff" }}>
+                <div style={{ ...styles.iconBox, background: "var(--bg-primary)" }}>
                   <Clock3 size={16} color="#3b82f6" />
                 </div>
                 {canModifyStructure && (
@@ -116,7 +116,7 @@ const ProjectHeader = ({
           <div style={{ ...styles.statCard, background: "#f5f3ff" }}>
             <div style={styles.cardInfo}>
               <div style={{ ...styles.cardHeaderArea }}>
-                <div style={{ ...styles.iconBox, background: "#fff" }}>
+                <div style={{ ...styles.iconBox, background: "var(--bg-primary)" }}>
                   <Box size={16} color="#8b5cf6" />
                 </div>
                 {canModifyStructure && (
@@ -136,7 +136,7 @@ const ProjectHeader = ({
           <div style={{ ...styles.statCard, background: "#fff7ed" }}>
             <div style={styles.cardInfo}>
               <div style={styles.cardHeaderArea}>
-                <div style={{ ...styles.iconBox, background: "#fff" }}>
+                <div style={{ ...styles.iconBox, background: "var(--bg-primary)" }}>
                   <ClipboardList size={16} color="#f97316" />
                 </div>
                 {canAddTasks && (
@@ -162,11 +162,11 @@ const styles = {
     marginBottom: 32,
   },
   container: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 24,
     padding: "24px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-    border: "1px solid #f1f5f9",
+    boxShadow: "var(--shadow-sm)",
+    border: "1px solid var(--border-color)",
     display: "flex",
     flexWrap: "wrap",
     gap: "24px",
@@ -183,7 +183,7 @@ const styles = {
   title: {
     fontSize: 24,
     fontWeight: 800,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     margin: 0,
   },
   editBtn: {
@@ -197,7 +197,7 @@ const styles = {
     borderRadius: "6px",
     transition: "background 0.2s",
     "&:hover": {
-      background: "#f1f5f9",
+      background: "var(--hover-bg)",
     },
   },
   prdBtn: {
@@ -221,7 +221,7 @@ const styles = {
     gap: 8,
     fontSize: 14,
     fontWeight: 600,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     marginBottom: 24,
   },
   progressSection: {
@@ -237,7 +237,7 @@ const styles = {
   progressTrack: {
     flex: 1,
     height: 10,
-    background: "#f1f5f9",
+    background: "var(--border-color)",
     borderRadius: 10,
     overflow: "hidden",
   },
@@ -249,7 +249,7 @@ const styles = {
   percentText: {
     fontSize: 14,
     fontWeight: 800,
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     minWidth: 40,
   },
   metaRow: {
@@ -300,8 +300,8 @@ const styles = {
     alignItems: "center",
   },
   cardAddBtn: {
-    background: "#fff",
-    border: "1px solid #e2e8f0",
+    background: "var(--card-bg)",
+    border: "1px solid var(--border-color)",
     width: "24px",
     height: "24px",
     borderRadius: "100%",
@@ -312,7 +312,7 @@ const styles = {
     transition: "all 0.2s ease",
     "&:hover": {
       transform: "scale(1.1)",
-      borderColor: "#cbd5e1",
+      borderColor: "var(--border-color)",
     }
   },
   cardText: {
@@ -321,12 +321,12 @@ const styles = {
   cardLabel: {
     fontSize: 15,
     fontWeight: 800,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     marginBottom: 4,
   },
   cardVal: {
     fontSize: 13,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontWeight: 600,
     marginTop: 4,
   },

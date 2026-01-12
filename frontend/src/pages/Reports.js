@@ -6,39 +6,26 @@ import MemberWorkloadGraph from '../components/MemberWorkloadGraph';
 import Avatar from '../components/Avatar';
 import Loader from '../components/Loader';
 import { ArrowLeft, Users, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
-import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import api from '../api/axios';
 
 const Reports = () => {
     const navigate = useNavigate();
     const userData = JSON.parse(localStorage.getItem('userData'));
     const role = userData?.role || '';
-    const token = userData?.accessToken; // Fixed: use accessToken from userData
 
     const [workloadData, setWorkloadData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (token) {
-            fetchWorkloadData();
-        }
-    }, [token]);
+        fetchWorkloadData();
+    }, []);
 
     const fetchWorkloadData = async () => {
         try {
             setLoading(true);
 
-            // Debug logging
-            console.log('Token:', token);
-            console.log('User Data:', userData);
-            console.log('Role:', role);
-            console.log('API URL:', `${API_BASE_URL}/dashboard/team-workload`);
-
-            const response = await axios.get(`${API_BASE_URL}/dashboard/team-workload`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/dashboard/team-workload');
 
             if (response.data.success) {
                 setWorkloadData(response.data.data);

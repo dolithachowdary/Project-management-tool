@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
@@ -16,7 +16,6 @@ import SprintDetails from "./pages/SprintDetails";
 import ToastManager from "./components/ToastManager";
 
 import ChatBot from "./components/ChatBot";
-import { useLocation } from "react-router-dom";
 
 function AppContent() {
   const location = useLocation();
@@ -85,11 +84,14 @@ function AppContent() {
   );
 }
 
+
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </ThemeProvider>
   );
 }
 
