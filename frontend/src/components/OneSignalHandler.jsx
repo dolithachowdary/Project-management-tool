@@ -14,10 +14,22 @@ const OneSignalHandler = () => {
                     allowLocalhostAsSecureOrigin: true
                 });
 
-                const playerId = await OneSignal.getUserId();
-                if (playerId) {
-                    await api.post("/users/save-player-id", { playerId });
-                }
+                const savePlayerId = async () => {
+                    const playerId = await OneSignal.getUserId();
+                    if (playerId) {
+                        await api.post("/users/save-player-id", { playerId });
+                    }
+                };
+
+                // Check immediately
+                await savePlayerId();
+
+                // Listen for changes (e.g. user clicks "Allow")
+                OneSignal.on('subscriptionChange', async (isSubscribed) => {
+                    if (isSubscribed) {
+                        await savePlayerId();
+                    }
+                });
 
                 OneSignal.on('notificationClick', (event) => {
                     const data = event.notification.data;
