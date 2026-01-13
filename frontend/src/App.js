@@ -16,6 +16,8 @@ import SprintDetails from "./pages/SprintDetails";
 import ToastManager from "./components/ToastManager";
 
 import OneSignalHandler from "./components/OneSignalHandler";
+import OneSignalDebug from "./components/OneSignalDebug";
+
 
 import ChatBot from "./components/ChatBot";
 
@@ -82,6 +84,7 @@ function AppContent() {
           }
         />
         <Route path="/notes" element={<Notes />} />
+        <Route path="/onesignal-debug" element={<OneSignalDebug />} />
       </Routes>
     </>
   );
