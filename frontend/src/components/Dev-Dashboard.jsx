@@ -194,18 +194,18 @@ const styles = {
   },
 
   graphWrapper: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 16,
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     padding: 24,
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    boxShadow: "var(--shadow-sm)",
   },
 
   sectionTitle: {
     fontSize: 16,
     fontWeight: 700,
     marginBottom: 16,
-    color: "#1e293b",
+    color: "var(--text-primary)",
     fontFamily: "'Poppins', sans-serif",
   },
 

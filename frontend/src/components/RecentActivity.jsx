@@ -66,7 +66,7 @@ export default function RecentActivity({ projectId, sprintId, hideHeader = false
           <div style={styles.loading}>Loading...</div>
         ) : logs.length === 0 ? (
           <div style={styles.empty}>
-            <FileText size={40} color="var(--border-color)" />
+            <FileText size={40} color="var(--text-secondary)" style={{ opacity: 0.5 }} />
             <p>No activity recorded yet</p>
           </div>
         ) : (

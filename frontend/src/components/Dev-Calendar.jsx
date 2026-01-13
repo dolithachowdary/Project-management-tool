@@ -177,8 +177,8 @@ export default function Calendar() {
                 style={{
                   ...styles.cell,
                   opacity: isCurrentMonth ? 1 : 0.4,
-                  backgroundColor: isSameDay(day, new Date()) ? "#fff" : "transparent",
-                  borderColor: isSameDay(day, new Date()) ? "#2563eb" : "#f1f5f9",
+                  backgroundColor: isSameDay(day, new Date()) ? "var(--bg-secondary)" : "transparent",
+                  borderColor: isSameDay(day, new Date()) ? "var(--info-color)" : "var(--border-color)",
                   cursor: dayTasks.length > 0 ? "pointer" : "default"
                 }}
                 onClick={() => {
@@ -187,7 +187,7 @@ export default function Calendar() {
               >
                 <div style={{
                   ...styles.date,
-                  color: isSameDay(day, new Date()) ? "#2563eb" : "#1e293b",
+                  color: isSameDay(day, new Date()) ? "var(--info-color)" : "var(--text-primary)",
                   fontWeight: isSameDay(day, new Date()) ? 800 : 600
                 }}>
                   {format(day, "d")}
@@ -199,9 +199,9 @@ export default function Calendar() {
                       key={idx}
                       style={{
                         ...styles.event,
-                        background: hexToRGBA(t.project_color || "#3b82f6", 0.12),
+                        background: hexToRGBA(t.project_color || "#3b82f6", 0.15),
                         borderLeft: `3px solid ${t.project_color || "#3b82f6"}`,
-                        color: "#1e293b"
+                        color: "var(--text-primary)"
                       }}
                       title={t.title}
                     >
@@ -235,14 +235,14 @@ export default function Calendar() {
 
 const styles = {
   wrapper: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 24,
-    border: "1px solid #e2e8f0",
+    border: "1px solid var(--border-color)",
     padding: 24,
     height: "calc(100vh - 160px)",
     display: "flex",
     flexDirection: "column",
-    boxShadow: "0 4px 24px rgba(0,0,0,0.02)",
+    boxShadow: "var(--shadow-sm)",
   },
 
   header: {
@@ -256,7 +256,7 @@ const styles = {
     margin: 0,
     fontSize: 22,
     fontWeight: 800,
-    color: "#0f172a",
+    color: "var(--text-primary)",
     letterSpacing: "-0.5px"
   },
 
@@ -269,9 +269,9 @@ const styles = {
     width: 36,
     height: 36,
     borderRadius: "10px",
-    border: "1px solid #e2e8f0",
-    background: "#fff",
-    color: "#64748b",
+    border: "1px solid var(--border-color)",
+    background: "var(--card-bg)",
+    color: "var(--text-secondary)",
     fontSize: 20,
     display: "flex",
     alignItems: "center",
@@ -279,9 +279,9 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.2s",
     ":hover": {
-      borderColor: "#2563eb",
-      color: "#2563eb",
-      background: "#eff6ff"
+      borderColor: "var(--info-color)",
+      color: "var(--info-color)",
+      background: "var(--hover-bg)"
     }
   },
 
@@ -289,17 +289,17 @@ const styles = {
     padding: "0 16px",
     height: 36,
     borderRadius: "10px",
-    border: "1px solid #e2e8f0",
-    background: "#fff",
-    color: "#475569",
+    border: "1px solid var(--border-color)",
+    background: "var(--card-bg)",
+    color: "var(--text-secondary)",
     fontSize: 13,
     fontWeight: 600,
     cursor: "pointer",
     transition: "all 0.2s",
     ":hover": {
-      borderColor: "#2563eb",
-      color: "#2563eb",
-      background: "#eff6ff"
+      borderColor: "var(--info-color)",
+      color: "var(--info-color)",
+      background: "var(--hover-bg)"
     }
   },
 
@@ -311,7 +311,7 @@ const styles = {
 
   weekDay: {
     textAlign: "center",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontSize: 11,
     fontWeight: 700,
     textTransform: "uppercase",
@@ -328,7 +328,7 @@ const styles = {
   },
 
   cell: {
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     borderRadius: 12,
     padding: 8,
     fontSize: 12,
@@ -338,11 +338,7 @@ const styles = {
     overflow: "hidden",
     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     position: "relative",
-    ":hover": {
-      backgroundColor: "#f8fafc",
-      transform: "translateY(-1px)",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.03)"
-    }
+    // No hover here, as it needs inline state
   },
 
   date: {
@@ -365,7 +361,7 @@ const styles = {
   },
 
   event: {
-    borderRadius: 6, // more pill-like
+    borderRadius: 6,
     padding: "6px 10px",
     fontSize: 12,
     fontWeight: 600,
@@ -379,8 +375,8 @@ const styles = {
   moreIndicator: {
     fontSize: 10,
     fontWeight: 700,
-    color: "#64748b",
-    background: "#f1f5f9",
+    color: "var(--text-secondary)",
+    background: "var(--bg-secondary)",
     padding: "2px 8px",
     borderRadius: 12,
     alignSelf: "flex-start",
@@ -394,7 +390,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: "rgba(0,0,0,0.4)",
+    background: "var(--modal-overlay)",
     backdropFilter: "blur(4px)",
     display: "flex",
     alignItems: "center",
@@ -402,21 +398,22 @@ const styles = {
     zIndex: 9999,
   },
   modalContent: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 16,
     width: "480px",
     maxWidth: "90%",
     maxHeight: "85vh",
     display: "flex",
     flexDirection: "column",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)",
+    boxShadow: "var(--shadow-md)",
     overflow: "hidden",
-    animation: "modalFadeIn 0.2s ease-out"
+    animation: "modalFadeIn 0.2s ease-out",
+    border: "1px solid var(--border-color)"
   },
   modalHeader: {
     padding: "24px 32px",
-    background: "#fff",
-    borderBottom: "1px solid #f1f5f9",
+    background: "var(--card-bg)",
+    borderBottom: "1px solid var(--border-color)",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start"
@@ -429,22 +426,22 @@ const styles = {
   modalDay: {
     fontSize: 32,
     fontWeight: 800,
-    color: "#2563eb",
+    color: "var(--info-color)",
     lineHeight: 1
   },
   modalTitle: {
     margin: 0,
     fontSize: 18,
     fontWeight: 700,
-    color: "#0f172a",
+    color: "var(--text-primary)",
   },
   modalDate: {
     fontSize: 14,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     marginTop: 2
   },
   closeBtn: {
-    background: "#f8fafc",
+    background: "var(--input-bg)",
     border: "none",
     borderRadius: 8,
     width: 32,
@@ -453,15 +450,15 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    color: "#64748b",
+    color: "var(--text-secondary)",
     transition: "all 0.2s",
-    ":hover": { background: "#e2e8f0", color: "#0f172a" }
+    ":hover": { background: "var(--hover-bg)", color: "var(--text-primary)" }
   },
   modalBody: {
     padding: "24px 32px",
     overflowY: "auto",
     flex: 1,
-    background: "#fcfdfe"
+    background: "var(--bg-secondary)"
   },
   emptyState: {
     display: "flex",
@@ -469,7 +466,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     padding: "48px 0",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontWeight: 500
   },
   taskList: {
@@ -478,16 +475,13 @@ const styles = {
     gap: 16
   },
   teamsTaskCard: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 12,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
+    boxShadow: "var(--shadow-sm)",
     overflow: "hidden",
     display: "flex",
     transition: "transform 0.2s",
-    ":hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 8px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02)"
-    }
+    border: "1px solid var(--border-color)",
   },
   teamsAccentStrip: {
     width: 4,
@@ -505,7 +499,7 @@ const styles = {
     alignItems: "center",
     gap: 6,
     fontSize: 12,
-    color: "#64748b",
+    color: "var(--text-secondary)",
     fontWeight: 600
   },
   teamsTimeText: {
@@ -515,7 +509,7 @@ const styles = {
   teamsTitle: {
     fontSize: 15,
     fontWeight: 700,
-    color: "#0f172a",
+    color: "var(--text-primary)",
     lineHeight: 1.4
   },
   teamsFooter: {
@@ -523,14 +517,14 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    borderTop: "1px solid #f8fafc",
+    borderTop: "1px solid var(--border-color)",
     paddingTop: 12
   },
   teamsProject: {
     fontSize: 11,
     fontWeight: 600,
-    color: "#64748b",
-    background: "#f1f5f9",
+    color: "var(--text-secondary)",
+    background: "var(--bg-secondary)",
     padding: "2px 8px",
     borderRadius: 6
   }

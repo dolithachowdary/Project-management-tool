@@ -39,7 +39,7 @@ export default function WeeklyTaskGraph({ data = [] }) {
 
       <div style={styles.legend}>
         <div style={styles.legendItem}>
-          <span style={{ ...styles.dot, background: "var(--error-bg)" }} />
+          <span style={{ ...styles.dot, background: "var(--border-color)" }} />
           <span style={styles.legendLabel}>Total Tasks</span>
         </div>
         <div style={styles.legendItem}>
@@ -79,7 +79,7 @@ export default function WeeklyTaskGraph({ data = [] }) {
                   width={barWidth}
                   height={Math.max(totalH, 4)}
                   rx="6"
-                  fill="var(--error-bg)"
+                  fill="var(--border-color)"
                 />
 
                 {/* COMPLETED (DARK RED) */}

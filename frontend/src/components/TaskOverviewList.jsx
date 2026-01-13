@@ -82,7 +82,7 @@ export default function TaskOverviewList({
         {role === "Developer" ? "Today’s Tasks" : "Team Tasks"}
       </h3>
 
-      <div style={styles.scrollArea}>
+      <div style={styles.scrollArea} className="custom-scrollbar">
         {sorted.length === 0 && <div style={styles.empty}>No active tasks found.</div>}
 
         {/* DEV VIEW */}
@@ -141,20 +141,19 @@ export default function TaskOverviewList({
     </div>
   );
 }
-
 const styles = {
   card: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 16,
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--border-color)",
     padding: 20,
     display: "flex",
     flexDirection: "column",
     height: "100%",
     maxHeight: 500,
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+    boxShadow: "var(--shadow-sm)",
   },
-  title: { marginBottom: 16, fontWeight: 700, fontSize: 16, color: "#1e293b" },
+  title: { marginBottom: 16, fontWeight: 700, fontSize: 16, color: "var(--text-primary)" },
   scrollArea: {
     flex: 1,
     overflowY: "auto",
@@ -166,13 +165,13 @@ const styles = {
     gap: 12,
     padding: "12px",
     borderRadius: 12,
-    background: "#f8fafc",
+    background: "var(--bg-secondary)",
     marginBottom: 8,
     transition: "background 0.2s",
   },
   dot: { width: 8, height: 8, borderRadius: "50%", flexShrink: 0 },
-  task: { fontWeight: 600, fontSize: 13, color: "#334155" },
-  meta: { fontSize: 11, color: "#64748b", marginTop: 2 },
+  task: { fontWeight: 600, fontSize: 13, color: "var(--text-primary)" },
+  meta: { fontSize: 11, color: "var(--text-secondary)", marginTop: 2 },
   pill: {
     fontSize: 10,
     padding: "4px 10px",
@@ -182,7 +181,7 @@ const styles = {
   },
   project: {
     fontWeight: 700,
-    color: "#C62828",
+    color: "var(--accent-color)",
     fontSize: 12,
     marginBottom: 8,
     paddingLeft: 4,
@@ -190,7 +189,7 @@ const styles = {
   empty: {
     padding: 20,
     textAlign: "center",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
     fontSize: 14,
   }
 };

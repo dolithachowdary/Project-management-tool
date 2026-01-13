@@ -35,7 +35,7 @@ export default function DevTaskPie({ data }) {
       </div>
 
       {total === 0 && (
-        <div style={{ color: "#64748b", fontSize: "14px", padding: "40px 0" }}>
+        <div style={{ color: "var(--text-secondary)", fontSize: "14px", padding: "40px 0" }}>
           No tasks assigned yet
         </div>
       )}
@@ -97,9 +97,9 @@ export default function DevTaskPie({ data }) {
 
 const styles = {
   card: {
-    background: "#fff",
+    background: "var(--card-bg)",
     borderRadius: 12,
-    border: "1px solid #e5e5e5",
+    border: "1px solid var(--border-color)",
     padding: 16,
     textAlign: "center",
     position: "relative",
@@ -114,36 +114,19 @@ const styles = {
   title: {
     fontSize: 16,
     fontWeight: 600,
-  },
-
-  btn: {
-    padding: "4px 10px",
-    marginLeft: 6,
-    borderRadius: 6,
-    border: "1px solid #ddd",
-    background: "#fff",
-    cursor: "pointer",
-  },
-
-  activeBtn: {
-    padding: "4px 10px",
-    marginLeft: 6,
-    borderRadius: 6,
-    border: "none",
-    background: "#C62828",
-    color: "#fff",
-    cursor: "pointer",
+    color: "var(--text-primary)",
   },
 
   tooltip: {
     position: "fixed",
-    background: "#fff",
-    border: "1px solid #e5e5e5",
+    background: "var(--card-bg)",
+    border: "1px solid var(--border-color)",
     borderRadius: 8,
     padding: "10px 12px",
     fontSize: 13,
-    boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+    boxShadow: "var(--shadow-md)",
     pointerEvents: "none",
     zIndex: 9999,
+    color: "var(--text-primary)",
   },
 };
