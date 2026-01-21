@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { useTheme } from "../context/ThemeContext";
 
 export default function WeeklyTaskGraph({ data = [] }) {
-  const { theme } = useTheme();
   const [tooltip, setTooltip] = useState(null);
 
   if (!data || data.length === 0) {

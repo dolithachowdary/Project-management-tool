@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import OneSignal from 'react-onesignal';
 import api from '../api/axios';
 
@@ -12,7 +12,7 @@ const OneSignalDebug = () => {
         console.log(`[${timestamp}] ${message}`, data || '');
     };
 
-    const checkStatus = async () => {
+    const checkStatus = useCallback(async () => {
         try {
             addLog('Checking OneSignal status...');
 
@@ -34,7 +34,7 @@ const OneSignalDebug = () => {
         } catch (error) {
             addLog('Error checking status', error);
         }
-    };
+    }, []);
 
     const requestPermission = async () => {
         try {
@@ -69,7 +69,7 @@ const OneSignalDebug = () => {
 
     useEffect(() => {
         checkStatus();
-    }, []);
+    }, [checkStatus]);
 
     return (
         <div style={{ padding: '20px', fontFamily: 'monospace' }}>

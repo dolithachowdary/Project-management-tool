@@ -1,21 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { getModules } from "../api/modules";
 import { getTasks } from "../api/tasks";
-import { ChevronDown, ChevronUp, Box, CircleCheckBig, Circle, CircleMinus, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Box, CircleCheckBig, Circle, CircleMinus } from "lucide-react";
 import Loader from "./Loader";
 import Avatar from "./Avatar";
 import AddModuleModal from "./AddModuleModal";
-import { useTheme } from "../context/ThemeContext";
 
 export default function Modules({ projectId, projectColor, onTaskClick, isAddModalOpen, setIsAddModalOpen }) {
-  const { theme } = useTheme();
   const [modules, setModules] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [expandedModules, setExpandedModules] = useState({});
   const [loading, setLoading] = useState(false);
 
   const role = JSON.parse(localStorage.getItem("userData"))?.role || "";
-  const canModify = ["admin", "Project Manager"].includes(role);
 
   const fetchData = useCallback(async () => {
     if (!projectId) return;

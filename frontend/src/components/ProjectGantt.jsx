@@ -139,7 +139,7 @@ export default function ProjectGantt() {
             }
         };
         fetchData();
-    }, [currentDate, selectedProject, selectedMember]);
+    }, [currentDate, selectedProject, selectedMember, weekStart, weekEnd]);
 
     const handlePrevWeek = () => setCurrentDate(subDays(currentDate, 7));
     const handleNextWeek = () => setCurrentDate(addDays(currentDate, 7));
