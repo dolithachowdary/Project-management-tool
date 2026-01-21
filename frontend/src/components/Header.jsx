@@ -65,11 +65,24 @@ const Header = () => {
 
     fetchNotifs();
 
+    // Refresh on window focus
+    const onFocus = () => fetchNotifs(false);
+    window.addEventListener("focus", onFocus);
+
+    // Refresh on custom event (e.g. from OneSignal)
+    const onRefreshEvent = () => fetchNotifs(false);
+    window.addEventListener("notifications:refresh", onRefreshEvent);
+
     if (isPM) {
       getAssignableUsers().then(res => {
         setAllUsers(res.data?.data || []);
       });
     }
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("notifications:refresh", onRefreshEvent);
+    };
   }, [fetchNotifs, isPM]);
 
   const showFreshNotification = (notif) => {
