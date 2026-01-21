@@ -12,8 +12,6 @@ export default function Modules({ projectId, projectColor, onTaskClick, isAddMod
   const [expandedModules, setExpandedModules] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const role = JSON.parse(localStorage.getItem("userData"))?.role || "";
-
   const fetchData = useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
