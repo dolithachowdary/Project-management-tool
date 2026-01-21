@@ -8,83 +8,75 @@ const OneSignalHandler = () => {
     const location = useLocation();
 
     useEffect(() => {
-        const initOneSignal = async () => {
-            if (window.OneSignalInitialized) return;
-            try {
-                console.log('[OneSignal] Initializing...');
-                await OneSignal.init({
-                    appId: process.env.REACT_APP_ONESIGNAL_APP_ID,
-                    allowLocalhostAsSecureOrigin: true,
-                    notifyButton: { enable: false }
-                });
+        let isMounted = true;
 
-                const supported = await OneSignal.isPushNotificationsSupported();
-                console.log('[OneSignal] Push supported:', supported);
-                if (!supported) return;
-
-                window.OneSignalInitialized = true;
-
-                // Handle notification click
-                OneSignal.on("notificationClick", async (event) => {
-                    console.log('[OneSignal] Notification clicked:', event);
-                    window.dispatchEvent(new CustomEvent("notifications:refresh"));
-                    const data = event.notification.data;
-                    if (data?.project_id) navigate(`/projects/${data.project_id}`);
-                    else if (data?.sprint_id) navigate(`/sprints/${data.sprint_id}`);
-                    else if (data?.task_id) navigate(`/tasks`);
-                });
-
-                console.log('[OneSignal] Initialization complete');
-            } catch (e) {
-                console.error('[OneSignal] Error during init:', e);
-            }
-        };
-
-        const trySavingPlayerId = async () => {
-            try {
-                const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-                if (!userData.accessToken) {
-                    console.log('[OneSignal] No access token, skipping save');
-                    return;
-                }
-
-                const isSubscribed = await OneSignal.isPushNotificationsEnabled();
-                console.log('[OneSignal] Is subscribed:', isSubscribed);
-
-                if (isSubscribed) {
-                    const playerId = await OneSignal.getUserId();
-                    if (playerId) {
-                        console.log('[OneSignal] Saving Player ID:', playerId);
-                        const res = await api.post("/users/save-player-id", { playerId });
-                        console.log('[OneSignal] Save response:', res.data);
+        const runSetup = async () => {
+            const trySavingPlayerId = async () => {
+                if (!isMounted) return;
+                try {
+                    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+                    if (!userData.accessToken) {
+                        console.log('[OneSignal] No session, skipping save');
+                        return;
                     }
+
+                    const isSubscribed = await OneSignal.isPushNotificationsEnabled();
+                    if (isSubscribed) {
+                        const playerId = await OneSignal.getUserId();
+                        if (playerId) {
+                            console.log('[OneSignal] Syncing Player ID:', playerId);
+                            await api.post("/users/save-player-id", { playerId });
+                        }
+                    }
+                } catch (err) {
+                    console.error('[OneSignal] Sync Error:', err);
                 }
-            } catch (err) {
-                console.error('[OneSignal] Save Error:', err);
-            }
-        };
+            };
 
-        const setup = async () => {
-            await initOneSignal();
-            await trySavingPlayerId();
-        };
+            try {
+                if (!window.OneSignalInitialized) {
+                    console.log('[OneSignal] Initializing...');
+                    await OneSignal.init({
+                        appId: process.env.REACT_APP_ONESIGNAL_APP_ID,
+                        allowLocalhostAsSecureOrigin: true,
+                        notifyButton: { enable: false }
+                    });
 
-        setup();
+                    const supported = await OneSignal.isPushNotificationsSupported();
+                    if (!supported) return;
 
-        // Listen for subscription changes
-        const onSubChange = async (isSubscribed) => {
-            console.log('[OneSignal] Subscription change:', isSubscribed);
-            if (isSubscribed) {
+                    window.OneSignalInitialized = true;
+
+                    OneSignal.on("notificationClick", (event) => {
+                        console.log('[OneSignal] Notification clicked');
+                        window.dispatchEvent(new CustomEvent("notifications:refresh"));
+                        const data = event.notification.data;
+                        if (data?.project_id) navigate(`/projects/${data.project_id}`);
+                        else if (data?.sprint_id) navigate(`/sprints/${data.sprint_id}`);
+                        else if (data?.task_id) navigate(`/tasks`);
+                    });
+
+                    OneSignal.on("subscriptionChange", async (isSubscribed) => {
+                        console.log('[OneSignal] Sub change:', isSubscribed);
+                        if (isSubscribed) {
+                            await trySavingPlayerId();
+                        }
+                    });
+                }
+
                 await trySavingPlayerId();
+
+            } catch (error) {
+                console.error('[OneSignal] Error:', error);
             }
         };
-        OneSignal.on("subscriptionChange", onSubChange);
+
+        runSetup();
 
         return () => {
-            OneSignal.off("subscriptionChange", onSubChange);
+            isMounted = false;
         };
     }, [navigate, location.pathname]);
-
 
     return null;
 };

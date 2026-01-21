@@ -53,6 +53,7 @@ const Header = () => {
     }
   }, []);
 
+  // Sync user data on mount
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userData"));
     if (storedUser) {
@@ -62,7 +63,10 @@ const Header = () => {
         id: storedUser.id || "",
       });
     }
+  }, []);
 
+  // Sync notifications and listeners
+  useEffect(() => {
     fetchNotifs();
 
     // Refresh on window focus
